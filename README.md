@@ -16,14 +16,31 @@ An open-source version of Google's NotebookLM, built with Next.js and shadcn/ui.
 
 1. Install dependencies:
 ```bash
-npm install
+pnpm install
 # or
 yarn install
 ```
 
+Create virtual environment for python (installs `requirements.txt`)
+```bash
+./setup/create_venv.sh
+```
+Activate virtual environment
+```bash
+source venv/bin/activate
+```
+If adding additional libraries / packages to `requirements.txt`
+```bash
+pip install -r requirements.txt
+```
+Deactivate virtual environment
+```bash
+deactivate
+```
+
 2. Run the development server:
 ```bash
-npm run dev
+pnpm run dev
 # or
 yarn dev
 ```

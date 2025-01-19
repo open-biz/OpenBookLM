@@ -1,0 +1,17 @@
+# hosting
+modal>=0.72.31
+cerebras-cloud-sdk>=1.16.0
+# ML libs
+transformers>=4.48.0
+scipy>=1.15.1
+torch>=2.5.1
+# audio libs
+suno-bark>=0.1.5
+# LLMs
+openai>=1.59.8
+llamaapi>=0.1.36
+llama-parse>=0.5.19
+# utils
+ipython>=8.31.0
+tqdm>=4.67.1
+optimum>=1.23.3

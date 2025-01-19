@@ -71,9 +71,21 @@ Thumbs.db
 .env.production.local
 .env.local
 
+# vscode / IDEs
+*.code-workspace
+
+# virtual env
+venv/
+
 # Logs
 logs
 *.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+
+# local helper files
+commands.sh
+links
+backend/
