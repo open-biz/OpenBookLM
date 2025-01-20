@@ -1,0 +1,146 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String     @id @default(cuid())
+  clerkId       String     @unique
+  email         String     @unique
+  name          String?
+  notebooks     Notebook[]
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+}
+
+model Notebook {
+  id          String     @id @default(cuid())
+  title       String
+  description String?
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String
+  sources     Source[]
+  chats       Chat[]
+  notes       Note[]
+  tags        Tag[]
+  isArchived  Boolean    @default(false)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@index([userId])
+}
+
+model Source {
+  id          String    @id @default(cuid())
+  title       String
+  content     String    @db.Text
+  type        SourceType
+  url         String?
+  notebook    Notebook  @relation(fields: [notebookId], references: [id], onDelete: Cascade)
+  notebookId  String
+  chunks      Chunk[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([notebookId])
+}
+
+model Chunk {
+  id          String    @id @default(cuid())
+  content     String    @db.Text
+  embedding   Json?     // Vector embedding for semantic search
+  source      Source    @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  sourceId    String
+  startIndex  Int
+  endIndex    Int
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([sourceId])
+}
+
+model Chat {
+  id          String       @id @default(cuid())
+  title       String?
+  notebook    Notebook     @relation(fields: [notebookId], references: [id], onDelete: Cascade)
+  notebookId  String
+  messages    Message[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@index([notebookId])
+}
+
+model Message {
+  id          String    @id @default(cuid())
+  content     String    @db.Text
+  role        Role
+  chat        Chat      @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  chatId      String
+  citations   Citation[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([chatId])
+}
+
+model Citation {
+  id          String    @id @default(cuid())
+  message     Message   @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  messageId   String
+  chunkId     String
+  startIndex  Int
+  endIndex    Int
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([messageId])
+}
+
+model Note {
+  id          String    @id @default(cuid())
+  title       String
+  content     String    @db.Text
+  notebook    Notebook  @relation(fields: [notebookId], references: [id], onDelete: Cascade)
+  notebookId  String
+  tags        Tag[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([notebookId])
+}
+
+model Tag {
+  id          String     @id @default(cuid())
+  name        String
+  notebooks   Notebook[]
+  notes       Note[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@unique([name])
+}
+
+enum SourceType {
+  PDF
+  WEBPAGE
+  TEXT
+  MARKDOWN
+  CODE
+}
+
+enum Role {
+  USER
+  ASSISTANT
+  SYSTEM
+}
