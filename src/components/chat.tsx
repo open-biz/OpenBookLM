@@ -1,14 +1,20 @@
-'use client';
+"use client";
 
-import { useState, useRef, useEffect, forwardRef, useImperativeHandle } from 'react';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { Send, AlertCircle } from 'lucide-react';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import ReactMarkdown from 'react-markdown';
-import type { Components } from 'react-markdown';
+import {
+  useState,
+  useRef,
+  useEffect,
+  forwardRef,
+  useImperativeHandle,
+} from "react";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Send, AlertCircle } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import ReactMarkdown from "react-markdown";
+import type { Components } from "react-markdown";
 
-type MessageRole = 'user' | 'assistant' | 'system';
+type MessageRole = "user" | "assistant" | "system";
 
 interface Message {
   role: MessageRole;
@@ -26,9 +32,9 @@ const MarkdownComponents: Components = {
   code: ({ className, children }) => (
     <code
       className={`${
-        className?.includes('inline')
-          ? 'bg-gray-800 px-1 py-0.5 rounded'
-          : 'block bg-gray-800 p-2 rounded-md my-2 overflow-x-auto'
+        className?.includes("inline")
+          ? "bg-gray-800 px-1 py-0.5 rounded"
+          : "block bg-gray-800 p-2 rounded-md my-2 overflow-x-auto"
       } font-mono text-sm`}
     >
       {children}
@@ -41,7 +47,12 @@ const MarkdownComponents: Components = {
     </blockquote>
   ),
   a: ({ children, href }) => (
-    <a href={href} className="text-blue-400 hover:underline" target="_blank" rel="noopener noreferrer">
+    <a
+      href={href}
+      className="text-blue-400 hover:underline"
+      target="_blank"
+      rel="noopener noreferrer"
+    >
       {children}
     </a>
   ),
@@ -53,13 +64,13 @@ export interface ChatRef {
 
 export const Chat = forwardRef<ChatRef>((props, ref) => {
   const [messages, setMessages] = useState<Message[]>([]);
-  const [input, setInput] = useState('');
+  const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
   useEffect(() => {
@@ -70,41 +81,45 @@ export const Chat = forwardRef<ChatRef>((props, ref) => {
     if (!input.trim()) return;
     setError(null);
 
-    const userMessage: Message = { role: 'user', content: input.trim() };
-    setMessages(prevMessages => [...prevMessages, userMessage]);
-    setInput('');
+    const userMessage: Message = { role: "user", content: input.trim() };
+    setMessages((prevMessages) => [...prevMessages, userMessage]);
+    setInput("");
     setIsLoading(true);
 
     try {
-      const response = await fetch('/api/chat', {
-        method: 'POST',
+      const response = await fetch("/api/chat", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           messages: [...messages, userMessage],
-          stream: true
+          stream: true,
         }),
       });
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.error || 'Failed to get response from AI');
+        throw new Error(error.error || "Failed to get response from AI");
       }
 
       const data = await response.json();
       if (data.choices && data.choices[0]?.message) {
         const assistantMessage: Message = {
-          role: 'assistant',
-          content: data.choices[0].message.content
+          role: "assistant",
+          content: data.choices[0].message.content,
         };
-        setMessages(prevMessages => [...prevMessages, assistantMessage]);
+        setMessages((prevMessages) => [...prevMessages, assistantMessage]);
       } else {
-        throw new Error('Invalid response format from AI');
+        throw new Error("Invalid response format from AI");
       }
     } catch (error) {
-      setError(error instanceof Error ? error.message : 'An error occurred while sending your message');
-      console.error('Chat error:', error);
+      setError(
+        error instanceof Error
+          ? error.message
+          : "An error occurred while sending your message"
+      );
+      console.error("Chat error:", error);
     } finally {
       setIsLoading(false);
     }
@@ -112,46 +127,46 @@ export const Chat = forwardRef<ChatRef>((props, ref) => {
 
   const handleUrlSummary = async (url: string) => {
     const prompt = `generate a massive summary of ${url}`;
-    const userMessage: Message = { role: 'user', content: prompt };
-    setMessages(prevMessages => [...prevMessages, userMessage]);
+    const userMessage: Message = { role: "user", content: prompt };
+    setMessages((prevMessages) => [...prevMessages, userMessage]);
     setIsLoading(true);
 
     try {
-      const response = await fetch('/api/chat', {
-        method: 'POST',
+      const response = await fetch("/api/chat", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           messages: [...messages, userMessage],
-          stream: true
+          stream: true,
         }),
       });
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.error || 'Failed to get response from AI');
+        throw new Error(error.error || "Failed to get response from AI");
       }
 
       const data = await response.json();
       if (data.choices && data.choices[0]?.message) {
         const assistantMessage: Message = {
-          role: 'assistant',
-          content: data.choices[0].message.content
+          role: "assistant",
+          content: data.choices[0].message.content,
         };
-        setMessages(prevMessages => [...prevMessages, assistantMessage]);
+        setMessages((prevMessages) => [...prevMessages, assistantMessage]);
       } else {
-        throw new Error('Invalid response format from AI');
+        throw new Error("Invalid response format from AI");
       }
     } catch (error) {
-      setError(error instanceof Error ? error.message : 'An error occurred');
+      setError(error instanceof Error ? error.message : "An error occurred");
     } finally {
       setIsLoading(false);
     }
   };
 
   useImperativeHandle(ref, () => ({
-    handleUrlSummary
+    handleUrlSummary,
   }));
 
   return (
@@ -161,19 +176,19 @@ export const Chat = forwardRef<ChatRef>((props, ref) => {
           <div
             key={index}
             className={`flex ${
-              message.role === 'user' ? 'justify-end' : 'justify-start'
+              message.role === "user" ? "justify-end" : "justify-start"
             }`}
           >
             <div
               className={`max-w-[80%] rounded-lg p-3 ${
-                message.role === 'user'
-                  ? 'bg-blue-600 text-white'
-                  : message.role === 'system'
-                  ? 'bg-yellow-600 text-white'
-                  : 'bg-gray-700 text-white'
+                message.role === "user"
+                  ? "bg-blue-600 text-white"
+                  : message.role === "system"
+                  ? "bg-yellow-600 text-white"
+                  : "bg-gray-700 text-white"
               }`}
             >
-              {message.role === 'assistant' ? (
+              {message.role === "assistant" ? (
                 <div className="prose prose-invert max-w-none">
                   <ReactMarkdown components={MarkdownComponents}>
                     {message.content}
@@ -215,7 +230,7 @@ export const Chat = forwardRef<ChatRef>((props, ref) => {
             placeholder="Type your message..."
             className="flex-1 bg-[#2A2A2A] border-none text-white"
             onKeyDown={(e) => {
-              if (e.key === 'Enter' && !e.shiftKey) {
+              if (e.key === "Enter" && !e.shiftKey) {
                 e.preventDefault();
                 sendMessage();
               }

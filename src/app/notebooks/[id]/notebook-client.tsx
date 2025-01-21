@@ -33,6 +33,7 @@ export function NotebookClient({ notebook }: NotebookClientProps) {
   const chatRef = useRef(null);
   const [addSourceOpen, setAddSourceOpen] = useState(false);
   const [showWebsiteInput, setShowWebsiteInput] = useState(false);
+  const [showAudio, setShowAudio] = useState(false);
 
   return (
     <div className="flex h-[calc(100vh-57px)]">
@@ -85,6 +86,12 @@ export function NotebookClient({ notebook }: NotebookClientProps) {
                 Deep Dive conversation
               </h3>
               <p className="text-gray-400 mb-6">Two hosts (English only)</p>
+              {showAudio && (
+                <audio controls className="w-full mb-6">
+                  <source src="/sample-conversation.wav" type="audio/wav" />
+                  Your browser does not support the audio element.
+                </audio>
+              )}
               <div className="flex gap-4 w-full">
                 <Button
                   variant="outline"
@@ -92,8 +99,11 @@ export function NotebookClient({ notebook }: NotebookClientProps) {
                 >
                   Customize
                 </Button>
-                <Button className="flex-1 bg-blue-600 hover:bg-blue-700 text-white">
-                  Generate
+                <Button
+                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
+                  onClick={() => setShowAudio(true)}
+                >
+                  Generate New
                 </Button>
               </div>
             </div>
