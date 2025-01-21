@@ -1,11 +1,44 @@
+# Version control
 .git
 .gitignore
+
+# Dependencies
 node_modules
 .next
+
+# Environment files
 .env
 .env.*
+
+# Documentation
 README.md
+
+# Docker files
 .dockerignore
 Dockerfile
 docker-compose.yml
-*.log 
+
+# Logs
+*.log
+
+# Python virtual environment
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+dist/
+build/
+*.tsbuildinfo
+
+# Development files
+.vscode/
+.idea/
+*.swp
+*.swo 
