@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { getOrCreateUser } from "@/lib/auth";
 import HomePage from "./home-page";
+import { setAllNotebooks } from "@/lib/redis-utils";
 
 export default async function Page() {
   const { userId } = await auth();
@@ -43,12 +44,14 @@ export default async function Page() {
     },
   });
 
-  // Transform Date objects to strings
+  // Cache all notebooks in Redis
   const serializedNotebooks = notebooks.map((notebook) => ({
     ...notebook,
     updatedAt: notebook.updatedAt.toISOString(),
     createdAt: notebook.createdAt.toISOString(),
   }));
+
+  await setAllNotebooks(user.id, serializedNotebooks);
 
   return <HomePage notebooks={serializedNotebooks} />;
 }

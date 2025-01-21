@@ -22,6 +22,7 @@ import { CreateNotebookDialog } from "@/components/create-notebook-dialog";
 import { Chat } from "@/components/chat";
 import type { Notebook, Source, Chat as ChatType, Note } from "@prisma/client";
 import { cn } from "@/lib/utils";
+import { useNotebook } from "@/contexts/notebook-context";
 
 interface NotebookClientProps {
   notebook: Notebook & {
@@ -31,11 +32,24 @@ interface NotebookClientProps {
   };
 }
 
-export function NotebookClient({ notebook }: NotebookClientProps) {
+export function NotebookClient({
+  notebook: initialNotebook,
+}: NotebookClientProps) {
+  const { notebook, updateNotebook } = useNotebook();
   const chatRef = useRef(null);
   const [showSourcesSidebar, setShowSourcesSidebar] = useState(true);
   const [showAudioSidebar, setShowAudioSidebar] = useState(true);
   const [showAudio, setShowAudio] = useState(false);
+
+  const handleAddNote = async (note: Note) => {
+    if (notebook) {
+      const updatedNotebook = {
+        ...notebook,
+        notes: [...notebook.notes, note],
+      };
+      await updateNotebook(updatedNotebook);
+    }
+  };
 
   return (
     <div className="flex h-[calc(100vh-57px)]">
@@ -91,7 +105,7 @@ export function NotebookClient({ notebook }: NotebookClientProps) {
       {/* Main Chat Area */}
       <div className="flex-1 flex flex-col">
         <div className="flex-1 overflow-auto bg-[#1C1C1C]">
-          <Chat ref={chatRef} />
+          <Chat ref={chatRef} notebookId={notebook.id} />
         </div>
       </div>
 

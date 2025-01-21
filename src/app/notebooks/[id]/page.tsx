@@ -2,6 +2,7 @@ import { getOrCreateUser } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { redirect } from "next/navigation";
 import { NotebookClient } from "./notebook-client";
+import { NotebookProvider } from "@/contexts/notebook-context";
 
 export default async function NotebookPage({
   params,
@@ -34,5 +35,9 @@ export default async function NotebookPage({
     );
   }
 
-  return <NotebookClient notebook={notebook} />;
+  return (
+    <NotebookProvider initialNotebook={notebook}>
+      <NotebookClient notebook={notebook} />
+    </NotebookProvider>
+  );
 }

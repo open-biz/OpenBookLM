@@ -14,6 +14,8 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import ReactMarkdown from "react-markdown";
 import type { Components } from "react-markdown";
 import { ChatInput } from "@/components/chat-input";
+import { getChatHistory, setChatHistory } from "@/lib/redis-utils";
+import { useAuth } from "@clerk/nextjs";
 
 type MessageRole = "user" | "assistant" | "system";
 
@@ -63,7 +65,12 @@ export interface ChatRef {
   handleUrlSummary: (url: string) => void;
 }
 
-export const Chat = forwardRef<ChatRef>((props, ref) => {
+interface ChatProps {
+  notebookId: string;
+}
+
+export const Chat = forwardRef<ChatRef, ChatProps>(({ notebookId }, ref) => {
+  const { userId } = useAuth();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -77,6 +84,26 @@ export const Chat = forwardRef<ChatRef>((props, ref) => {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  // Load chat history on component mount
+  useEffect(() => {
+    if (userId) {
+      const loadHistory = async () => {
+        const history = await getChatHistory(userId, notebookId);
+        if (history.length > 0) {
+          setMessages(history);
+        }
+      };
+      loadHistory();
+    }
+  }, [userId, notebookId]);
+
+  // Save messages to Redis whenever they change
+  useEffect(() => {
+    if (userId && messages.length > 0) {
+      setChatHistory(userId, notebookId, messages);
+    }
+  }, [messages, userId, notebookId]);
 
   const sendMessage = async () => {
     if (!input.trim()) return;
