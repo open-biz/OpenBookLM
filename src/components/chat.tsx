@@ -13,6 +13,7 @@ import { Send, AlertCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import ReactMarkdown from "react-markdown";
 import type { Components } from "react-markdown";
+import { ChatInput } from "@/components/chat-input";
 
 type MessageRole = "user" | "assistant" | "system";
 
@@ -223,28 +224,16 @@ export const Chat = forwardRef<ChatRef>((props, ref) => {
         <div ref={messagesEndRef} />
       </div>
       <div className="border-t border-[#2A2A2A] p-4">
-        <div className="flex space-x-2">
-          <Textarea
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="Type your message..."
-            className="flex-1 bg-[#2A2A2A] border-none text-white"
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && !e.shiftKey) {
-                e.preventDefault();
-                sendMessage();
-              }
-            }}
-          />
-          <Button
-            onClick={sendMessage}
-            disabled={isLoading || !input.trim()}
-            className="bg-blue-600 hover:bg-blue-700"
-          >
-            <Send className="h-4 w-4" />
-          </Button>
-        </div>
+        <ChatInput
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          placeholder="Type your message here..."
+          onSend={sendMessage}
+          isLoading={isLoading}
+        />
       </div>
     </div>
   );
 });
+
+Chat.displayName = "Chat";
