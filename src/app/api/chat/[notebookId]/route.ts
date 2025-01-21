@@ -48,7 +48,7 @@ export async function POST(
       await prisma.message.create({
         data: {
           chatId: chat.id,
-          role: 'assistant',
+          role: 'ASSISTANT',
           content: aiResponse.choices[0].message.content,
         },
       });
