@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -23,11 +23,16 @@ export default function NotebookPage({ params }: { params: { id: string } }) {
   const [showWebsiteInput, setShowWebsiteInput] = useState(false)
   const [addSourceOpen, setAddSourceOpen] = useState(false)
   const [isGeneratingAudio, setIsGeneratingAudio] = useState(false)
+  const chatRef = useRef<{ handleUrlSummary: (url: string) => void }>(null)
 
   const handleWebsiteSubmit = (url: string) => {
     console.log('Submitted URL:', url)
     setShowWebsiteInput(false)
     setAddSourceOpen(false)
+  }
+
+  const handleSendToCerebras = (url: string) => {
+    chatRef.current?.handleUrlSummary(url);
   }
 
   const handleGenerateAudio = () => {
@@ -67,6 +72,7 @@ export default function NotebookPage({ params }: { params: { id: string } }) {
                 <WebsiteURLInput 
                   onBack={() => setShowWebsiteInput(false)}
                   onSubmit={handleWebsiteSubmit}
+                  onSendToCerebras={handleSendToCerebras}
                 />
               ) : (
                 <>
@@ -115,9 +121,9 @@ export default function NotebookPage({ params }: { params: { id: string } }) {
           </Dialog>
         </div>
 
-        {/* Main Content - Chat */}
-        <div className="flex-1">
-          <Chat />
+        {/* Chat Panel */}
+        <div className="flex-1 bg-[#1C1C1C]">
+          <Chat ref={chatRef} />
         </div>
 
         {/* Studio Panel */}

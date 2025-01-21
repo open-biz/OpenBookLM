@@ -17,7 +17,7 @@ export function AudioLoading() {
   if (showAudio) {
     return (
       <audio controls className="w-full">
-        <source src="/sample-conversation.wav" type="audio/wav" />
+        <source src="/merged.wav" type="audio/wav" />
         Your browser does not support the audio element.
       </audio>
     )

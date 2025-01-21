@@ -1,0 +1,3 @@
+file 'public/en.wav'
+file 'public/de.wav'
+file 'public/cn.wav'

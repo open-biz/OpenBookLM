@@ -8,10 +8,18 @@ import { Input } from '@/components/ui/input'
 interface WebsiteURLInputProps {
   onBack: () => void
   onSubmit: (url: string) => void
+  onSendToCerebras?: (url: string) => void
 }
 
-export function WebsiteURLInput({ onBack, onSubmit }: WebsiteURLInputProps) {
+export function WebsiteURLInput({ onBack, onSubmit, onSendToCerebras }: WebsiteURLInputProps) {
   const [url, setUrl] = useState('https://morganandwestfield.com/podcast/entrepreneurship-through-acquisition-insights-from-harvard-business-school-experts/')
+
+  const handleSubmit = async () => {
+    onSubmit(url);
+    if (onSendToCerebras) {
+      onSendToCerebras(url);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -57,7 +65,7 @@ export function WebsiteURLInput({ onBack, onSubmit }: WebsiteURLInputProps) {
 
       <div className="flex justify-end">
         <Button 
-          onClick={() => onSubmit(url)}
+          onClick={handleSubmit}
           className="bg-blue-500 hover:bg-blue-600 text-white px-8"
         >
           Insert
