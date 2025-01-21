@@ -1,6 +1,10 @@
 # Base image
 FROM node:20-slim AS base
 
+
+# Install OpenSSL and other required dependencies
+RUN apt-get update -y && apt-get install -y openssl libssl-dev ca-certificates
+
 # Install pnpm
 RUN npm install -g pnpm
 
