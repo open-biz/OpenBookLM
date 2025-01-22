@@ -22,9 +22,14 @@ import {
   Files,
 } from "lucide-react";
 import { Textarea } from "./ui/textarea";
-import { loadGoogleDriveApi } from "@/lib/google-drive";
+import { GoogleDrivePicker } from "./google-drive-picker";
 import { WebsiteURLInput } from "@/components/website-url-input";
 import { toast } from "sonner";
+import {
+  loadGoogleDriveApi,
+  getGoogleToken,
+  createPicker,
+} from "@/lib/google-drive";
 
 interface CreateNotebookDialogProps {
   children?: React.ReactNode;
@@ -34,9 +39,12 @@ export function CreateNotebookDialog({ children }: CreateNotebookDialogProps) {
   const [files, setFiles] = useState<File[]>([]);
   const [showPasteText, setShowPasteText] = useState(false);
   const [pastedText, setPastedText] = useState("");
-  const [isGoogleDriveLoading, setIsGoogleDriveLoading] = useState(false);
+  const [isGoogleDriveOpen, setIsGoogleDriveOpen] = useState(false);
   const [showLinkInput, setShowLinkInput] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isGoogleDriveLoading, setIsGoogleDriveLoading] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+  const [isPickerOpen, setIsPickerOpen] = useState(false);
   const router = useRouter();
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
@@ -104,48 +112,46 @@ export function CreateNotebookDialog({ children }: CreateNotebookDialogProps) {
     }
   };
 
-  // Google Drive integration
   const handleGoogleDrive = async () => {
     setIsGoogleDriveLoading(true);
+    // Close the modal before showing picker
+
     try {
       await loadGoogleDriveApi();
-      const auth = (window as any).gapi.auth2.getAuthInstance();
+      const token = await getGoogleToken();
+      console.log("token", token);
+      setIsOpen(false);
 
-      if (!auth.isSignedIn.get()) {
-        await auth.signIn();
-      }
+      await createPicker(token, async (file) => {
+        try {
+          const response = await fetch(
+            `https://www.googleapis.com/drive/v3/files/${file.id}?alt=media`,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          );
 
-      const token = auth.currentUser.get().getAuthResponse().access_token;
-      const picker = new (window as any).gapi.picker.PickerBuilder()
-        .addView((window as any).google.picker.ViewId.DOCS)
-        .addView((window as any).google.picker.ViewId.PDFS)
-        .setOAuthToken(token)
-        .setCallback((data: any) => {
-          if (data.action === (window as any).google.picker.Action.PICKED) {
-            const file = data.docs[0];
-            const fileId = file.id;
-
-            // Download the file using the Google Drive API
-            (window as any).gapi.client.drive.files
-              .get({
-                fileId: fileId,
-                alt: "media",
-              })
-              .then((response: any) => {
-                const content = response.body;
-                const blob = new Blob([content], { type: file.mimeType });
-                const newFile = new File([blob], file.name, {
-                  type: file.mimeType,
-                });
-                setFiles((prev) => [...prev, newFile]);
-              });
-          }
-        })
-        .build();
-
-      picker.setVisible(true);
+          const blob = await response.blob();
+          const newFile = new File([blob], file.name, {
+            type: file.mimeType,
+          });
+          setFiles((prev) => [...prev, newFile]);
+          // Reopen the modal after file is selected
+          setIsOpen(true);
+        } catch (error) {
+          console.error("Error downloading file:", error);
+          toast.error("Failed to download file");
+          // Reopen the modal on error
+          setIsOpen(true);
+        }
+      });
     } catch (error) {
       console.error("Error with Google Drive:", error);
+      toast.error("Failed to connect to Google Drive");
+      // Reopen the modal on error
+      setIsOpen(true);
     } finally {
       setIsGoogleDriveLoading(false);
     }
@@ -193,8 +199,16 @@ export function CreateNotebookDialog({ children }: CreateNotebookDialogProps) {
   };
 
   return (
-    <Dialog>
-      <DialogTrigger asChild>
+    <Dialog
+      open={isOpen}
+      onOpenChange={(open) => {
+        // Only allow closing if picker is not open
+        if (!isPickerOpen) {
+          setIsOpen(open);
+        }
+      }}
+    >
+      <DialogTrigger asChild onClick={() => setIsOpen(true)}>
         {children || (
           <Button
             size="sm"
@@ -205,7 +219,19 @@ export function CreateNotebookDialog({ children }: CreateNotebookDialogProps) {
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[600px] bg-[#1A1A1A] border-[#2A2A2A]">
+      <DialogContent
+        className="sm:max-w-[425px]"
+        onPointerDownOutside={(e) => {
+          if (isPickerOpen) {
+            e.preventDefault();
+          }
+        }}
+        onInteractOutside={(e) => {
+          if (isPickerOpen || document.querySelector(".picker-dialog")) {
+            e.preventDefault();
+          }
+        }}
+      >
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <div className="h-8 w-8">
@@ -389,6 +415,12 @@ export function CreateNotebookDialog({ children }: CreateNotebookDialogProps) {
             />
           </div>
         </div>
+
+        <GoogleDrivePicker
+          isOpen={isGoogleDriveOpen}
+          onClose={() => setIsGoogleDriveOpen(false)}
+          onFileSelect={handleGoogleDrive}
+        />
       </DialogContent>
     </Dialog>
   );

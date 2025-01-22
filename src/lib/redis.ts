@@ -2,6 +2,7 @@ import { Redis } from "@upstash/redis";
 
 console.log("Environment variables:", {
   UPSTASH_REDIS_REST_URL: process.env.UPSTASH_REDIS_REST_URL,
+  UPSTASH_REDIS_REST_TOKEN: process.env.UPSTASH_REDIS_REST_TOKEN,
   NODE_ENV: process.env.NODE_ENV,
 });
 

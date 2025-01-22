@@ -25,7 +25,6 @@ export async function GET() {
 
     return NextResponse.json(notebooks);
   } catch (error) {
-    ß;
     console.error("[NOTEBOOKS_GET]", error);
     return new NextResponse("Internal Error", { status: 500 });
   }
