@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: openbooklm-dev
+  labels:
+    app: openbooklm-dev
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: openbooklm-dev
+  template:
+    metadata:
+      labels:
+        app: openbooklm-dev
+    spec:
+      containers:
+      - name: openbooklm-dev
+        image: openbooklm-dev:latest
+        imagePullPolicy: Never  # Use local images
+        ports:
+        - containerPort: 3000
+        envFrom:
+        - configMapRef:
+            name: openbooklm-dev-config
+        volumeMounts:
+        - name: src-volume
+          mountPath: /app/src
+        - name: public-volume
+          mountPath: /app/public
+      volumes:
+      - name: src-volume
+        hostPath:
+          path: /src
+          type: Directory
+      - name: public-volume
+        hostPath:
+          path: /public
+          type: Directory
