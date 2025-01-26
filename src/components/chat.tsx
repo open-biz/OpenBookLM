@@ -8,7 +8,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import ReactMarkdown from 'react-markdown';
 import type { Components } from 'react-markdown';
 
-type MessageRole = 'user' | 'assistant' | 'system';
+type MessageRole = 'user' | 'USER' | 'assistant' | 'ASSISTANT' | 'system' | 'SYSTEM';
 
 interface Message {
   role: MessageRole;
