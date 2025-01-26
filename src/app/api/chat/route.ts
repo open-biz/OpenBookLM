@@ -23,7 +23,7 @@ export async function POST(req: Request) {
 
     const completionResponse = await client.chat.completions.create({
       messages: messages.map(msg => ({
-        role: msg.role,
+        role: msg.role === 'ASSISTANT' ? 'ASSISTANT' : msg.role.toUpperCase(),
         content: msg.content,
       })),
       model: 'llama3.3-70b',
