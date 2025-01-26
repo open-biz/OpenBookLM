@@ -26,7 +26,7 @@ export async function POST(req: Request) {
         role: msg.role,
         content: msg.content,
       })),
-      model: 'llama3.1-70b',
+      model: 'llama3.3-70b',
       temperature: 0.7,
       max_tokens: 1000,
     });

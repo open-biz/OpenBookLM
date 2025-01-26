@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: openbooklm
-        image: openbooklm:latest  # You'll need to update this with your actual image repository
+        image: ghcr.io/open-biz/openbooklm:main  # Updated to use GitHub Container Registry
         ports:
         - containerPort: 3000
         envFrom:

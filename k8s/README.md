@@ -6,13 +6,21 @@ This directory contains Kubernetes manifests for deploying OpenBookLM.
 
 - Kubernetes cluster
 - kubectl configured to communicate with your cluster
-- Docker image built and pushed to a container registry
+- Access to ghcr.io/open-biz/openbooklm container images
+
+## Container Images
+
+The application images are hosted on GitHub Container Registry:
+```
+ghcr.io/open-biz/openbooklm:main     # Latest main branch build
+ghcr.io/open-biz/openbooklm:v*.*.*   # Release versions
+```
 
 ## Configuration
 
-1. Update the image in `deployment.yaml` to point to your container registry:
+1. The deployment is configured to use the GitHub Container Registry image:
    ```yaml
-   image: your-registry/openbooklm:latest
+   image: ghcr.io/open-biz/openbooklm:main
    ```
 
 2. Update the `configmap.yaml` with your non-sensitive environment variables.
@@ -51,3 +59,10 @@ To scale the application, modify the `replicas` field in `deployment.yaml` or us
 ```bash
 kubectl scale deployment openbooklm --replicas=3
 ```
+
+## CI/CD
+
+The container images are automatically built and pushed to GitHub Container Registry via GitHub Actions when:
+- Code is pushed to the main branch
+- A new release tag is created
+- Pull requests are opened (build only)
