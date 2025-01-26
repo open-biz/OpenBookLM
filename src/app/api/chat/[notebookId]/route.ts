@@ -19,7 +19,7 @@ export async function POST(
         notebookId: params.notebookId,
         messages: {
           create: messages.map((msg: any) => ({
-            role: msg.role,
+            role: msg.role.toUpperCase(),
             content: msg.content,
           })),
         },
@@ -48,7 +48,7 @@ export async function POST(
       await prisma.message.create({
         data: {
           chatId: chat.id,
-          role: 'assistant',
+          role: aiResponse.choices[0].message.role.toUpperCase(),
           content: aiResponse.choices[0].message.content,
         },
       });
