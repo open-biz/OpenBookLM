@@ -53,8 +53,8 @@ ENV NODE_ENV production
 # Generate Prisma Client
 RUN npx prisma generate
 
-# Build application
-RUN pnpm build
+# Build application with --no-lint flag to skip linting
+RUN pnpm run build --no-lint
 
 # Production image, copy all the files and run next
 FROM base AS runner
