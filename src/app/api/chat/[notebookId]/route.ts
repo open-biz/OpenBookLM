@@ -19,7 +19,7 @@ export async function POST(
         notebookId: params.notebookId,
         messages: {
           create: messages.map((msg: any) => ({
-            role: msg.role.toUpperCase(),
+            role: msg.role.toUpperCase(), // Keep uppercase for database storage
             content: msg.content,
           })),
         },
@@ -37,7 +37,10 @@ export async function POST(
         'Authorization': `Bearer ${process.env.CEREBRAS_API_KEY}`,
       },
       body: JSON.stringify({
-        messages: messages,
+        messages: messages.map((msg: any) => ({
+          role: msg.role.toLowerCase(), // Convert to lowercase for API call
+          content: msg.content,
+        })),
       }),
     });
 
