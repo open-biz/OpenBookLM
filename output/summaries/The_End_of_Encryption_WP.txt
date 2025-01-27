@@ -1,55 +1,111 @@
-The user has r equest ed enhanc ement of the do wnlo aded file.
-The end of encryption ?
-- the era of quantum computers.
-In the 21st century, information technology is an integral part of our lives.
-IT tools make it impossible for org anisations to op-erate without computers, networks and applications.
-IT security is the state of the IT system, in which risks to the confidentiality, integrity and availability of the data processed are managed efficiently.
-Data, infor-                mation,  and knowledge created, stored and transmitted on ICT devices is a subject to security threats.
-The use of IT systems is a great help when it comes to high processes.
-Security is the property of the data or elements of the IT system that they can be used by those entitled to them.
-Even though perfect security is nothing but a utopia, each system, and  most users strive to protect their data as much as possible.
-We will examine some traditional w ays of such protection and investi-gate, whether the emergence of quantum computers is affecting them in a radical way.
-Possession -based procedures require specific tools, devices.
-Tools can range from  simple tokens, or physical keys (opening certain spaces) Biometric procedures require a device to read the biometric identifiers.
-A separate device for each user and one or more device readers per access  point s.
-Biometric procedures require a device to read the biometric identifiers.
-Biometric data can be skin pattern (fingerprint, fingerprint, palmprint, footprint), hand geometry, vascular network (palm, finger) or eye characteristics (iris, retina) or even DNA.
-The greatest advantage of biometric procedures is that the human involvement is relatively low.
-However, the role of the human factor is much more prevalent, and hence the risk of the i dentification process is more imminent.
-Passwords are and can be used independent from their original users.
-The authentication process does not distinguish between true and fake users.
-Passwords can be stolen by trying different code lines (“brute force” or in other  cases, automated, serious calculations) or through experiments.
-Passwords can be stolen by trying different code lines (“brute force” or in other  cases, automated, serious calculations or through experiments) A password that cannot be easily crack ed by brute force is considered se-                cure.
-The total num-                ber of potential character combinations is one of the factors to be assessed – which calls  attention to the importance of the human fa ctor that usually gets to determine the length of a given password.
-The break rate depends on two fac-phthaltors, the computational requirements of the hash function used to generate the shadow password, and the computational power available.
-Increasing the number of optional character sets by a quarter, from 80 to 100, in-creases the time required to crack the password.
-The length of the passwo rd is more important than the composition thereof.
-As we increase the length of our password, we can get a password that is really hard to be broken with current machines.
-For 15 characters, it will take more than 1 billion years.
-A well -chosen password can provide optimal security against the password -breaking resources of today's generic machines.
-One of the keys is called a public key and is distributed as widely as possible.
-The other is the private or secret key, which is kept secret by its owner in the most secure way possible.
-If there is a need to send a secured  message from the SENDER to the RECEIVER, the public key will be used.
-It can only be decrypted with the RECeIVER ’s secret key.
-Quantum computers are computing devices that perform calculations based on quan-                tum mechanical phenomena.
-A quantum computer may be able to perform calculations that would be practically unsolvable with traditional digital compu ters or could take years or decades to solve.
-At present the most powerful (traditional)computer in the world is the IBM Summit built by IBM Corporation.
-Quantum algorithms are able to process information in a fraction of the time the fastest traditional systems would/could solve certain problems.
-Information that can be easily represented in 500 quantum bits could not be presented in 2^500 classic bits.
-A classic computer could calculate the prime factors of a 2048 -bit number in just millions of years.
-With quantum bits, this calculation can be done in minutes.
-By the end of 2021, quantum computers are still rare.
-There are only few that operate on a circuit -base logic, and other 5 that contain annealin quantum processors.
-For some implement ations, the quantum bits must be kept at a temperature close to absolute zero.
-Quantum Computing Algorithms have been developed starting from 1992.
-Since the cost and time of their devel opment is extreme, and their operation is also difficult, we cannot expect a rapid increase  in hteir numbers in the comping 5 years.
-However, from 2030 they may become the norm for organisations with h igh computing neccesities.
-Quantum computers will cause a serious upheaval - what experts call a "quantum apocalypse" The advent of quantum computers is making the currently used encryption methods obsolete.
-Brute force is not a language that can be used in connection to them.
-Quantum computers can perform operations that traditional computers would need an eternity for in minutes.
-Quantum computers can easily break most standar d mathematical cryptography problems.
-Even though the era of quantum computers is still far away, cryptography research is already searching for potential solutions.
-The challenges of security will not be solved, but only shifted to a more complex, novel field of mathematics.
-Although quantum computers represent the future rather than the present for the public, many countries are already working on developing them.
-At current such systems are extremely vulnerable to environmental effects and their reliability is also volatile.
-If the weaknesses of quantum computers can be eradicated and their  reliability can be improved, the encryptions that have been use will soon be obsolate.
+**The End of Encryption? – The Era of Quantum Computers**
+
+**Summary**
+
+In this paper, we examine the impact of quantum computers on traditional encryption methods. Quantum computers have the
+    potential to break most standard mathematical cryptography problems, making traditional cryptography obsolete. However,
+    researchers are already searching for potential solutions, such as symmetric key quantum resistance, multivariate
+    cryptography, and lattice-based cryptography.
+
+**Introduction**
+
+In the 21st century, information technology has become an integral part of our lives. The number of organizations using
+    the internet is growing every year, with 93% of all enterprises using the internet by the end of 2020. The use of IT
+    systems is a great help when it comes to high processes and tasks with high computational needs and real-time
+    communication or file-sharing with geographically distant entities. However, the high prevalence of information and
+    communication technologies (ICT) has its own drawbacks.
+
+**Machine-Based Identification**
+
+Machine-based identification procedures can be divided into two main groups: traditional personal identification
+    techniques and biometric methods. Traditional personal identification techniques include knowledge-based and possession-
+    based procedures. Biometric methods, such as fingerprint recognition, facial recognition, and iris scanning, are also
+    spreading rapidly. However, biometric systems are subject to cost/benefit analysis, and the final conclusion is heavily
+    influenced by the field of application and budgetary constraints.
+
+**Understanding Passwords**
+
+Passwords are a means of identification that can be used independently of their original users. The authentication
+    process does not distinguish between true and fake users, making it essential to tackle password safety consciously.
+    Password security can be supplemented by multi-factor or multi-step authentication. The purpose of multifactor
+    identification is to uniquely identify the user.
+
+**Encryption**
+
+Encryption is a method of protecting data by converting it into a code that can only be deciphered with a key. Symmetric
+    encryption uses the same key for both encryption and decryption, while asymmetric encryption uses a public key for
+    encryption and a private key for decryption. However, quantum computers can easily break most standard mathematical
+    cryptography problems, making traditional cryptography obsolete.
+
+**Quantum Computers**
+
+Quantum computers are computing devices that perform calculations based on quantum mechanical phenomena. A quantum
+    computer may be able to perform calculations efficiently that would be practically unsolvable with traditional digital
+    computers or could take years or decades to solve. Quantum bits (qubits) are the basic unit of information in quantum
+    informatics, and they can represent 0, 1, or a superposition of any ratio of states 0 to 1 with a certain probability of
+    0 and a certain probability of 1.
+
+**Quantum Apocalypse**
+
+The advent of quantum computers is making the currently used encryption methods obsolete. Brute force is not a
+    vocabulary that can be used in connection with them. Quantum computers will cause a serious upheaval, what experts call
+    a "quantum apocalypse," since methodologies used on/for traditional computers will no longer be able to provide safety.
+
+**Quantum Cryptography**
+
+Quantum cryptography is a fundamental challenge classic cryptography, since quantum computers can easily break most
+    standard mathematical cryptography problems, such as factoring and discrete logarithms, by using quantum mechanics'
+    physics. Researchers are already searching for potential solutions, such as symmetric key quantum resistance,
+    multivariate cryptography, and lattice-based cryptography.
+
+**Summary**
+
+In conclusion, quantum computers represent the future rather than the present for the public. However, in many
+    countries, both the state and large research institutes are already working on developing them. If the weaknesses of
+    quantum computers can be eradicated and their reliability can be improved, the encryptions that have been used will soon
+    be obsolete.
+
+**Key Points**
+
+* Quantum computers have the potential to break most standard mathematical cryptography problems. * Traditional
+    cryptography is becoming obsolete due to the advent of quantum computers. * Researchers are searching for potential
+    solutions, such as symmetric key quantum resistance, multivariate cryptography, and lattice-based cryptography. *
+    Quantum computers are still in the experimental phase, but they have the potential to revolutionize the field of
+    cryptography. * The distribution of keys is also a problem to be tackled in the era of quantum computers.
+
+**Main Arguments**
+
+* Quantum computers have the potential to break most standard mathematical cryptography problems. * Traditional
+    cryptography is becoming obsolete due to the advent of quantum computers. * Researchers are searching for potential
+    solutions to the challenges posed by quantum computers.
+
+**Important Details**
+
+* Quantum computers are computing devices that perform calculations based on quantum mechanical phenomena. * A quantum
+    computer may be able to perform calculations efficiently that would be practically unsolvable with traditional digital
+    computers or could take years or decades to solve. * Quantum bits (qubits) are the basic unit of information in quantum
+    informatics, and they can represent 0, 1, or a superposition of any ratio of states 0 to 1 with a certain probability of
+    0 and a certain probability of 1. * Quantum computers are still in the experimental phase, but they have the potential
+    to revolutionize the field of cryptography.
+
+**Examples and Context**
+
+* The number of organizations using the internet is growing every year, with 93% of all enterprises using the internet
+    by the end of 2020. * The use of IT systems is a great help when it comes to high processes and tasks with high
+    computational needs and real-time communication or file-sharing with geographically distant entities. * Biometric
+    methods, such as fingerprint recognition, facial recognition, and iris scanning, are also spreading rapidly. *
+    Researchers are searching for potential solutions, such as symmetric key quantum resistance, multivariate cryptography,
+    and lattice-based cryptography.
+
+**Relevant Tables and Figures**
+
+* Table 1: Data of cracking passwords of different length and composition. * Table 2: Circuit-based and Annealing
+    quantum processors. * Table 3: Quantum algorithms and their mathematical backgrounds. * Table 4: Quantum languages and
+    their basic programming languages.
+
+**Conclusion**
+
+In conclusion, quantum computers represent the future rather than the present for the public. However, in many
+    countries, both the state and large research institutes are already working on developing them. If the weaknesses of
+    quantum computers can be eradicated and their reliability can be improved, the encryptions that have been used will soon
+    be obsolete.
