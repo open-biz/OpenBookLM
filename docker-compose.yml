@@ -12,8 +12,7 @@ services:
         - CEREBRAS_API_KEY=${CEREBRAS_API_KEY}
         - LLAMA_API_KEY=${LLAMA_API_KEY}
         - OPENAI_API_KEY=${OPENAI_API_KEY}
-        - UPSTASH_REDIS_REST_URL=${UPSTASH_REDIS_REST_URL}
-        - UPSTASH_REDIS_REST_TOKEN=${UPSTASH_REDIS_REST_TOKEN}
+        - REDIS_URL=redis://redis:6379
     ports:
       - "3000:3000"
       - "9229:9229" # For debugging
@@ -25,8 +24,7 @@ services:
       - CEREBRAS_API_KEY=${CEREBRAS_API_KEY}
       - LLAMA_API_KEY=${LLAMA_API_KEY}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
-      - UPSTASH_REDIS_REST_URL=${UPSTASH_REDIS_REST_URL}
-      - UPSTASH_REDIS_REST_TOKEN=${UPSTASH_REDIS_REST_TOKEN}
+      - REDIS_URL=redis://redis:6379
     volumes:
       - .:/app
       - /app/node_modules
@@ -38,6 +36,7 @@ services:
         max-file: "3"
     depends_on:
       - db
+      - redis
 
   db:
     image: postgres:16
@@ -50,5 +49,14 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --save 60 1 --loglevel warning
+
 volumes:
-  postgres_data: 
+  postgres_data:
+  redis_data:
