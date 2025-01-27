@@ -1,7 +1,16 @@
 import { NextResponse } from "next/server";
 import { setCacheValue, getCacheValue } from "@/lib/redis-utils";
 
+// Move Redis check to runtime only
 export async function GET() {
+  if (process.env.NODE_ENV === 'development' && !process.env.REDIS_URL) {
+    return NextResponse.json({
+      success: false,
+      error: "Redis is not configured in development",
+      message: "Application will work with reduced functionality"
+    }, { status: 503 });
+  }
+
   try {
     // Test setting a value
     await setCacheValue("test-key", { message: "Hello from Redis!" });

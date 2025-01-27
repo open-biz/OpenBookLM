@@ -1,9 +1,21 @@
 import { Redis } from 'ioredis';
 
-if (!process.env.REDIS_URL) {
-  throw new Error('Missing REDIS_URL environment variable');
+// Lazy-loaded Redis client
+let redis: Redis | null = null;
+
+export function getRedisClient() {
+  // During build time, always return null
+  if (process.env.NODE_ENV === 'development') {
+    if (!process.env.REDIS_URL) {
+      return null;
+    }
+  }
+
+  if (!redis && process.env.REDIS_URL) {
+    redis = new Redis(process.env.REDIS_URL);
+  }
+
+  return redis;
 }
 
-const redis = new Redis(process.env.REDIS_URL);
-
-export default redis;
+export default getRedisClient;

@@ -10,6 +10,7 @@
 # next.js
 /.next/
 /out/
+pnpm-lock.yaml
 
 # production
 /build
@@ -88,8 +89,10 @@ yarn-error.log*
 # local helper files
 commands.sh
 links
+<<<<<<< HEAD
 backend/musicgen.py
 
 # cache files
 __pycache__
 *.pyc
+backend/
