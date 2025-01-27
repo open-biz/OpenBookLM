@@ -29,8 +29,7 @@ docker build \
     --build-arg CEREBRAS_API_KEY="$CEREBRAS_API_KEY" \
     --build-arg LLAMA_API_KEY="$LLAMA_API_KEY" \
     --build-arg OPENAI_API_KEY="$OPENAI_API_KEY" \
-    --build-arg UPSTASH_REDIS_REST_URL="$UPSTASH_REDIS_REST_URL" \
-    --build-arg UPSTASH_REDIS_REST_TOKEN="$UPSTASH_REDIS_REST_TOKEN" \
+    --build-arg REDIS_URL="redis://redis:6379" \
     --build-arg NODE_ENV="$NODE_ENV" \
     --build-arg NEXT_PUBLIC_APP_URL="$NEXT_PUBLIC_APP_URL" \
     -t ghcr.io/${GITHUB_REPOSITORY}:${TAG} .
