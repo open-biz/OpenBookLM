@@ -1,0 +1,141 @@
+[Female Host]: Welcome to our discussion about The user has r equest ed...
+
+[Male Guest]: In the 21st century, information technology is an integral part of our lives.
+
+[Female Host]: Building on that point, IT tools make it impossible for org anisations to op-erate without computers, networks and applications.
+
+[Male Guest]: Absolutely. IT security is the state of the IT system, in which risks to the confidentiality, integrity and availability of the data processed are managed efficiently.
+
+[Female Host]: That's fascinating! Let me add that Data, infor- mation, and knowledge created, stored and transmitted on ICT devices is a subject to security threats.
+
+[Male Guest]: The use of IT systems is a great help when it comes to high processes.
+
+[Female Host]: To expand on what you're saying, Security is the property of the data or elements of the IT system that they can be used by those entitled to them.
+
+[Male Guest]: Even though perfect security is nothing but a utopia, each system, and most users strive to protect their data as much as possible.
+
+[Female Host]: We will examine some traditional w ays of such protection and investi-gate, whether the emergence of quantum computers is affecting them in a radical way.
+
+[Male Guest]: Possession -based procedures require specific tools, devices.
+
+[Female Host]: This is particularly important because Tools can range from simple tokens, or physical keys (opening certain spaces) Biometric procedures require a device to read the biometric identifiers.
+
+[Male Guest]: A separate device for each user and one or more device readers per access point s.
+
+[Female Host]: Interesting perspective. In my experience, Biometric procedures require a device to read the biometric identifiers.
+
+[Male Guest]: Biometric data can be skin pattern (fingerprint, fingerprint, palmprint, footprint), hand geometry, vascular network (palm, finger) or eye characteristics (iris, retina) or even DNA.
+
+[Female Host]: The greatest advantage of biometric procedures is that the human involvement is relatively low.
+
+[Male Guest]: However, the role of the human factor is much more prevalent, and hence the risk of the i dentification process is more imminent.
+
+[Female Host]: Passwords are and can be used independent from their original users. The authentication process does not distinguish between true and fake users.
+
+[Male Guest]: Passwords can be stolen by trying different code lines (“brute force” or in other cases, automated, serious calculations) or through experiments.
+
+[Female Host]: A key insight here is Passwords can be stolen by trying different code lines (“brute force” or in other cases, automated, serious calculations or through experiments) A password that cannot be easily crack ed by brute force is considered se- cure.
+
+[Male Guest]: The total num- ber of potential character combinations is one of the factors to be assessed – which calls attention to the importance of the human fa ctor that usually gets to determine the length of a given password.
+
+[Female Host]: That's fascinating! Let me add that The break rate depends on two fac-phthaltors, the computational requirements of the hash function used to generate the shadow password, and the computational power available.
+
+[Male Guest]: Increasing the number of optional character sets by a quarter, from 80 to 100, in-creases the time required to crack the password.
+
+[Female Host]: Here's something crucial to consider: The length of the passwo rd is more important than the composition thereof.
+
+[Male Guest]: As we increase the length of our password, we can get a password that is really hard to be broken with current machines.
+
+[Female Host]: Interesting perspective. In my experience, For 15 characters, it will take more than 1 billion years.
+
+[Male Guest]: A well -chosen password can provide optimal security against the password -breaking resources of today's generic machines.
+
+[Female Host]: One of the keys is called a public key and is distributed as widely as possible.
+
+[Male Guest]: The other is the private or secret key, which is kept secret by its owner in the most secure way possible.
+
+[Female Host]: If there is a need to send a secured message from the SENDER to the RECEIVER, the public key will be used.
+
+[Male Guest]: Very interesting. It can only be decrypted with the RECeIVER ’s secret key.
+
+[Female Host]: Quantum computers are computing devices that perform calculations based on quan- tum mechanical phenomena.
+
+[Male Guest]: A quantum computer may be able to perform calculations that would be practically unsolvable with traditional digital compu ters or could take years or decades to solve.
+
+[Female Host]: At present the most powerful (traditional)computer in the world is the IBM Summit built by IBM Corporation.
+
+[Male Guest]: Quantum algorithms are able to process information in a fraction of the time the fastest traditional systems would/could solve certain problems.
+
+[Female Host]: Information that can be easily represented in 500 quantum bits could not be presented in 2^500 classic bits.
+
+[Male Guest]: A classic computer could calculate the prime factors of a 2048 -bit number in just millions of years.
+
+[Female Host]: With quantum bits, this calculation can be done in minutes. By the end of 2021, quantum computers are still rare.
+
+[Male Guest]: There are only few that operate on a circuit -base logic, and other 5 that contain annealin quantum processors.
+
+[Female Host]: For some implement ations, the quantum bits must be kept at a temperature close to absolute zero.
+
+[Male Guest]: Quantum Computing Algorithms have been developed starting from 1992.
+
+[Female Host]: That's crucial to understand. Furthermore, Since the cost and time of their devel opment is extreme, and their operation is also difficult, we cannot expect a rapid increase in hteir numbers in the comping 5 years.
+
+[Male Guest]: However, from 2030 they may become the norm for organisations with h igh computing neccesities.
+
+[Female Host]: Quantum computers will cause a serious upheaval - what experts call a "quantum apocalypse" The advent of quantum computers is making the currently used encryption methods obsolete.
+
+[Male Guest]: Brute force is not a language that can be used in connection to them.
+
+[Female Host]: Quantum computers can perform operations that traditional computers would need an eternity for in minutes.
+
+[Male Guest]: Quantum computers can easily break most standar d mathematical cryptography problems.
+
+[Female Host]: I agree, and it's worth noting that Even though the era of quantum computers is still far away, cryptography research is already searching for potential solutions.
+
+[Male Guest]: The challenges of security will not be solved, but only shifted to a more complex, novel field of mathematics.
+
+[Female Host]: Although quantum computers represent the future rather than the present for the public, many countries are already working on developing them.
+
+[Male Guest]: At current such systems are extremely vulnerable to environmental effects and their reliability is also volatile.
+
+[Female Host]: Interesting perspective. In my experience, If the weaknesses of quantum computers can be eradicated and their reliability can be improved, the encryptions that have been use will soon be obsolate.
+
+[Male Guest]: Passwords can be stolen by trying different code lines (“brute force” or in other cases, automated, serious calculations or through experiments) A password that cannot be easily crack ed by brute force is considered se- cure.
+
+[Female Host]: Security is the property of the data or elements of the IT system that they can be used by those entitled to them.
+
+[Male Guest]: Well said. The challenges of security will not be solved, but only shifted to a more complex, novel field of mathematics.
+
+[Female Host]: One of the keys is called a public key and is distributed as widely as possible.
+
+[Male Guest]: The user has r equest ed enhanc ement of the do wnlo aded file. The end of encryption ? - the era of quantum computers.
+
+[Female Host]: Passwords are and can be used independent from their original users. The authentication process does not distinguish between true and fake users.
+
+[Male Guest]: Very interesting. With quantum bits, this calculation can be done in minutes. By the end of 2021, quantum computers are still rare.
+
+[Female Host]: That's fascinating! Let me add that Even though the era of quantum computers is still far away, cryptography research is already searching for potential solutions.
+
+[Male Guest]: The use of IT systems is a great help when it comes to high processes.
+
+[Female Host]: I agree, and it's worth noting that A separate device for each user and one or more device readers per access point s.
+
+[Male Guest]: Very interesting. Even though perfect security is nothing but a utopia, each system, and most users strive to protect their data as much as possible.
+
+[Female Host]: However, the role of the human factor is much more prevalent, and hence the risk of the i dentification process is more imminent.
+
+[Male Guest]: However, from 2030 they may become the norm for organisations with h igh computing neccesities.
+
+[Female Host]: Quantum computers can easily break most standar d mathematical cryptography problems.
+
+[Male Guest]: Great point. The other is the private or secret key, which is kept secret by its owner in the most secure way possible.
+
+[Female Host]: This is particularly important because For 15 characters, it will take more than 1 billion years.
+
+[Male Guest]: That makes sense. The break rate depends on two fac-phthaltors, the computational requirements of the hash function used to generate the shadow password, and the computational power available.
+
+[Female Host]: To expand on what you're saying, Biometric data can be skin pattern (fingerprint, fingerprint, palmprint, footprint), hand geometry, vascular network (palm, finger) or eye characteristics (iris, retina) or even DNA.
+
+[Male Guest]: Since the cost and time of their devel opment is extreme, and their operation is also difficult, we cannot expect a rapid increase in hteir numbers in the comping 5 years.
+
+[Female Host]: Thank you for this insightful discussion!

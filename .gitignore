@@ -88,4 +88,8 @@ yarn-error.log*
 # local helper files
 commands.sh
 links
-backend/
+backend/musicgen.py
+
+# cache files
+__pycache__
+*.pyc

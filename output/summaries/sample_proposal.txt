@@ -1,0 +1,14 @@
+A research project or thesis will take at least two semesters to complete.
+Students are not allowed to enroll in a research course without an approved proposal.
+The proposal should discuss problem statement, research methodology, research activities, and a time schedule in about 3 -5 pages.
+A sample proposal is at tached here for your reference.
+A look -ahead scheduling and constraint analysis is a critical component of the last -planner methodology proposed by Ballard (2000) This research project will provide an overview of state -of-art s chedule constraint analysis practice during look-ahead scheduling.
+In addition, it will propose a conceptual framework for managing constraints.
+Constraint management is the process of identifying, classifying, modeling, and resolving constraints.
+Traditional schedulin g methods, bar charts and Critical Path Method (CPM) are widely used as a basis for constraint analysis.
+The long term goal of the research is to develop a formalized constraint management system.
+Constraint identification and classification is the very first step toward a “zero -constraint’ The primary research method for this study is literature review andconceptual modeling.
+The result of this study will be valuable to the industry practitioners as well as related software providers.
+The primary research method for this study is literature review andconceptual modeling.
+Constraint identification and classification through a structured approach is the very first step toward a “zero -constraint” environment.
+This study will be conducted between September 2010 and May 2011.

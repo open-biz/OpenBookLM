@@ -1,0 +1,171 @@
+A Sample Research Proposal  with Comments  
+ 
+A research project or thesis will take at least two semesters to complete. Prior to starting a research, i.e. 
+enrolling in the first semester research course, students must go through the proposal stage, during which 
+students will develop their proposal and have it reviewed by his/her research advisor. This means that students 
+need months  of planning and background research work before the start of the first semester research. Students 
+are not allowed to enroll in a research course without an approved proposal. For students planning to start their 
+research in the fall semester, the deadlin e for the proposal submission (to your advisor) is July 15. For those 
+who plan to start in the spring semester, the proposal deadline is December 1.  During the proposal stage, 
+students should discuss their research interests with CM faculty members, identi fy a research topic, conduct 
+preliminary literature review and develop a project proposal. The proposal should discuss problem statement, 
+objectives, research methodology, research activities, and a time schedule in about 3 -5 pages. A sample 
+proposal is at tached here for your reference.  
+ 
+Sample proposal text  Comment  
+A Conceptual Framework for Scheduling Constraint Management  Provide a brief and meaningful title to 
+your project  
+1. Introduction  
+Every construction project is unique and has its own operating 
+environment and sets of technical requirements. As a result, the execution 
+of a construction project is subject to numerous constraints that limit the 
+commencement or progression of field operations, which invariably have 
+significant negative impact on ove rall project performance. By definition, 
+constraints refer to any condition, such as temporal/spatial limitations and 
+safety/quality concerns, which may prevent a project to achieve its goals. 
+Successful execution and control of a construction project reli es on effective 
+identification and management of constraints through master planning and 
+short -term look -ahead scheduling. While the master schedule provides a 
+global view of a project and the overall execution strategy, a look -ahead 
+schedule offers a deta il account of operational constraints and a detailed 
+plan showing work to be done within a relatively short time window. 
+Ideally, these detailed schedules should reflect actual field conditions and 
+provide field personnel with operation instructions free o f constraints and 
+conflicts (Hinze 2008). This look -ahead scheduling and constraint analysis 
+procedure is also a critical component  of the last -planner methodology 
+proposed by Ballard (2000). This research project will provide an overview 
+of state -of-art s chedule constraint analysis practice during look -ahead 
+scheduling. In addition, it will propose a conceptual framework for 
+managing constraints . 
+ Background or introduction section 
+provides a description of the basic 
+facts and importance of the research 
+area - What is your research area, the 
+motivation of research, and how 
+important is it for the industry 
+practice/knowledge advancement?  
+2. Problem Statement  
+The importance of developing a constraint -free and reliable work 
+plan has long been recognized by the industry. However, numerous 
+construction projects are still plagued by delays and cost overruns, which 
+can frequently be traced to ineffective identification and treatment of 
+constraints. First, when a constraint is not properly identified during 
+sched uling, subsequent conflicts in the field are inevitable. Today’s projects 
+are becoming more and more technically complex and logistically 
+challenging, which exposes construction operations to even more complex 
+constraints. Second, the traditional schedulin g methods, bar charts and 
+Critical Path Method (CPM) which are widely used as a basis for constraint 
+analysis, greatly limit our capability in modeling and resolving constraints Problem statement provides a clear 
+and concise description of the issues 
+that need to  be addressed - What is 
+the specific problem in that research 
+area that you will address (e.g. lack of 
+understanding of a subject, low 
+performance …)?   during look -ahead scheduling. These methods have long been blamed for 
+their li mitations in modeling and communicating constraints, including 
+inability to cope with non -time-related precedence constraints and difficulty 
+to evaluate and communicate inter -dependencies at the field operation level 
+(e.g. Sriprasert and Dawood 2002; Chua and Shen 2001). In summary, there 
+is a need for a better understanding of constraints in construction and a 
+structured approach in identifying and modeling constraints to ensure a 
+constraint -free work plan. More specifically, the following research 
+questio ns need to be addressed:  
+ 
+1. What are the typical constraints found in various construction 
+projects?  
+2. How to classify these constrains for easier identification and 
+modeling?  
+3. What are the current industry practice as well as research 
+advancements in modeling and resolving constraints?  
+How to unify the constraint classification knowledge and various constraint 
+modeling efforts into a framework for total constraint management?  
+ 
+3. Objectives  
+The long term goal of the research is to develop a formalized 
+constraint management system . Constraint management is defined herein as 
+the process of identifying, classifying, modeling, and resolving constraints. 
+The objective of the current study is to provide a comprehensive review of 
+literatures and industry practices in relation to constrai nt analysis and 
+outline a conceptual framework for constraint management. Particularly, the 
+study has the following sub -objectives:  
+ 
+1. To provide a comprehensive review of sources and characteristics 
+of constraints typically found in construction projects;  
+2. To develop a constraint classification method for easier constraint 
+identification and modeling;  
+3. To review current industry practices and researches in regards to 
+constraint modeling;  
+4. To outline a conceptual framework for total constraint management.  
+ 
+The result of this study will be valuable to the industry practitioners as well 
+as related software providers in developing better practice and tools for 
+constraint management and look -ahead scheduling.  
+ Objectives provide a list of goals that 
+will be achieved  through the proposed 
+research – What are the 
+benefits/impact (e.g. better 
+understanding, improved productivity 
+…) that will be generated if the 
+research problem is answered?  
+4. Preliminary Literature Review  
+A preliminary literature review shows that pas t studies are primarily 
+focused on understanding and modeling a particular type of constraint, such 
+as technological, contractual, resource, spatial, and information constraints. 
+Limited progress has been made on classifying various constraints 
+according t o their characteristics in a comprehensive manner. In terms of 
+modeling and resolving constraints, various approaches have been 
+recommended. For example, many CPM -based methods are applied to deal 
+with time -related constraints; knowledge -based systems were  used to 
+automate work plan generation; network -based optimization algorithms 
+were developed to resolve constraints; and databases and visualization 
+techniques, such as 3D, 4D, and Virtual Reality (VR), are used to 
+communicate and visualize constraints. Wh at is missing from the past 
+studies is a comprehensive and structured approach in managing constraints Preliminary literature review: provide 
+a summary of previous related 
+research on the research problem and 
+their strength and weakness and a 
+justification of your research - What 
+is known/what have been done by 
+others? And, why your research is 
+still necessary?   in construction projects.  
+ 
+5. Methodology  
+The primary research method for this study is literature review and 
+conceptual modeling. Constraint identification and classification through a 
+structured approach is the very first step toward a “zero -constraint” 
+environment. This study will first review various types of constraints in 
+construction and their characteristics. Based on this understanding, a 
+classification method will be developed to categorize constraint factors for 
+the purpose of constraint identification and modeling. In the second stage o f 
+this study, existing constraint modeling methods will be identified based on 
+a comprehensive review of current industry practices and academic 
+researches. Finally, once the constraint classification and modeling 
+techniques are identified, a conceptual fr amework for total constraint 
+management will be outlined. This study will be conducted between 
+September 2010 and May 2011.  Research methodology defines the 
+research methods and logic steps - 
+What to do and how to solve the 
+problem and achieve proposed 
+objectives? Which research methods 
+(e.g. survey, modeling, case study …) 
+will be used?  Attach a project 
+schedule table, if necessary.  
+References  
+ 
+Ballard, G. (2000). “Last planner system of production control.” Ph.D. 
+Dissertation . Univ. of Birmingham, Birmin gham, UK.  
+Chua, D. and Shen, L.  J. (2001). “Constraint modeling and buffer 
+management with integrated production scheduler.” Proceedings of 
+International Conferences on Lean Construction 2001 , Singapore.  
+Hinze, J. W. (2008). Construction planning and sche duling , 3rd ed. 
+Pearson, NJ.  
+Sriprasert, E. and Dawood, N (2002). “Requirements identification for 4D 
+constraint -based construction planning and control system.” 
+Proceedings of CIB W78 conference – distributing knowledge in 
+building , Aarhus, Danmark.  
+ All factual material that is not original 
+with you must be accompanied by a 
+reference to its source.  Please use 
+ASCE guideline on reference and 
+citation style.  
+ 

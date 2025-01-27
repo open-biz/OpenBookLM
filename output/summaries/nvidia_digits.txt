@@ -1,0 +1,17 @@
+NVIDIA DIGITS DU-08732-001_v5.0.0    |    September 2021NVIDIA DigITS                Tutorial NVIDIA Digits DU-2008732_001_ v5.1.0   |    iiTable of Contents                Chapter 1.
+An Overview Of DIG ITS.
+DIGITS simplifies common deep learning tasks such as managing data, designing and training neural networks on multi-GPU systems and monitoring performance in real time.
+DIGITS  data plug-ins enable a mechanism by which you can extend DIG ITS to ingest data fromcustom sources.
+DigITS offers a number of model output visualization types such as Image.Classification, Object Detection or Image Segmentation.
+Most of the concepts we need to understand to create a data plugin also apply to writing visualization plugins.
+In the following sections, each of the important files are defined which need to be created in order to write a plugin.
+The main section of interest here is the invocation of the setup command from setuptools.
+The digitsDataPluginSunnybrook plugin is a Python package.
+It implements a DataIngestion class, which is the only interface between DIGITS and the Sunnybrook plugin.
+The plugin is written in Python and requires the pydicom package.
+We are recursively including all .html files within the digitsData plugin folder.
+The DataIngestion class is the only interface between DIGITS and the Sunnybrook plugin.
+Familiarize yourself with the interface for details about the required methods to implement in this class.
+The most important ones are: get_inference_form and get_dataset_template.
+The digitsDataPluginSunnybrook/templates/dataset_template.py file is a Jinja template that defines what you will see in the Web user interface.
+The DatasetForm class is used to specify a dataset, and the InferenceForm class to specify inference data.

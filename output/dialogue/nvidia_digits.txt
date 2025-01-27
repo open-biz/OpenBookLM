@@ -1,0 +1,141 @@
+[Female Host]: Welcome to our discussion about -08732-001.0 | September 2021NVIDIA DigITS Tutorial...
+
+[Male Guest]: Great point. DIGITS simplifies common deep learning tasks such as managing data, designing and training neural networks on multi-GPU systems and monitoring performance in real time.
+
+[Female Host]: This is particularly important because DIGITS data plug-ins enable a mechanism by which you can extend to ingest data fromcustom sources.
+
+[Male Guest]: DigITS offers a number of model output visualization types such as Image.Classification, Object Detection or Image Segmentation.
+
+[Female Host]: That's fascinating! Let me add that Most of the concepts we need to understand to create a data plugin also apply to writing visualization plugins.
+
+[Male Guest]: In the following sections, each of the important files are defined which need to be created in order to write a plugin.
+
+[Female Host]: This connects to something important: The main section of interest here is the invocation of the setup command from setuptools. The digitsDataPluginSunnybrook plugin is a Python package.
+
+[Male Guest]: It implements a DataIngestion class, which is the only interface between DIGITS and the Sunnybrook plugin.
+
+[Female Host]: The plugin is written in Python and requires the pydicom package. We are recursively including all .html files within the digitsData plugin folder.
+
+[Male Guest]: I see what you mean. The DataIngestion class is the only interface between DIGITS and the Sunnybrook plugin.
+
+[Female Host]: That's fascinating! Let me add that Familiarize yourself with the interface for details about the required methods to implement in this class.
+
+[Male Guest]: The most important ones are: getinferenceform and getdatasettemplate.
+
+[Female Host]: Let me break this down further - The digitsDataPluginSunnybrook/templates/datasettemplate.py file is a Jinja template that defines what you will see in the Web user interface.
+
+[Male Guest]: The DatasetForm class is used to specify a dataset, and the InferenceForm class to specify inference data.
+
+[Female Host]: I agree, and it's worth noting that The plugin is written in Python and requires the pydicom package. We are recursively including all .html files within the digitsData plugin folder.
+
+[Male Guest]: Exactly! The main section of interest here is the invocation of the setup command from setuptools. The digitsDataPluginSunnybrook plugin is a Python package.
+
+[Female Host]: To put this in perspective, DIGITS simplifies common deep learning tasks such as managing data, designing and training neural networks on multi-GPU systems and monitoring performance in real time.
+
+[Male Guest]: The DataIngestion class is the only interface between DIGITS and the Sunnybrook plugin.
+
+[Female Host]: DIGITS data plug-ins enable a mechanism by which you can extend to ingest data fromcustom sources.
+
+[Male Guest]: That's fascinating. DigITS offers a number of model output visualization types such as Image.Classification, Object Detection or Image Segmentation.
+
+[Female Host]: Most of the concepts we need to understand to create a data plugin also apply to writing visualization plugins.
+
+[Male Guest]: The most important ones are: getinferenceform and getdatasettemplate.
+
+[Female Host]: Interesting perspective. In my experience, The DatasetForm class is used to specify a dataset, and the InferenceForm class to specify inference data.
+
+[Male Guest]: -08732-001.0 | September 2021NVIDIA DigITS Tutorial NVIDIA Digits DU-2008732001 .0 | ii Chapter 1. An Overview Of .
+
+[Female Host]: Familiarize yourself with the interface for details about the required methods to implement in this class.
+
+[Male Guest]: That makes sense. The digitsDataPluginSunnybrook/templates/datasettemplate.py file is a Jinja template that defines what you will see in the Web user interface.
+
+[Female Host]: It implements a DataIngestion class, which is the only interface between DIGITS and the Sunnybrook plugin.
+
+[Male Guest]: Well said. In the following sections, each of the important files are defined which need to be created in order to write a plugin.
+
+[Female Host]: This is particularly important because DIGITS data plug-ins enable a mechanism by which you can extend to ingest data fromcustom sources.
+
+[Male Guest]: Familiarize yourself with the interface for details about the required methods to implement in this class.
+
+[Female Host]: This connects to something important: The plugin is written in Python and requires the pydicom package. We are recursively including all .html files within the digitsData plugin folder.
+
+[Male Guest]: Well said. The digitsDataPluginSunnybrook/templates/datasettemplate.py file is a Jinja template that defines what you will see in the Web user interface.
+
+[Female Host]: It implements a DataIngestion class, which is the only interface between DIGITS and the Sunnybrook plugin.
+
+[Male Guest]: The DataIngestion class is the only interface between DIGITS and the Sunnybrook plugin.
+
+[Female Host]: The DatasetForm class is used to specify a dataset, and the InferenceForm class to specify inference data.
+
+[Male Guest]: In the following sections, each of the important files are defined which need to be created in order to write a plugin.
+
+[Female Host]: The main section of interest here is the invocation of the setup command from setuptools. The digitsDataPluginSunnybrook plugin is a Python package.
+
+[Male Guest]: The DataIngestion class is the only interface between DIGITS and the Sunnybrook plugin.
+
+[Female Host]: This is particularly important because -08732-001.0 | September 2021NVIDIA DigITS Tutorial NVIDIA Digits DU-2008732001 .0 | ii Chapter 1. An Overview Of .
+
+[Male Guest]: Familiarize yourself with the interface for details about the required methods to implement in this class.
+
+[Female Host]: The main section of interest here is the invocation of the setup command from setuptools. The digitsDataPluginSunnybrook plugin is a Python package.
+
+[Male Guest]: Exactly! In the following sections, each of the important files are defined which need to be created in order to write a plugin.
+
+[Female Host]: To expand on what you're saying, The most important ones are: getinferenceform and getdatasettemplate.
+
+[Male Guest]: That's fascinating. Most of the concepts we need to understand to create a data plugin also apply to writing visualization plugins.
+
+[Female Host]: To put this in perspective, DigITS offers a number of model output visualization types such as Image.Classification, Object Detection or Image Segmentation.
+
+[Male Guest]: Exactly! The digitsDataPluginSunnybrook/templates/datasettemplate.py file is a Jinja template that defines what you will see in the Web user interface.
+
+[Female Host]: That's crucial to understand. Furthermore, DIGITS data plug-ins enable a mechanism by which you can extend to ingest data fromcustom sources.
+
+[Male Guest]: The most important ones are: getinferenceform and getdatasettemplate.
+
+[Female Host]: DIGITS simplifies common deep learning tasks such as managing data, designing and training neural networks on multi-GPU systems and monitoring performance in real time.
+
+[Male Guest]: DIGITS simplifies common deep learning tasks such as managing data, designing and training neural networks on multi-GPU systems and monitoring performance in real time.
+
+[Female Host]: DigITS offers a number of model output visualization types such as Image.Classification, Object Detection or Image Segmentation.
+
+[Male Guest]: It implements a DataIngestion class, which is the only interface between DIGITS and the Sunnybrook plugin.
+
+[Female Host]: That's crucial to understand. Furthermore, Most of the concepts we need to understand to create a data plugin also apply to writing visualization plugins.
+
+[Male Guest]: Well said. The DatasetForm class is used to specify a dataset, and the InferenceForm class to specify inference data.
+
+[Female Host]: The plugin is written in Python and requires the pydicom package. We are recursively including all .html files within the digitsData plugin folder.
+
+[Male Guest]: -08732-001.0 | September 2021NVIDIA DigITS Tutorial NVIDIA Digits DU-2008732001 .0 | ii Chapter 1. An Overview Of .
+
+[Female Host]: DIGITS data plug-ins enable a mechanism by which you can extend to ingest data fromcustom sources.
+
+[Male Guest]: The main section of interest here is the invocation of the setup command from setuptools. The digitsDataPluginSunnybrook plugin is a Python package.
+
+[Female Host]: Let me break this down further - DIGITS data plug-ins enable a mechanism by which you can extend to ingest data fromcustom sources.
+
+[Male Guest]: That makes sense. The main section of interest here is the invocation of the setup command from setuptools. The digitsDataPluginSunnybrook plugin is a Python package.
+
+[Female Host]: DigITS offers a number of model output visualization types such as Image.Classification, Object Detection or Image Segmentation.
+
+[Male Guest]: Absolutely. Most of the concepts we need to understand to create a data plugin also apply to writing visualization plugins.
+
+[Female Host]: The plugin is written in Python and requires the pydicom package. We are recursively including all .html files within the digitsData plugin folder.
+
+[Male Guest]: That makes sense. DigITS offers a number of model output visualization types such as Image.Classification, Object Detection or Image Segmentation.
+
+[Female Host]: DIGITS data plug-ins enable a mechanism by which you can extend to ingest data fromcustom sources.
+
+[Male Guest]: Exactly! The digitsDataPluginSunnybrook/templates/datasettemplate.py file is a Jinja template that defines what you will see in the Web user interface.
+
+[Female Host]: Here's something crucial to consider: The digitsDataPluginSunnybrook/templates/datasettemplate.py file is a Jinja template that defines what you will see in the Web user interface.
+
+[Male Guest]: -08732-001.0 | September 2021NVIDIA DigITS Tutorial NVIDIA Digits DU-2008732001 .0 | ii Chapter 1. An Overview Of .
+
+[Female Host]: Most of the concepts we need to understand to create a data plugin also apply to writing visualization plugins.
+
+[Male Guest]: Familiarize yourself with the interface for details about the required methods to implement in this class.
+
+[Female Host]: Thank you for this insightful discussion!
