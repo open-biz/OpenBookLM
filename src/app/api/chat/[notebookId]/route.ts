@@ -30,34 +30,44 @@ export async function POST(
     });
 
     // Call Cerebras API
-    const response = await fetch('YOUR_CEREBRAS_API_ENDPOINT', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.CEREBRAS_API_KEY}`,
-      },
-      body: JSON.stringify({
-        messages: messages.map((msg: any) => ({
-          role: msg.role.toLowerCase(), // Convert to lowercase for API call
-          content: msg.content,
-        })),
-      }),
-    });
+    try {
+      if (!process.env.CEREBRAS_API_KEY) {
+        throw new Error('Missing CEREBRAS_API_KEY environment variable');
+      }
 
-    const aiResponse = await response.json();
-
-    // Save AI response
-    if (aiResponse.choices && aiResponse.choices[0]?.message) {
-      await prisma.message.create({
-        data: {
-          chatId: chat.id,
-          role: aiResponse.choices[0].message.role.toUpperCase(),
-          content: aiResponse.choices[0].message.content,
+      const response = await fetch('YOUR_CEREBRAS_API_ENDPOINT', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${process.env.CEREBRAS_API_KEY}`,
         },
+        body: JSON.stringify({
+          messages: messages.map((msg: any) => ({
+            role: msg.role.toLowerCase(), // Convert to lowercase for API call
+            content: msg.content,
+          })),
+        }),
       });
+
+      const aiResponse = await response.json();
+
+      // Save AI response
+      if (aiResponse.choices && aiResponse.choices[0]?.message) {
+        await prisma.message.create({
+          data: {
+            chatId: chat.id,
+            role: aiResponse.choices[0].message.role.toUpperCase(),
+            content: aiResponse.choices[0].message.content,
+          },
+        });
+      }
+    } catch (error) {
+      console.error("[CHAT_API_ERROR]", error);
+      // Still return the chat even if API call fails
+      return NextResponse.json(chat);
     }
 
-    return NextResponse.json(aiResponse);
+    return NextResponse.json(chat);
   } catch (error) {
     console.error("[CHAT_POST]", error);
     return new NextResponse("Internal Error", { status: 500 });
