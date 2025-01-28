@@ -1,4 +1,4 @@
-import { auth } from "@clerk/nextjs/server";
+import { auth } from "@clerk/nextjs";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { getOrCreateUser } from "@/lib/auth";
@@ -6,7 +6,8 @@ import HomePage from "./home-page";
 import { setAllNotebooks } from "@/lib/redis-utils";
 
 export default async function Page() {
-  const { userId } = await auth();
+  // Skip auth in development mode
+  const userId = process.env.NODE_ENV === 'development' ? 'dev-user' : (await auth()).userId;
 
   if (!userId) {
     return (

@@ -11,7 +11,16 @@ interface RootLayoutProps {
 }
 
 export function RootLayout({ children }: RootLayoutProps) {
-  const { isSignedIn } = useAuth();
+  const isDev = process.env.NODE_ENV === 'development';
+  // Skip auth check in development
+  const isSignedIn = isDev ? true : useAuth().isSignedIn;
+
+  // Development mode placeholder for UserButton
+  const DevUserButton = () => (
+    <Button variant="ghost" size="icon" className="text-gray-400 hover:text-white">
+      <Settings className="w-5 h-5" />
+    </Button>
+  );
 
   return (
     <div className="flex flex-col h-screen bg-[#1A1A1A]">
@@ -25,14 +34,16 @@ export function RootLayout({ children }: RootLayoutProps) {
         <div className="flex items-center space-x-2">
           {isSignedIn ? (
             <>
-              <UserButton
-                afterSignOutUrl="/"
-                appearance={{
-                  elements: {
-                    avatarBox: "w-8 h-8",
-                  },
-                }}
-              />
+              {isDev ? <DevUserButton /> : (
+                <UserButton
+                  afterSignOutUrl="/"
+                  appearance={{
+                    elements: {
+                      avatarBox: "w-8 h-8",
+                    },
+                  }}
+                />
+              )}
               <Button
                 variant="ghost"
                 size="icon"
@@ -42,7 +53,7 @@ export function RootLayout({ children }: RootLayoutProps) {
               </Button>
             </>
           ) : (
-            <SignInButton mode="modal">
+            isDev ? (
               <Button
                 variant="outline"
                 size="sm"
@@ -51,33 +62,55 @@ export function RootLayout({ children }: RootLayoutProps) {
                 <LogIn className="h-4 w-4 mr-2" />
                 Sign In
               </Button>
-            </SignInButton>
+            ) : (
+              <SignInButton mode="modal">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="text-gray-200 hover:text-white"
+                >
+                  <LogIn className="h-4 w-4 mr-2" />
+                  Sign In
+                </Button>
+              </SignInButton>
+            )
           )}
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 overflow-hidden">
-        {!isSignedIn ? (
-          <div className="flex min-h-[calc(100vh-57px)] flex-col items-center justify-center p-24">
-            <div className="max-w-2xl text-center">
-              <h1 className="text-6xl font-bold mb-6 bg-gradient-to-r from-blue-500 to-teal-500 bg-clip-text text-transparent">
+      {isSignedIn ? (
+        <main className="flex-1 overflow-y-auto">{children}</main>
+      ) : (
+        <div className="flex items-center justify-center flex-1">
+          <div className="max-w-md mx-auto px-4 py-8">
+            <div className="text-center">
+              <h2 className="text-3xl font-bold text-white mb-4">
                 Welcome to OpenBookLM
-              </h1>
-              <p className="text-xl text-gray-400 mb-12">
-                Your AI-powered research companion. Transform content into
-                meaningful conversations.
+              </h2>
+              <p className="text-gray-400 mb-8">
+                Sign in to start creating notebooks and having meaningful
+                conversations.
               </p>
               <div className="flex flex-col space-y-4 w-64 mx-auto">
-                <SignInButton mode="modal">
+                {isDev ? (
                   <Button
                     size="lg"
                     className="w-full bg-blue-600 hover:bg-blue-700"
                   >
                     Sign In
                   </Button>
-                </SignInButton>
-                <SignInButton mode="modal">
+                ) : (
+                  <SignInButton mode="modal">
+                    <Button
+                      size="lg"
+                      className="w-full bg-blue-600 hover:bg-blue-700"
+                    >
+                      Sign In
+                    </Button>
+                  </SignInButton>
+                )}
+                {isDev ? (
                   <Button
                     variant="outline"
                     size="lg"
@@ -85,14 +118,22 @@ export function RootLayout({ children }: RootLayoutProps) {
                   >
                     Sign Up
                   </Button>
-                </SignInButton>
+                ) : (
+                  <SignInButton mode="modal">
+                    <Button
+                      variant="outline"
+                      size="lg"
+                      className="w-full border-[#333333] hover:bg-[#2A2A2A] text-gray-200"
+                    >
+                      Sign Up
+                    </Button>
+                  </SignInButton>
+                )}
               </div>
             </div>
           </div>
-        ) : (
-          <div className="h-[calc(100vh-56px)] overflow-auto">{children}</div>
-        )}
-      </main>
+        </div>
+      )}
     </div>
   );
 }
