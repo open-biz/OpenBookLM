@@ -1,22 +1,25 @@
-// Temporarily disabled auth
-// import { auth } from "@clerk/nextjs/server";
+import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/db";
 import { NextResponse } from "next/server";
+import { getOrCreateUser } from "@/lib/auth";
 
 export async function GET() {
   try {
-    // Temporarily disabled auth check
-    // const { userId } = await auth();
-    // if (!userId) {
-    //   return new NextResponse("Unauthorized", { status: 401 });
-    // }
+    const { userId } = await auth();
+    if (!userId) {
+      return new NextResponse("Unauthorized", { status: 401 });
+    }
+
     const notebooks = await prisma.notebook.findMany({
+      where: {
+        userId: userId,
+      },
       include: {
         chats: true,
         sources: true,
       },
       orderBy: {
-        updatedAt: 'desc',
+        updatedAt: "desc",
       },
     });
 
@@ -29,11 +32,11 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
-    // Temporarily disabled auth check
-    // const { userId } = await auth();
-    // if (!userId) {
-    //   return new NextResponse("Unauthorized", { status: 401 });
-    // }
+    const user = await getOrCreateUser();
+    if (!user) {
+      return new NextResponse("Unauthorized", { status: 401 });
+    }
+
     const body = await req.json();
     const { title } = body;
 

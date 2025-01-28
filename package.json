@@ -7,6 +7,7 @@
     "build": "SKIP_ENV_VALIDATION=1 next build",
     "start": "next start",
     "lint": "next lint",
+    "db:seed": "npx ts-node --compiler-options '{\"module\":\"CommonJS\"}' prisma/seed.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
@@ -21,14 +22,20 @@
     "ioredis": "^5.3.2",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.0",
+    "date-fns": "^4.1.0",
+    "fns": "^1.0.0",
+    "googleapis": "^144.0.0",
+    "ioredis": "^5.3.2",
     "lucide-react": "^0.309.0",
-    "next": "14.0.4",
+    "next": "14.1.0",
     "next-auth": "^4.24.11",
     "next-themes": "^0.2.1",
     "prisma": "^6.2.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-dropzone": "^14.3.5",
     "react-markdown": "^9.0.3",
+    "sonner": "^1.4.0",
     "tailwind-merge": "^2.2.0",
     "tailwindcss-animate": "^1.0.7"
   },
@@ -37,10 +44,17 @@
     "@types/react": "^18.2.46",
     "@types/react-dom": "^18.2.18",
     "autoprefixer": "^10.4.16",
+    "buffer": "^6.0.3",
     "eslint": "^8.56.0",
     "eslint-config-next": "14.0.4",
     "postcss": "^8.4.33",
+    "process": "^0.11.10",
     "tailwindcss": "^3.4.1",
-    "typescript": "^5.3.3"
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3",
+    "util": "^0.12.5"
+  },
+  "prisma": {
+    "seed": "npx ts-node --compiler-options '{\"module\":\"CommonJS\"}' prisma/seed.ts"
   }
 }
