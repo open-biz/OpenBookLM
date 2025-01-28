@@ -3,11 +3,10 @@ import { setCacheValue, getCacheValue } from "@/lib/redis-utils";
 
 // Move Redis check to runtime only
 export async function GET() {
-  // Skip Redis check during build time
-  if (process.env.NODE_ENV === 'development') {
+  if (process.env.NODE_ENV === 'development' && !process.env.REDIS_URL) {
     return NextResponse.json({
       success: false,
-      error: "Redis is not available during build",
+      error: "Redis is not configured in development",
       message: "Application will work with reduced functionality"
     }, { status: 503 });
   }
@@ -22,14 +21,14 @@ export async function GET() {
     return NextResponse.json({
       success: true,
       message: "Redis is working correctly",
-      value
+      value,
+      timestamp: new Date().toISOString(),
     });
   } catch (error) {
     console.error("[REDIS_TEST_ERROR]", error);
     return NextResponse.json({
       success: false,
-      error: "Redis test failed",
-      message: error instanceof Error ? error.message : "Unknown error"
+      error: error instanceof Error ? error.message : "Unknown error",
     }, { status: 500 });
   }
 }

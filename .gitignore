@@ -90,8 +90,10 @@ yarn-error.log*
 # local helper files
 commands.sh
 links
+<<<<<<< HEAD
 backend/musicgen.py
 
 # cache files
 __pycache__
 *.pyc
+backend/

@@ -196,6 +196,16 @@ export async function setCacheValue(key: string, value: any): Promise<boolean | 
     console.error('[REDIS_SET_ERROR]', error);
     return null;
   }
+
+/**
+ * Set a value in Redis with optional TTL
+ */
+export async function setCacheValue(key: string, value: any, ttl = DEFAULT_TTL) {
+  const redis = getRedisClient();
+  if (!redis) return;
+  
+  const serializedValue = JSON.stringify(value);
+  await redis.setex(key, ttl, serializedValue);
 }
 
 /**
@@ -238,29 +248,33 @@ export async function deleteCacheValue(key: string): Promise<boolean> {
 
 /**
  * Cache the result of a function
+export async function deleteCacheValue(key: string) {
+  const redis = getRedisClient();
+  if (!redis) return;
+  
+  await redis.del(key);
+}
+
+/**
+ * Cache function results
  */
 export async function cacheResult<T>(
   key: string,
   fn: () => Promise<T>,
-): Promise<T | null> {
-  try {
-    const redis = getRedisClient();
-    if (!redis) {
-      // In browser or when Redis is not available, use memory cache
-      return fn();
-    }
-    const cachedValue = await redis.get(key);
-    if (cachedValue !== null) {
-      return JSON.parse(cachedValue);
-    }
-
-    const result = await fn();
-    await setCacheValue(key, result);
-    return result;
-  } catch (error) {
-    console.error("Error in cacheResult:", error);
-    return null;
+  ttl = DEFAULT_TTL
+): Promise<T> {
+  const redis = getRedisClient();
+  if (!redis) {
+    // If Redis is not available, just execute the function
+    return fn();
   }
+
+  const cached = await getCacheValue<T>(key);
+  if (cached) return cached;
+
+  const result = await fn();
+  await setCacheValue(key, result, ttl);
+  return result;
 }
 
 /**
