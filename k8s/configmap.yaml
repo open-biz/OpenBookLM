@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: openbooklm-config
+data:
+  NODE_ENV: "production"
+  NEXT_TELEMETRY_DISABLED: "1"

@@ -3,6 +3,13 @@ import { prisma } from "@/lib/db";
 import { redirect } from "next/navigation";
 import { NotebooksClient } from "./notebooks-client";
 import { getAllNotebooks, setAllNotebooks } from "@/lib/redis-utils";
+import type { Notebook } from "@prisma/client";
+
+interface SerializedNotebook extends Omit<Notebook, 'createdAt' | 'updatedAt'> {
+  createdAt: string;
+  updatedAt: string;
+  sources: any[];
+}
 
 export default async function NotebooksPage() {
   const user = await getOrCreateUser();
@@ -15,7 +22,12 @@ export default async function NotebooksPage() {
   const cachedNotebooks = await getAllNotebooks(user.id);
 
   if (cachedNotebooks) {
-    return <NotebooksClient notebooks={cachedNotebooks} />;
+    const notebooksWithDates = (cachedNotebooks as SerializedNotebook[]).map((notebook) => ({
+      ...notebook,
+      updatedAt: new Date(notebook.updatedAt),
+      createdAt: new Date(notebook.createdAt),
+    }));
+    return <NotebooksClient notebooks={notebooksWithDates} />;
   }
 
   // If not in Redis, get from database and cache
@@ -36,9 +48,16 @@ export default async function NotebooksPage() {
     ...notebook,
     updatedAt: notebook.updatedAt.toISOString(),
     createdAt: notebook.createdAt.toISOString(),
-  }));
+  })) as SerializedNotebook[];
 
   await setAllNotebooks(user.id, serializedNotebooks);
 
-  return <NotebooksClient notebooks={serializedNotebooks} />;
+  // Convert dates back to Date objects for the component
+  const notebooksWithDates = serializedNotebooks.map((notebook) => ({
+    ...notebook,
+    updatedAt: new Date(notebook.updatedAt),
+    createdAt: new Date(notebook.createdAt),
+  }));
+
+  return <NotebooksClient notebooks={notebooksWithDates} />;
 }

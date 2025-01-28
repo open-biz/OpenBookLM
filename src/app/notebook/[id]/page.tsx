@@ -123,7 +123,7 @@ export default function NotebookPage({ params }: { params: { id: string } }) {
 
         {/* Chat Panel */}
         <div className="flex-1 bg-[#1C1C1C]">
-          <Chat ref={chatRef} />
+          <Chat ref={chatRef} notebookId={params.id} />
         </div>
 
         {/* Studio Panel */}

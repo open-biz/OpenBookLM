@@ -1,20 +1,29 @@
-import { Redis } from "@upstash/redis";
+import Redis from "ioredis";
 
-console.log("Environment variables:", {
-  UPSTASH_REDIS_REST_URL: process.env.UPSTASH_REDIS_REST_URL,
-  UPSTASH_REDIS_REST_TOKEN: process.env.UPSTASH_REDIS_REST_TOKEN,
-  NODE_ENV: process.env.NODE_ENV,
-});
+// Lazy-loaded Redis client
+let redis: Redis | null = null;
 
-if (!process.env.UPSTASH_REDIS_REST_URL) {
-  throw new Error("UPSTASH_REDIS_REST_URL is not defined");
+export function getRedisClient() {
+  // Don't initialize Redis in the browser
+  if (typeof window !== 'undefined') {
+    return null;
+  }
+
+  // Skip Redis if URL not configured
+  if (!process.env.REDIS_URL) {
+    return null;
+  }
+
+  if (!redis) {
+    redis = new Redis(process.env.REDIS_URL, {
+      // Disable automatic reconnection in development
+      retryStrategy: process.env.NODE_ENV === 'development' ? () => null : undefined,
+      // Reduce connection timeout in development
+      connectTimeout: process.env.NODE_ENV === 'development' ? 1000 : 10000,
+    });
+  }
+
+  return redis;
 }
 
-if (!process.env.UPSTASH_REDIS_REST_TOKEN) {
-  throw new Error("UPSTASH_REDIS_REST_TOKEN is not defined");
-}
-
-export const redis = new Redis({
-  url: process.env.UPSTASH_REDIS_REST_URL,
-  token: process.env.UPSTASH_REDIS_REST_TOKEN,
-});
+export default getRedisClient;

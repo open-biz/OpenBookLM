@@ -11,61 +11,87 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 PROJECT_ROOT="$( cd "$SCRIPT_DIR/.." && pwd )"
 cd "$PROJECT_ROOT"
 
-echo -e "${GREEN}Deploying to Fly.io...${NC}\n"
+# Parse command line arguments
+BUILD_DOCKER=false
+HELP=false
 
-# Check if flyctl is installed
-if ! command -v flyctl &> /dev/null; then
-    echo -e "${YELLOW}Error: flyctl is not installed. Please install it first:${NC}"
-    echo "curl -L https://fly.io/install.sh | sh"
+print_usage() {
+    echo "Usage: $0 [options]"
+    echo "Options:"
+    echo "  -b, --build     Build and push Docker image before deployment"
+    echo "  -h, --help      Show this help message"
+}
+
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        -b|--build)
+            BUILD_DOCKER=true
+            shift
+            ;;
+        -h|--help)
+            HELP=true
+            shift
+            ;;
+        *)
+            echo "Unknown option: $1"
+            print_usage
+            exit 1
+            ;;
+    esac
+done
+
+if [ "$HELP" = true ]; then
+    print_usage
+    exit 0
+fi
+
+echo -e "${GREEN}Deploying to Kubernetes...${NC}\n"
+
+# Check if kubectl is installed
+if ! command -v kubectl &> /dev/null; then
+    echo -e "${YELLOW}Error: kubectl is not installed. Please install it first:${NC}"
+    echo "brew install kubectl"
     exit 1
 fi
 
-# Check if user is logged in
-if ! flyctl auth whoami &> /dev/null; then
-    echo "Please log in to Fly.io:"
-    flyctl auth login
-fi
-
-# Check if app exists, if not create it
-if ! flyctl status &> /dev/null; then
-    echo "Creating new Fly.io app..."
-    flyctl launch --no-deploy
-fi
-
-# Check if PostgreSQL is attached and properly configured
-echo "Checking database configuration..."
-if ! flyctl postgres list | grep -q "openbooklm-db"; then
-    echo "Creating PostgreSQL database..."
-    flyctl postgres create openbooklm-db --name openbooklm-db --region dfw
-fi
-
-# Get current DATABASE_URL
-echo "Checking database connection..."
-DB_URL=$(flyctl secrets list | grep DATABASE_URL | sed 's/DATABASE_URL=//')
-
-if [[ -z "$DB_URL" ]]; then
-    echo "No DATABASE_URL found. Attaching database..."
-    # Generate a unique database user name using timestamp
-    DB_USER="user_$(date +%s)"
-    echo "Creating new database user: $DB_USER"
-    
-    # Attach database and capture the output
-    ATTACH_OUTPUT=$(flyctl postgres attach openbooklm-db --app openbooklm --database-user "$DB_USER")
-    
-    # Extract the new DATABASE_URL from the attachment output
-    DB_URL=$(echo "$ATTACH_OUTPUT" | grep "DATABASE_URL=" | sed 's/DATABASE_URL=//')
-fi
-
-# Validate DATABASE_URL format
-if [[ ! "$DB_URL" =~ ^postgres(ql)?:// ]]; then
-    echo -e "${RED}Error: Invalid DATABASE_URL format${NC}"
+# Check if we have access to the cluster
+if ! kubectl cluster-info &> /dev/null; then
+    echo -e "${RED}Error: Cannot connect to Kubernetes cluster. Please check your kubeconfig.${NC}"
     exit 1
 fi
 
-# Set DATABASE_URL for subsequent commands
-export DATABASE_URL="$DB_URL"
+# Build and push Docker image if flag is set
+if [ "$BUILD_DOCKER" = true ]; then
+    echo -e "${GREEN}Building and pushing Docker image...${NC}"
+    
+    # Build the Docker image
+    docker build -t ghcr.io/open-biz/openbooklm:latest .
+    
+    # Push to GitHub Container Registry
+    echo -e "${GREEN}Pushing to GitHub Container Registry...${NC}"
+    docker push ghcr.io/open-biz/openbooklm:latest
+else
+    echo -e "${YELLOW}Skipping Docker build step. Using existing image.${NC}"
+fi
 
-# Load and set other environment variables
+# Deploy to Kubernetes
+echo -e "${GREEN}Deploying to Kubernetes...${NC}"
+
+# Create namespace if it doesn't exist
+kubectl create namespace openbooklm --dry-run=client -o yaml | kubectl apply -f -
+
+# Apply Kubernetes configurations
+kubectl apply -f k8s/ -n openbooklm
+
+# Wait for deployment to be ready
+echo -e "${GREEN}Waiting for deployment to be ready...${NC}"
+kubectl wait --for=condition=available --timeout=300s deployment/openbooklm -n openbooklm
+
+# Get the deployment status
+echo -e "${GREEN}Deployment Status:${NC}"
+kubectl get deployments -n openbooklm
+kubectl get pods -n openbooklm
+
 echo "Setting up other secrets..."
 if [ -f "$PROJECT_ROOT/.env" ]; then
     while IFS='=' read -r key value; do
@@ -76,11 +102,8 @@ if [ -f "$PROJECT_ROOT/.env" ]; then
         key=$(echo "$key" | xargs)
         value=$(echo "$value" | xargs | sed -e 's/^["\x27]//' -e 's/["\x27]$//')
         
-        # Skip DATABASE_URL as we handle it separately
-        [[ "$key" == "DATABASE_URL" ]] && continue
-        
         echo "Setting $key..."
-        flyctl secrets set "$key=$value"
+        kubectl create secret generic openbooklm --from-literal="$key=$value" -n openbooklm
     done < "$PROJECT_ROOT/.env"
 fi
 
@@ -91,13 +114,8 @@ if ! npx prisma migrate deploy; then
     exit 1
 fi
 
-# Deploy the application
-echo "Deploying application..."
-if flyctl deploy; then
-    echo -e "\n${GREEN}Deployment successful!${NC}"
-    echo -e "To view your app: ${YELLOW}flyctl open${NC}"
-    echo -e "To view logs: ${YELLOW}flyctl logs${NC}"
-else
-    echo -e "${RED}Error: Deployment failed${NC}"
-    exit 1
-fi 
+echo -e "${GREEN}Deployment complete!${NC}"
+echo -e "To view your deployment:"
+echo -e "${YELLOW}kubectl get pods -n openbooklm${NC}"
+echo -e "To view logs:"
+echo -e "${YELLOW}kubectl logs -f deployment/openbooklm -n openbooklm${NC}"

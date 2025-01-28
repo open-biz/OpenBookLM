@@ -74,7 +74,7 @@ export function NotebookClient({
               </Button>
             </CreateNotebookDialog>
 
-            {notebook.sources.length > 0 && (
+            {notebook && notebook.sources && notebook.sources.length > 0 && (
               <div className="space-y-2 mt-4">
                 {notebook.sources.map((source) => (
                   <div
@@ -105,7 +105,7 @@ export function NotebookClient({
       {/* Main Chat Area */}
       <div className="flex-1 flex flex-col">
         <div className="flex-1 overflow-auto bg-[#1C1C1C]">
-          <Chat ref={chatRef} notebookId={notebook.id} />
+          {notebook && <Chat ref={chatRef} notebookId={notebook.id} />}
         </div>
       </div>
 
@@ -203,7 +203,7 @@ export function NotebookClient({
               </div>
 
               {/* Empty State */}
-              {notebook.notes.length === 0 && (
+              {notebook && notebook.notes && notebook.notes.length === 0 && (
                 <div className="mt-8 border border-dashed border-[#333333] rounded-lg p-8 text-center">
                   <div className="flex justify-center mb-4">
                     <div className="w-10 h-10 bg-[#2A2A2A] rounded-lg flex items-center justify-center">

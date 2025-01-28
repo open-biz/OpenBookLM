@@ -24,6 +24,8 @@ export default async function NotebookPage({
       sources: true,
       chats: true,
       notes: true,
+      tags: true,
+      user: true,
     },
   });
 

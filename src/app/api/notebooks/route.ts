@@ -47,8 +47,8 @@ export async function POST(req: Request) {
     const notebook = await prisma.notebook.create({
       data: {
         title,
-        userId: user.id,
-        description: "Created by user",
+        // TODO: Remove this temporary userId once auth is re-enabled
+        userId: "temp_user_id", // Temporary user ID for development
       },
     });
 
