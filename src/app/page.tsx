@@ -1,4 +1,4 @@
-import { auth } from "@clerk/nextjs";
+import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { getOrCreateUser } from "@/lib/auth";
@@ -46,7 +46,11 @@ export default async function Page() {
   });
 
   // Cache all notebooks in Redis
-  const serializedNotebooks = notebooks.map((notebook) => ({
+  const serializedNotebooks = notebooks.map((notebook: {
+    updatedAt: Date;
+    createdAt: Date;
+    [key: string]: any;
+  }) => ({
     ...notebook,
     updatedAt: notebook.updatedAt.toISOString(),
     createdAt: notebook.createdAt.toISOString(),
