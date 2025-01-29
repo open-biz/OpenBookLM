@@ -14,10 +14,11 @@ from backend.utils.llama_api_helpers import *
 
 from typing import Dict, Any
 import requests
-import json
 from llamaapi import LlamaAPI
 from .token_counter import count_tokens
+import json
 import time
+import re
 
 class APIError(Exception):
     """Custom exception for API errors"""
@@ -67,6 +68,11 @@ def handle_api_response(response: dict) -> str:
         print("Warning: Empty response")
         return ""
 
+    # Handle non-dict responses
+    if not isinstance(response, dict):
+        print(f"Warning: Unexpected response type: {type(response)}, value: {response}")
+        return str(response) if response else ""
+
     # Handle streaming response format
     if 'choices' in response and response['choices']:
         choice = response['choices'][0]
@@ -85,123 +91,170 @@ def handle_api_response(response: dict) -> str:
 
     return ""
 
+def get_api_request_params(system_prompt, target_tokens=4000, temperature=0.8):
+    """Get parameters for the API request with better token management."""
+    # Count tokens in the prompt
+    prompt_tokens = count_tokens(system_prompt)
+
+    # Calculate the target completion tokens, accounting for prompt overhead
+    # Add a 20% buffer to avoid early cutoffs
+    completion_buffer = int(target_tokens * 0.2)
+    max_tokens = target_tokens + completion_buffer
+
+    # Adjust temperature based on target length
+    # Lower temperature for longer outputs to maintain coherence
+    adjusted_temp = max(0.6, min(0.8, temperature - (target_tokens / 10000)))
+
+    # Set minimum_length to 90% of target to ensure we get close
+    min_length = int(target_tokens * 0.9)
+
+    return {
+        'model': 'llama3.1-8b',
+        'messages': [{'role': 'system', 'content': system_prompt}],
+        'stream': False,
+        'temperature': adjusted_temp,
+        'top_p': 0.95,
+        'max_tokens': max_tokens,
+        'min_tokens': min_length,  # Add minimum length requirement
+        'presence_penalty': 0.2,   # Encourage diverse content
+        'frequency_penalty': 0.2,  # Discourage repetition
+    }
+
 def make_api_call(
     llama_client: LlamaAPI,
-    messages: list,
-    model: str,
-    timeout: tuple[int, int] = (10, 30),
-    stream: bool = True
+    api_params: dict,
+    debug: bool = False
 ) -> str:
-    """Make API call with error handling."""
-    try:
-        api_request = {
-            "model": model,
-            "messages": messages,
-            "stream": stream
-        }
+    """Make API call with error handling and retries."""
+    max_retries = 3
+    retry_delay = 2
+    last_error = None
 
-        # Use requests directly with timeout and streaming
-        response = requests.post(
-            "https://api.llama-api.com/chat/completions",
-            headers={"Authorization": f"Bearer {llama_client.api_token}"},
-            json=api_request,
-            timeout=timeout,
-            stream=stream
-        )
-
-        if response.status_code != 200:
-            error_body = None
-            try:
-                error_body = response.json()
-            except Exception:
-                error_body = str(response.content)
-            raise APIError(response.status_code, error_body)
-
-        if not stream:
-            response_json = response.json()
-            if not response_json:
-                raise APIError(422, "Empty JSON response")
-
-            content = handle_api_response(response_json)
-            if not content:
-                raise APIError(422, "No valid content in response")
-            return content.strip()
-
-        # Process streamed response
-        full_content = ""
+    for attempt in range(max_retries):
         try:
-            for line in response.iter_lines():
-                if not line:
-                    continue
-                if line == b'data: [DONE]':
-                    break
+            if attempt > 0:
+                print(f"Retrying API call (attempt {attempt + 1}/{max_retries})")
+                time.sleep(retry_delay)
 
+            if debug:
+                print(f"API request parameters: {api_params}")
+
+            response = llama_client.run(api_params)
+            
+            if debug:
+                print(f"Response status: {response.status_code}")
+                print(f"Response headers: {dict(response.headers)}")
+                print(f"Response text length: {len(response.text)}")
+                print(f"Response content (first 200 chars): {response.text[:200]}")
+
+            if response.status_code != 200:
+                error_msg = f"API Error (status {response.status_code})"
                 try:
-                    if line.startswith(b'data: '):
-                        line = line[6:]
-                    json_response = json.loads(line)
-                    if content := handle_api_response(json_response):
-                        full_content += content
-                except json.JSONDecodeError as e:
-                    # Log but continue - one bad line shouldn't fail the whole response
-                    print(f"Warning: Failed to parse line: {str(e)}")
+                    error_msg += f": {response.json()}"
+                except:
+                    error_msg += f": {response.text}"
+                raise APIError(response.status_code, error_msg)
+
+            try:
+                response_data = response.json()
+                if debug:
+                    print("Response data:", {k: v for k, v in response_data.items() if k != 'choices'})
+                
+                content = response_data['choices'][0]['message']['content']
+                return clean_dialogue_output(content)
+
+            except json.JSONDecodeError as e:
+                if attempt < max_retries - 1:
                     continue
+                raise APIError(520, f"Failed to parse response: {str(e)}")
 
-        except requests.Timeout as err:
-            raise APIError(524, f"Stream timed out after {timeout[1]} seconds") from err
-        except Exception as err:
-            # Any other error during streaming is unexpected and should be treated as a server error
-            raise APIError(500, f"Stream processing failed: {str(err)}") from err
+        except Exception as e:
+            last_error = e
+            if isinstance(e, APIError):
+                raise
+            if attempt < max_retries - 1:
+                continue
+            raise APIError(520, f"Unknown error: {str(e)}")
 
-        if not full_content:
-            raise APIError(422, "No valid content in response")
+    raise APIError(520, f"All {max_retries} attempts failed. Last error: {str(last_error)}")
 
-        return full_content.strip()
+def clean_dialogue_output(content: str) -> str:
+    """Clean and validate dialogue output."""
+    if not content:
+        return ""
 
-    except requests.Timeout as err:
-        raise APIError(524, f"Request timed out after {timeout[1]} seconds") from err
-    except requests.ConnectionError as e:
-        raise APIError(503, f"Connection failed: {str(e)}") from e  # Service unavailable
-    except requests.RequestException as err:
-        if hasattr(err, 'response') and err.response is not None:
-            status_code = err.response.status_code
-            raise APIError(status_code, err.response.text) from err
-        raise APIError(500, str(err)) from err
-    except Exception as e:
-        if isinstance(e, APIError):
-            raise  # Re-raise APIError as is
-        # For truly unexpected errors, raise as unknown error
-        raise APIError(520, f"Unknown error: {str(e)}") from e
+    # Remove any leading/trailing whitespace
+    content = content.strip()
+
+    # Fix common formatting issues
+    lines = []
+    current_line = []
+    speaker_pattern = re.compile(r'^\[\d+:\s*(?:Host|Guest):\s*[^]]+\]')
+    
+    for line in content.split('\n'):
+        line = line.strip()
+        if not line:
+            continue
+            
+        # Check if this is a new speaker line
+        if speaker_pattern.match(line):
+            # If we have a pending line, add it
+            if current_line:
+                lines.append(' '.join(current_line))
+                current_line = []
+            current_line.append(line)
+        else:
+            # Continue previous line
+            current_line.append(line)
+    
+    # Add any remaining line
+    if current_line:
+        lines.append(' '.join(current_line))
+
+    # Join lines with proper spacing
+    content = '\n'.join(lines)
+
+    # Validate basic dialogue structure
+    if not re.search(r'^\[\d+:', content):  # Should start with a speaker tag
+        return ""
+        
+    if not re.search(r'\[\d+:\s*(?:Host|Guest):\s*[^]]+\]', content):  # Should have proper speaker format
+        return ""
+
+    return content
 
 def calculate_timeout(
     token_count: int,
-    base_timeout: int = 30,
-    connect_timeout: int = 10,
-    timeout_per_1k: int = 3
+    base_timeout: int = 30,  # Increased base timeout
+    tokens_per_second: float = 20,  # Conservative estimate
+    min_timeout: int = 20,  # Increased minimum
+    max_timeout: int = 300  # Allow up to 5 minutes for very long outputs
 ) -> tuple[int, int]:
-    """Calculate appropriate timeouts based on token count.
-
-    Args:
-        token_count: Number of tokens in the request
-        base_timeout: Base timeout for reading response
-        connect_timeout: Timeout for establishing connection
-        timeout_per_1k: Additional seconds per 1K tokens
-
-    Returns:
-        Tuple of (connect_timeout, read_timeout)
-    """
-    read_timeout = base_timeout + (token_count // 1000) * timeout_per_1k
+    """Calculate appropriate timeout values based on expected token count."""
+    # Calculate estimated processing time
+    estimated_seconds = (token_count / tokens_per_second) + base_timeout
+    
+    # Add buffer for network latency and processing
+    connect_timeout = min(30, max(10, int(estimated_seconds * 0.2)))
+    read_timeout = min(max_timeout, max(min_timeout, int(estimated_seconds * 1.5)))
+    
     return (connect_timeout, read_timeout)
 
 def get_model_context_window(model: str) -> int:
-    """Get context window size for model."""
-    # Based on testing with tiktoken
-    model_windows = {
-        "llama3.1-8b": 32_768  # Found via testing
+    """Get context window size for a model."""
+    # Default context windows for known models
+    context_windows = {
+        'llama3.1-8b': 4096,
+        'llama3.1-70b': 4096,
+        'llama3.1-7b': 4096,
+        'llama3.1-13b': 4096,
+        'llama3.1-34b': 4096,
+        'llama3.2-70b': 8192,
+        'llama3.2-7b': 8192,
+        'llama3.2-13b': 8192,
+        'llama3.2-34b': 8192
     }
-    if model in model_windows.keys():
-        return model_windows[model]
-    return None
+    return context_windows.get(model, 4096)  # Default to 4096 if model not found
 
 def estimate_token_cost_per_model(
     model_name: str = "llama3.1-8b",
