@@ -30,6 +30,7 @@ model Notebook {
   user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId      String
   sources     Source[]
+  content     String    @db.Text
   chats       Chat[]
   notes       Note[]
   tags        Tag[]

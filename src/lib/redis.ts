@@ -1,11 +1,11 @@
-import { Redis } from 'ioredis';
+import { Redis } from "ioredis";
 
 // Lazy-loaded Redis client
 let redis: Redis | null = null;
 
 export function getRedisClient() {
   // During build time, always return null
-  if (process.env.NODE_ENV === 'development') {
+  if (process.env.NODE_ENV === "development") {
     if (!process.env.REDIS_URL) {
       return null;
     }

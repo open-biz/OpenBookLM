@@ -2,6 +2,7 @@ import os
 import sys
 from dotenv import load_dotenv
 from llamaapi import LlamaAPI
+import requests
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 sys.path.append(ROOT)
@@ -12,33 +13,34 @@ LLAMA_API_KEY = os.getenv('LLAMA_API_KEY')
 if not LLAMA_API_KEY:
     raise ValueError("LLAMA_API_KEY environment variable not set")
 
-llama = LlamaAPI(LLAMA_API_KEY)
+# Constants
+GROQ_API_KEY = "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"
+GROQ_MODEL = "llama-3.3-70b-versatile"
+MAX_TOKENS_PER_REQUEST = 4000  # Groq's recommended max
+RATE_LIMIT_TPM = 6000  # Tokens per minute limit
 
-def test_api_with_tokens(num_tokens: int, model: str = "llama3.1-8b"):
+def test_api_with_tokens(num_tokens: int, model: str = GROQ_MODEL):
     """Test API with specified number of tokens."""
+    if num_tokens > MAX_TOKENS_PER_REQUEST:
+        print(f"Warning: {num_tokens} tokens exceeds max of {MAX_TOKENS_PER_REQUEST}")
+        return False
+
     # Create test text (4 chars per token)
-    test_text = "test " * num_tokens  # Each "test " is roughly 1 token
+    test_text = "test " * num_tokens
     
     print(f"\nTesting with {num_tokens:,} tokens...")
     print(f"Text length: {len(test_text):,} chars")
     
-    system_prompt = "You are a helpful assistant that summarizes text. Keep responses very brief."
-    user_prompt = f"""Summarize this text in 100 words or less:
-
-{test_text}
-
-Summary:"""
-
     api_request = {
         "model": model,
         "messages": [
             {
                 "role": "system",
-                "content": system_prompt
+                "content": "You are a helpful assistant that summarizes text."
             },
             {
                 "role": "user", 
-                "content": user_prompt
+                "content": f"Summarize this text: {test_text}"
             }
         ],
         "temperature": 0.7,
@@ -47,7 +49,11 @@ Summary:"""
 
     try:
         print("\nSending request...")
-        response = llama.run(api_request)
+        response = requests.post(
+            "https://api.groq.com/openai/v1/chat/completions",
+            headers={"Authorization": f"Bearer {GROQ_API_KEY}"},
+            json=api_request
+        )
         print("\nResponse received!")
         print(f"Response type: {type(response)}")
         print(f"Response content: {response}")
@@ -73,10 +79,10 @@ Summary:"""
 
 def main():
     """Test API with various token sizes."""
-    test_sizes = [1000, 2000, 5000, 8000, 10000]
+    test_sizes = [1000, 2000, 3000, 4000]  # Reduced test sizes
     
     print("Starting API limit tests...")
-    print("Model: llama3.1-8b")
+    print("Model: mixtral-8x7b-32768")
     
     results = []
     for size in test_sizes:

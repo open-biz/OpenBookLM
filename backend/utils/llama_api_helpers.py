@@ -18,6 +18,8 @@ import json
 from llamaapi import LlamaAPI
 from .token_counter import count_tokens
 import time
+import asyncio
+import re
 
 class APIError(Exception):
     """Custom exception for API errors"""
@@ -39,7 +41,26 @@ class APIError(Exception):
         self.message = self.ERROR_MESSAGES.get(status_code, f"Unknown error {status_code}")
         super().__init__(self.message)
 
-    def handle(self,
+    def extract_wait_time(self) -> float:
+        """Extract wait time from Groq error message."""
+        if not self.response_body:
+            return None
+        
+        try:
+            if isinstance(self.response_body, str):
+                error_data = json.loads(self.response_body)
+            else:
+                error_data = self.response_body
+
+            error_msg = error_data.get('error', {}).get('message', '')
+            match = re.search(r'try again in (\d+\.?\d*)s', error_msg.lower())
+            if match:
+                return float(match.group(1))
+        except Exception:
+            pass
+        return None
+
+    async def handle(self,
         attempt_num: int,
         MAX_RETRIES: int = 3
         ) -> None:
@@ -49,17 +70,24 @@ class APIError(Exception):
             print(f"Response details: {self.response_body}")
 
         if self.status_code == 429:
-            # Rate limit - wait longer
+            # Extract wait time from error message
+            wait_time = self.extract_wait_time()
+            if wait_time:
+                print(f"Rate limited. Waiting {wait_time:.1f}s as requested by API...")
+                await asyncio.sleep(wait_time)
+                return
+            
+            # Fallback to exponential backoff if can't extract wait time
             wait_time = min(30, 2 ** (attempt_num + 2))
-            print(f"Rate limited. Waiting {wait_time} seconds...")
+            print(f"Rate limited. Using fallback wait of {wait_time}s...")
         elif self.status_code == 524:
             wait_time = 5
-            print(f"Request timed out. Waiting {wait_time} seconds...")
+            print(f"Request timed out. Waiting {wait_time}s...")
         else:
             wait_time = min(10, 2 ** attempt_num)
-            print(f"Waiting {wait_time} seconds before retry...")
+            print(f"Waiting {wait_time}s before retry...")
 
-        time.sleep(wait_time)
+        await asyncio.sleep(wait_time)
 
 def handle_api_response(response: dict) -> str:
     """Handle API response and extract summary text."""
@@ -97,12 +125,18 @@ def make_api_call(
         api_request = {
             "model": model,
             "messages": messages,
-            "stream": stream
+            "stream": stream,
+            "temperature": 0.7,
+            "max_tokens": 1000  # Reduced to stay within rate limits
         }
 
-        # Use requests directly with timeout and streaming
+        # Calculate total tokens in request
+        total_tokens = sum(count_tokens(msg["content"]) for msg in messages)
+        if total_tokens > 4000:  # Groq's recommended max per request
+            raise APIError(400, f"Request too large: {total_tokens} tokens")
+
         response = requests.post(
-            "https://api.llama-api.com/chat/completions",
+            "https://api.groq.com/openai/v1/chat/completions",
             headers={"Authorization": f"Bearer {llama_client.api_token}"},
             json=api_request,
             timeout=timeout,
@@ -195,13 +229,10 @@ def calculate_timeout(
 
 def get_model_context_window(model: str) -> int:
     """Get context window size for model."""
-    # Based on testing with tiktoken
     model_windows = {
-        "llama3.1-8b": 32_768  # Found via testing
+        "mixtral-8x7b-32768": 32_768,  # Groq model
     }
-    if model in model_windows.keys():
-        return model_windows[model]
-    return None
+    return model_windows.get(model, 32_768)  # Default to 32k if model not found
 
 def estimate_token_cost_per_model(
     model_name: str = "llama3.1-8b",
@@ -347,7 +378,7 @@ def validate_request(request: Dict[str, Any], model: str = "llama3.1-8b") -> Non
 
 if __name__ == "__main__":
     # Example usage
-    model_name = "llama3.1-8b"
+    model_name = "llama3.1-8b-instant"
     context_window = get_model_context_window(model_name)
     print(f"Context window for {model_name}: {context_window} tokens")
 

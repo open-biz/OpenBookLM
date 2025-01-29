@@ -42,7 +42,7 @@ sys.path.append(ROOT)
 from backend.utils.decorators import timeit
 
 load_dotenv()
-LLAMA_MODEL = os.getenv('LLAMA_MODEL', 'llama3.1-8b')  # Default to 8b if not set
+LLAMA_MODEL = os.getenv('LLAMA_MODEL', 'llama3.1-8b-instant')  # Default to 8b if not set
 
 
 def get_token_count(text: str) -> int:

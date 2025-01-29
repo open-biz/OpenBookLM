@@ -44,4 +44,27 @@ if [ $? -eq 0 ]; then
 else
     echo -e "${YELLOW}Error: Failed to start development environment${NC}"
     exit 1
-fi 
+fi
+
+# Create and activate virtual environment if it doesn't exist
+if [ ! -d "venv" ]; then
+    echo "Creating virtual environment..."
+    python -m venv venv
+fi
+
+# Activate virtual environment
+source venv/bin/activate
+
+# Install main requirements
+echo "Installing main requirements..."
+pip install -r requirements.txt
+
+# Install Cerebras requirements
+echo "Installing Cerebras requirements..."
+pip install -r requirements-cerebras.txt
+
+# Install package in development mode
+echo "Installing package in development mode..."
+pip install -e .
+
+echo "Setup complete!" 

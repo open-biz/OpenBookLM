@@ -17,11 +17,12 @@ RUN apt-get update && \
     apt-get install -y openssl python3 make g++
 
 # Copy package files
-COPY package.json pnpm-lock.yaml* ./
+COPY package.json ./
+COPY pnpm-lock.yaml ./
 COPY prisma ./prisma/
 
-# Install dependencies
-RUN pnpm install
+# Clean install dependencies
+RUN pnpm install --frozen-lockfile
 
 # Development image
 FROM base AS development
@@ -33,10 +34,13 @@ COPY . .
 # Generate Prisma Client for development
 RUN npx prisma generate
 
+COPY docker-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 # Expose port
 EXPOSE 3000
 
 # Start development server
+ENTRYPOINT ["docker-entrypoint.sh"]
 CMD ["pnpm", "dev"]
 
 # Rebuild the source code only when needed

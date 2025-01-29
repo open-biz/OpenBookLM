@@ -2,6 +2,7 @@ version: '3.8'
 
 services:
   app:
+    platform: linux/arm64/v8
     build:
       context: .
       target: development
@@ -15,10 +16,9 @@ services:
         - REDIS_URL=redis://redis:6379
     ports:
       - "3000:3000"
-      - "9229:9229" # For debugging
+      - "9229:9229"
     environment:
       - NODE_ENV=development
-      - DATABASE_URL=${DATABASE_URL}
       - NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=${NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
       - CLERK_SECRET_KEY=${CLERK_SECRET_KEY}
       - CEREBRAS_API_KEY=${CEREBRAS_API_KEY}
@@ -39,6 +39,7 @@ services:
       - redis
 
   db:
+    platform: linux/arm64/v8
     image: postgres:16
     ports:
       - "5432:5432"
@@ -48,14 +49,43 @@ services:
       - POSTGRES_DB=openbooklm
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   redis:
-    image: redis:7-alpine
+    platform: linux/arm64/v8
+    image: redis:7
     ports:
       - "6379:6379"
     volumes:
       - redis_data:/data
-    command: redis-server --save 60 1 --loglevel warning
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  redis-insight:
+    image: redislabs/redisinsight:latest
+    platform: linux/arm64/v8  # For M1/M2 Macs
+    ports:
+      - "8001:8001"
+    depends_on:
+      - redis
+
+ 
 
 volumes:
   postgres_data:

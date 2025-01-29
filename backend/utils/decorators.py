@@ -2,34 +2,37 @@
 
 import time
 import functools
+import logging
 from typing import Callable, Any
+import asyncio
+
+logger = logging.getLogger(__name__)
 
 def timeit(func: Callable) -> Callable:
-    """Decorator to measure and print the execution time of functions.
-    
-    Args:
-        func: The function to be timed
-        
-    Returns:
-        Wrapped function that prints execution time
-    """
+    """Decorator to time function execution."""
     @functools.wraps(func)
-    def wrapper(*args, **kwargs) -> Any:
-        start_time = time.time()
-        result = func(*args, **kwargs)
-        end_time = time.time()
-        
-        # Format duration nicely
-        duration = end_time - start_time
-        if duration < 1:
-            duration_str = f"{duration*1000:.1f}ms"
-        elif duration < 60:
-            duration_str = f"{duration:.1f}s"
-        else:
-            minutes = int(duration // 60)
-            seconds = duration % 60
-            duration_str = f"{minutes}m {seconds:.1f}s"
-            
-        print(f" {func.__name__} took {duration_str}")
-        return result
-    return wrapper
+    async def async_wrapper(*args, **kwargs) -> Any:
+        start = time.time()
+        try:
+            if asyncio.iscoroutinefunction(func):
+                result = await func(*args, **kwargs)
+            else:
+                result = func(*args, **kwargs)
+            return result
+        finally:
+            end = time.time()
+            logger.info(f"{func.__name__} took {(end-start)*1000:.1f}ms")
+    
+    @functools.wraps(func)
+    def sync_wrapper(*args, **kwargs) -> Any:
+        start = time.time()
+        try:
+            result = func(*args, **kwargs)
+            return result
+        finally:
+            end = time.time()
+            logger.info(f"{func.__name__} took {(end-start)*1000:.1f}ms")
+
+    if asyncio.iscoroutinefunction(func):
+        return async_wrapper
+    return sync_wrapper
