@@ -1,6 +1,13 @@
 # Base image
 FROM node:20-slim AS base
 
+# Add build arguments for Clerk keys
+ARG NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
+ARG CLERK_SECRET_KEY
+
+# Set environment variables
+ENV NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=$NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
+ENV CLERK_SECRET_KEY=$CLERK_SECRET_KEY
 
 # Install OpenSSL and other required dependencies
 RUN apt-get update -y && apt-get install -y openssl libssl-dev ca-certificates

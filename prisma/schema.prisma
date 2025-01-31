@@ -19,6 +19,8 @@ model User {
   email         String     @unique
   name          String?
   notebooks     Notebook[]
+  bookmarks     Notebook[] @relation("BookmarkedNotebooks")
+  sharedWithMe  Notebook[] @relation("SharedNotebooks")
   createdAt     DateTime   @default(now())
   updatedAt     DateTime   @updatedAt
 }
@@ -27,11 +29,15 @@ model Notebook {
   id          String     @id @default(cuid())
   title       String
   description String?
+  content     String?    @db.Text
   user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId      String
+  bookmarkedBy User[]    @relation("BookmarkedNotebooks")
+  sharedWith  User[]     @relation("SharedNotebooks")
+  isPublic    Boolean    @default(false)
   sources     Source[]
-  chats       Chat[]
   notes       Note[]
+  chats       Chat[]
   tags        Tag[]
   isArchived  Boolean    @default(false)
   createdAt   DateTime   @default(now())

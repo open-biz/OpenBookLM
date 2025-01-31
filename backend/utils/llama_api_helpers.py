@@ -347,7 +347,7 @@ def validate_request(request: Dict[str, Any], model: str = "llama3.1-8b") -> Non
 
 if __name__ == "__main__":
     # Example usage
-    model_name = "llama3.1-8b"
+    model_name = "llama-3.1-8b-instant"
     context_window = get_model_context_window(model_name)
     print(f"Context window for {model_name}: {context_window} tokens")
 

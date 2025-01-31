@@ -55,7 +55,24 @@ services:
       - "6379:6379"
     volumes:
       - redis_data:/data
-    command: redis-server --save 60 1 --loglevel warning
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  redis-insight:
+    image: redislabs/redisinsight:latest
+    platform: linux/arm64/v8  # For M1/M2 Macs
+    ports:
+      - "8001:8001"
+    depends_on:
+      - redis
 
 volumes:
   postgres_data:

@@ -12,7 +12,11 @@ LLAMA_API_KEY = os.getenv('LLAMA_API_KEY')
 if not LLAMA_API_KEY:
     raise ValueError("LLAMA_API_KEY environment variable not set")
 
-llama = LlamaAPI(LLAMA_API_KEY)
+# Constants
+GROQ_API_KEY = "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"
+GROQ_MODEL = "llama-3.1-8b-instant"
+MAX_TOKENS_PER_REQUEST = 4000  # Groq's recommended max
+RATE_LIMIT_TPM = 6000  # Tokens per minute limit
 
 def test_api_with_tokens(num_tokens: int, model: str = "llama3.1-8b"):
     """Test API with specified number of tokens."""

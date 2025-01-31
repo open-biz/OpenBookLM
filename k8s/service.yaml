@@ -3,10 +3,10 @@ kind: Service
 metadata:
   name: openbooklm
 spec:
-  type: ClusterIP
+  type: LoadBalancer
   ports:
-  - port: 80
-    targetPort: 3000
-    protocol: TCP
+    - port: 80
+      targetPort: 3000
+      protocol: TCP
   selector:
     app: openbooklm

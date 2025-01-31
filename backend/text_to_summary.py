@@ -65,10 +65,14 @@ sys.path.append(ROOT)
 INPUT_DIR = os.path.join(ROOT, "output", "text")
 OUTPUT_DIR = os.path.join(ROOT, "output", "summaries")
 load_dotenv()
-LLAMA_MODEL = os.getenv("LLAMA_MODEL", "llama3.1-8b")
+LLAMA_MODEL = os.getenv("LLAMA_MODEL", "llama-3.1-8b-instant")
 LLAMA_API_KEY = os.getenv('LLAMA_API_KEY')
 if not LLAMA_API_KEY:
     raise ValueError("LLAMA_API_KEY not found in environment variables")
+
+# Constants for API configuration
+GROQ_MODEL = os.getenv("GROQ_MODEL", "llama3.1-8b-instant")  # Groq model
+GROQ_API_KEY = "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"
 
 # Initialize API client
 llama = LlamaAPI(LLAMA_API_KEY)
@@ -76,7 +80,7 @@ llama = LlamaAPI(LLAMA_API_KEY)
 # Prompt to summarize input text
 prompt_summary = """You are a precise summarization assistant. Your task is to create a DETAILED summary of TARGET_TOKENS tokens. \
 Your summary MUST be EXACTLY TARGET_TOKENS tokens long. Not shorter, not longer.
-
+ 
 Instructions:
 1. Keep title and author if available
 2. Use a conversational tone

@@ -19,12 +19,13 @@ CEREBRAS_API_KEY = os.getenv('CEREBRAS_API_KEY')
 if not CEREBRAS_API_KEY:
     raise ValueError("CEREBRAS_API_KEY not found in environment variables")
 
-client = Cerebras(api_key=CEREBRAS_API_KEY)
+client = Groq(api_key="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",
+)
 
 
 def query_cerebras(
     content: str = "test",
-    model_name: str = "llama3.1-8b",
+    model_name: str = "llama-3.1-8b-instant",
     temperature: float = 0.7,
     min_tokens: int = 800,
     max_tokens: int = 1000,

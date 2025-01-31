@@ -1,31 +1,87 @@
-"use client"
+"use client";
 
-import { useState } from 'react'
-import { ArrowLeft } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import { useState } from "react";
+import { ArrowLeft } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 interface WebsiteURLInputProps {
-  onBack: () => void
-  onSubmit: (url: string) => void
-  onSendToCerebras?: (url: string) => void
+  onBack: () => void;
+  onSubmit: (url: string) => void;
+  onSendToCerebras?: (url: string) => void;
+  notebookId: string;
+  userId: string;
 }
 
-export function WebsiteURLInput({ onBack, onSubmit, onSendToCerebras }: WebsiteURLInputProps) {
-  const [url, setUrl] = useState('https://morganandwestfield.com/podcast/entrepreneurship-through-acquisition-insights-from-harvard-business-school-experts/')
+export function WebsiteURLInput({
+  onBack,
+  onSubmit,
+  onSendToCerebras,
+  notebookId,
+  userId,
+}: WebsiteURLInputProps) {
+  const [url, setUrl] = useState(
+    "https://morganandwestfield.com/podcast/entrepreneurship-through-acquisition-insights-from-harvard-business-school-experts/"
+  );
 
   const handleSubmit = async () => {
-    onSubmit(url);
-    if (onSendToCerebras) {
-      onSendToCerebras(url);
+    try {
+      const response = await fetch("http://localhost:8000/website", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          url,
+          notebookId,
+          userId,
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Failed to process website");
+      }
+
+      const data = await response.json();
+
+      // Create source in database
+      const sourceResponse = await fetch(
+        `/api/notebooks/${notebookId}/sources`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            type: "WEBSITE",
+            title: url,
+            content: data.summary || data.extractedText,
+          }),
+        }
+      );
+
+      if (!sourceResponse.ok) {
+        throw new Error("Failed to save source");
+      }
+
+      onSubmit(url);
+      if (onSendToCerebras) {
+        onSendToCerebras(url);
+      }
+    } catch (error) {
+      console.error("Error processing website:", error);
+      alert(
+        error instanceof Error ? error.message : "Failed to process website"
+      );
     }
   };
 
   return (
     <div className="space-y-6">
       <div className="flex items-center space-x-4">
-        <Button 
-          variant="ghost" 
+        <Button
+          variant="ghost"
           size="icon"
           onClick={onBack}
           className="hover:bg-[#2A2A2A]"
@@ -56,7 +112,10 @@ export function WebsiteURLInput({ onBack, onSubmit, onSendToCerebras }: WebsiteU
           <div className="space-y-2">
             <h3 className="text-sm font-medium text-gray-300">Notes</h3>
             <ul className="list-disc text-sm text-gray-400 pl-5 space-y-1">
-              <li>Only the visible text on the website will be imported at this moment</li>
+              <li>
+                Only the visible text on the website will be imported at this
+                moment
+              </li>
               <li>Paid articles are not supported</li>
             </ul>
           </div>
@@ -64,7 +123,7 @@ export function WebsiteURLInput({ onBack, onSubmit, onSendToCerebras }: WebsiteU
       </div>
 
       <div className="flex justify-end">
-        <Button 
+        <Button
           onClick={handleSubmit}
           className="bg-blue-500 hover:bg-blue-600 text-white px-8"
         >
@@ -72,5 +131,5 @@ export function WebsiteURLInput({ onBack, onSubmit, onSendToCerebras }: WebsiteU
         </Button>
       </div>
     </div>
-  )
+  );
 }
