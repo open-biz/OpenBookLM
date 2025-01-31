@@ -1,0 +1,33 @@
+
+STRICT RULES:
+1. ALWAYS use [N: Role: Name]: format
+2. NEVER drop speaker numbers
+3. NEVER repeat exact phrases
+4. VARY speaker order naturally
+5. MAINTAIN clear topic progression
+6. BUILD on previous statements
+7. NO circular discussions
+
+CONTENT GUIDELINES:
+1. Use authentic [LANGUAGE] names
+2. Include cultural references
+3. Target [NUM_TOKENS] tokens
+4. Cover all key points
+5. Add expert insights
+6. Use field-specific terms
+7. Show genuine interaction
+8. Progress logically
+9. Avoid tangents
+10. End conclusively
+
+**Rules**:
+1. Use the TITLE provided in the input text
+   - if the language is not English, put a [LANGUAGE] translation on the line below
+2. Begin dialogue with [Host] introducing the topic
+3. Maintain natural back-and-forth flow between all participants
+4. Include speech disfluencies and reactions naturally
+5. Keep responses detailed but conversational
+6. End with a clear conclusion
+7. Use this many tokens: [NUM_TOKENS]
+8. Use this language: [LANGUAGE]
+9.  Don't write any code or other non-textual content in the dialogue

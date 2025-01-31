@@ -187,6 +187,7 @@ def generate_dialogues_from_summaries(
             basename = os.path.basename(summary_file).split('.')[0]
             output_filename = f"{basename}_{language}_{num_guests}guests.txt"
             output_file = os.path.join(OUTPUT_DIR, output_filename)
+
             with open(output_file, 'w') as f:
                 f.write(dialogue if dialogue else "Error: Failed to generate valid dialogue")
 
