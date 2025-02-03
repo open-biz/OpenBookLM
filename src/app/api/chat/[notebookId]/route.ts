@@ -32,14 +32,14 @@ export async function POST(
     // Call Cerebras API
     try {
       if (!process.env.CEREBRAS_API_KEY) {
-        throw new Error('Missing CEREBRAS_API_KEY environment variable');
+        throw new Error("Missing CEREBRAS_API_KEY environment variable");
       }
 
-      const response = await fetch('YOUR_CEREBRAS_API_ENDPOINT', {
-        method: 'POST',
+      const response = await fetch("YOUR_CEREBRAS_API_ENDPOINT", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${process.env.CEREBRAS_API_KEY}`,
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${process.env.CEREBRAS_API_KEY}`,
         },
         body: JSON.stringify({
           messages: messages.map((msg: any) => ({
