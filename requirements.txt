@@ -1,6 +1,6 @@
 # Currently used dependencies
 # ML libs
-transformers>=4.30.0
+transformers>=4.48.0
 scipy>=1.10.0
 numpy>=1.24.0
 torch>=2.4.0
@@ -21,9 +21,9 @@ bitsandbytes>=0.42.0
 openai>=1.59.8
 llamaapi>=0.1.36
 llama-parse>=0.5.19
-langchain>=0.3.14
-langchain-community>=0.0.10
-langchain-huggingface>=0.1.2
+# langchain>=0.3.14
+# langchain-community>=0.0.10 # DDoS CVE
+# langchain-huggingface>=0.1.2
 
 # API and serving
 fastapi>=0.115.6
@@ -44,3 +44,4 @@ cerebras_cloud_sdk>=1.16.0
 
 # New dependency
 aiofiles>=23.2.1
+#cerebras_pytorch>=2.4.0

@@ -1,226 +1,210 @@
 #!/usr/bin/env python3
-"""Convert text summaries to natural dialogue format."""
+"""Convert text summaries to natural dialogue format using LLaMA
+Run:
+(venv) ./scripts/summary_to_dialogue.py --language [LANGUAGE] [--num_guests [NUM_GUESTS]] [--num_tokens [NUM_TOKENS]] [--debug]
+(venv) ./scripts/summary_to_dialogue.py --language Italian --num_guests 3 --num_tokens 1000 --debug
+input: ./output/summaries/*.txt
+output: ./output/dialogue/*.txt
+"""
 
 import os
-import re
-import random
-from typing import List, Tuple
 import sys
-from backend.utils.decorators import timeit
+import argparse
+import time
+from dotenv import load_dotenv
+from llamaapi import LlamaAPI
+import glob
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.append(ROOT)
 
+from utils.llama_api_helpers import make_api_call
+from utils.decorators import timeit
+
 INPUT_DIR = os.path.join(ROOT, "output", "summaries")
 OUTPUT_DIR = os.path.join(ROOT, "output", "dialogue")
+os.makedirs(OUTPUT_DIR, exist_ok=True)
 
-# Conversation starters/transitions
-TRANSITIONS = [
-    "That's fascinating! Let me add that",
-    "Building on that point,",
-    "Interesting perspective. In my experience,",
-    "You raise a good point. Additionally,",
-    "To expand on what you're saying,",
-    "That's crucial to understand. Furthermore,",
-    "I agree, and it's worth noting that",
-    "Let me add some context here -",
-    "This is particularly important because",
-    "What's really interesting here is",
-    "To put this in perspective,",
-    "Let me break this down further -",
-    "Here's something crucial to consider:",
-    "This connects to something important:",
-    "A key insight here is",
-]
+load_dotenv()
+LLAMA_API_KEY = os.getenv('LLAMA_API_KEY')
+if not LLAMA_API_KEY:
+    raise ValueError("LLAMA_API_KEY environment variable not set")
+llama = LlamaAPI(LLAMA_API_KEY)
 
-# Natural reactions
-REACTIONS = [
-    "Exactly!",
-    "That's fascinating.",
-    "Great point.",
-    "Very interesting.",
-    "I see what you mean.",
-    "That makes sense.",
-    "Absolutely.",
-    "Well said.",
-]
+DIALOGUE_PROMPT_PATH = os.path.join(ROOT, "backend", "prompts", "multi_lang_guests.txt")
+with open(DIALOGUE_PROMPT_PATH, 'r') as f:
+    DIALOGUE_PROMPT = f.read().strip()
 
-# Words/phrases to filter out
-FILTER_PATTERNS = [
-    r'Table of Contents',
-    r'Chapter \d+',
-    r'\|\s*\d+\s*\|',  # Table markers
-    r'^\d+\s*$',  # Standalone numbers
-    r'v\d+\.\d+',  # Version numbers
-    r'[A-Z]{2,}(?:\s+[A-Z]{2,})+',  # All caps sequences
-    r'_+',  # Underscores
-    r'\.{2,}',  # Multiple dots
-]
+# LLAMA_MODEL = os.getenv('LLAMA_MODEL', 'llama2-70b')  # Default to 70b if not set
+LLAMA_MODEL = os.getenv('LLAMA_MODEL', 'llama3.1-8b')  # Default to 70b if not set
 
-@timeit
-def clean_text(text: str) -> str:
-    """Clean text of unwanted patterns and normalize spacing."""
-    # Remove unwanted patterns
-    for pattern in FILTER_PATTERNS:
-        text = re.sub(pattern, '', text)
-    
-    # Clean up whitespace
-    text = re.sub(r'\s+', ' ', text)
-    text = re.sub(r'\s*\n\s*', '\n', text)
-    
-    return text.strip()
+# available languages for llama
+LanguageOptions = {
+    "English",
+    "German",
+    "Spanish",
+    "French",
+    "Hindi",
+    "Italian",
+    "Japanese",
+    "Korean",
+    "Polish",
+    "Portuguese",
+    "Russian",
+    "Turkish",
+    # simplified Chinese
+    "Chinese"
+}
 
-@timeit
-def split_into_segments(text: str) -> List[str]:
-    """Split text into meaningful segments for dialogue."""
-    # Split on sentence boundaries
-    segments = []
-    current = []
-    
-    for line in text.split('\n'):
-        line = line.strip()
-        if not line:
-            continue
-            
-        # Split long sentences
-        sentences = re.split(r'(?<=[.!?])\s+', line)
-        for sent in sentences:
-            sent = sent.strip()
-            if not sent:
-                continue
-                
-            # Combine short related sentences
-            if len(current) < 3 and len(' '.join(current + [sent])) < 150:
-                current.append(sent)
-            else:
-                if current:
-                    segments.append(' '.join(current))
-                current = [sent]
-    
-    if current:
-        segments.append(' '.join(current))
-    
-    return segments
+def parse_args() -> argparse.Namespace:
+    """Parse command-line arguments."""
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--num_tokens", type=int, default=1000)
+    parser.add_argument("--language", type=str, default="English")
+    parser.add_argument("--num_guests", type=int, default=5)
+    parser.add_argument("--debug", action="store_true")
+    args = parser.parse_args()
+    # Validate arguments and if not errors raised, then return args
+    validate_args(args)
+    return args
+
+
+def validate_args(args: argparse.Namespace) -> None:
+    """Validate command-line arguments."""
+    # Validate num_guests
+    if not (1 <= args.num_guests <= 8):
+        raise ValueError("Number of guests must be between 1 and 8")
+
+    # Validate language
+    if args.language not in LanguageOptions:
+        raise ValueError(f"Language {args.language} not supported")
+
+    # Validate num_tokens
+    # TODO: support targeted token counts in future from LLaMA API
+    if not (100 <= args.num_tokens <= 1000):
+        raise ValueError("Number of tokens must be between 100 and 1000")
+
 
 @timeit
-def create_dialogue_script(segments: List[str]) -> List[Tuple[str, str]]:
-    """Create natural dialogue from segments."""
-    dialogue = []
-    
-    # Randomly assign host/guest gender for this conversation
-    speakers = ['[Male Host]', '[Female Guest]'] if random.random() < 0.5 else ['[Female Host]', '[Male Guest]']
-    host, guest = speakers
-    
-    # Start with introduction
-    title_words = segments[0].split()[:6]  # Use first few words for topic
-    intro = f"Welcome to our discussion about {' '.join(title_words)}..."
-    dialogue.append((host, intro))
-    
-    prev_speaker = host
-    for i, segment in enumerate(segments[1:], 1):
-        # Decide who speaks next (avoid same speaker twice in a row)
-        if prev_speaker == host:
-            speaker = guest
-            # Add reaction occasionally
-            if random.random() < 0.3:
-                segment = f"{random.choice(REACTIONS)} {segment}"
-        else:
-            speaker = host
-            # Add transition occasionally
-            if random.random() < 0.4:
-                segment = f"{random.choice(TRANSITIONS)} {segment}"
-        
-        dialogue.append((speaker, segment))
-        prev_speaker = speaker
-    
-    # Add conclusion
-    conclusion = "Thank you for this insightful discussion!"
-    if prev_speaker == host:
-        dialogue.append((guest, conclusion))
-    else:
-        dialogue.append((host, conclusion))
-    
-    return dialogue
+def generate_dialogue(
+    summary: str,
+    language: str = "English",
+    num_guests: int = 1,
+    num_tokens: int = 1000,
+    debug: bool = False
+) -> str:
+    """
+    Generate natural dialogue using LLaMA model.
+    take the system prompt template and the summary as input
+    add token parameters to the system prompt
+    make an API call to generate the dialogue
+    return the generated dialogue
+    """
 
-@timeit
-def format_dialogue_script(dialogue: List[Tuple[str, str]]) -> str:
-    """Format dialogue pairs into text."""
-    lines = []
-    for speaker, text in dialogue:
-        lines.append(f"{speaker}: {text}")
-    return '\n\n'.join(lines)
+    # TODO: get targeted token output working in the future
+    # Calculate token targets for each section
+    # intro_tokens = num_tokens // 10
+    # main_tokens = num_tokens * 7 // 10  # Reduced to leave room for conclusion
+    # conclusion_tokens = num_tokens * 2 // 10  # Increased for better wrap-up
 
-@timeit
-def generate_dialogue_script(summary_path: str) -> str:
-    """Convert a summary file to dialogue format."""
+    # Replace template variables in base prompt first
+    system_prompt = (DIALOGUE_PROMPT
+        .replace("[LANGUAGE]", language)
+        .replace("[NUM_GUESTS]", str(num_guests))
+        .replace("[SUMMARY]", summary)
+        .replace("[NUM_TOKENS]", str(num_tokens))
+    )
+
+    # TODO: get targeted token output working in the future
+    # token_constraints = f"""\n\nYou must target {num_tokens} for your generated response with
+    # approximately {intro_tokens} for the intro, {main_tokens} for the main dialogue,
+    # and {conclusion_tokens} for the final wrap-up.\n"""
+    # system_prompt += token_constraints
+
+    messages = [
+        {
+            "role": "system",
+            "content": system_prompt
+        }
+    ]
+
     try:
-        print(f"\nProcessing: {summary_path}")
-        
-        # Read summary
-        with open(summary_path, 'r', encoding='utf-8') as f:
-            text = f.read()
-        
-        if not text.strip():
-            print("Empty summary file")
-            return ""
-        
-        # Clean text
-        text = clean_text(text)
-        
-        # Split into segments
-        segments = split_into_segments(text)
-        
-        # Ensure minimum dialogue length
-        min_lines = 70
-        while len(segments) < min_lines:
-            # Duplicate some segments to reach minimum length
-            additional = random.sample(segments, min(len(segments), min_lines - len(segments)))
-            segments.extend(additional)
-        
-        # Cap maximum length
-        max_lines = 150
-        if len(segments) > max_lines:
-            segments = segments[:max_lines]
-        
-        # Create and format dialogue
-        dialogue = create_dialogue_script(segments)
-        formatted = format_dialogue_script(dialogue)
-        
-        # Save dialogue
-        output_path = os.path.join(
-            OUTPUT_DIR,
-            os.path.basename(summary_path)
+        print("Starting API request")
+        dialogue = make_api_call(
+            llama_client=llama,
+            messages=messages,
+            model=LLAMA_MODEL,
+            timeout=(10, 30),
+            stream=False
         )
-        
-        with open(output_path, 'w', encoding='utf-8') as f:
-            f.write(formatted)
-            
-        print(f"Generated dialogue script: {output_path}")
-        print(f"Dialogue length: {len(formatted):,} chars")
-        
-        return output_path
-        
+
+        if not dialogue:
+            print("Error: Empty response from API")
+            return ""
+
+        if debug:
+            print("\nRaw API Response:")
+            print(dialogue)  # Print full response
+
+        return dialogue
+
     except Exception as e:
-        print(f"Error processing {summary_path}: {str(e)}")
+        print(f"Error generating dialogue: {str(e)}")
         return ""
 
+
 @timeit
-def process_summary_files():
-    """Process all summary files to create dialogue scripts."""
-    print(f"\nInput directory: {INPUT_DIR}")
-    print(f"Output directory: {OUTPUT_DIR}\n")
-    
-    # Ensure output directory exists
-    os.makedirs(OUTPUT_DIR, exist_ok=True)
-    
-    # Process all summary files
-    for _, _, files in os.walk(INPUT_DIR):
-        for file in sorted(files):
-            if not file.endswith('.txt'):
-                continue
-                
-            summary_path = os.path.join(INPUT_DIR, file)
-            generate_dialogue_script(summary_path)
+def generate_dialogues_from_summaries(
+    num_guests: int = 1,
+    language: str = "English",
+    num_tokens: int = 1000,
+    debug: bool = False
+) -> None:
+    """
+    Read in all files in summaries folder and generate dialogue for each one.
+    """
+
+    # Process each summary file
+    for summary_file in glob.glob(os.path.join(INPUT_DIR, "*.txt")):
+        try:
+            print(f"\nProcessing {summary_file}")
+
+            # Read summary
+            with open(summary_file, "r") as f:
+                summary = f.read().strip()
+
+            # Generate dialogue
+            dialogue = generate_dialogue(
+                summary=summary,
+                language=language,
+                num_guests=num_guests,
+                num_tokens=num_tokens,
+                debug=debug
+            )
+
+            # Write output even if incomplete
+            # TODO: add num tokens to filepath once accurate calculations and targets are hit
+            basename = os.path.basename(summary_file).split('.')[0]
+            output_filename = f"{basename}_{language}_{num_guests}guests.txt"
+            output_file = os.path.join(OUTPUT_DIR, output_filename)
+
+            with open(output_file, 'w') as f:
+                f.write(dialogue if dialogue else "Error: Failed to generate valid dialogue")
+
+            print(f"Output written to: {output_file}")
+
+        except Exception as e:
+            print(f"Error processing {summary_file}: {str(e)}")
+            continue
+
+        time.sleep(0.1)
 
 if __name__ == "__main__":
-    process_summary_files()
+    args = parse_args()
+
+    generate_dialogues_from_summaries(
+        args.num_guests,
+        args.language,
+        args.num_tokens,
+        args.debug
+    )

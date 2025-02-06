@@ -14,9 +14,11 @@ spec:
       labels:
         app: openbooklm
     spec:
+      imagePullSecrets:
+      - name: ghcr-secret
       containers:
       - name: openbooklm
-        image: ghcr.io/open-biz/openbooklm:main  # Updated to use GitHub Container Registry
+        image: ghcr.io/open-biz/openbooklm:sha-96454f5f31b03236eada4c4f5fe53a97b0445565
         ports:
         - containerPort: 3000
         envFrom:
@@ -24,6 +26,8 @@ spec:
             name: openbooklm-config
         - secretRef:
             name: openbooklm-secrets
+        - secretRef:
+            name: clerk-credentials
         resources:
           requests:
             cpu: "100m"
