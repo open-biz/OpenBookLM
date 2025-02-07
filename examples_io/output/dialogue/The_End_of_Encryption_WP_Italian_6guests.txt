@@ -1,0 +1,22 @@
+**The End of Encryption? – The Era of Quantum Computers**
+La fine della crittografia? – L'era dei computer quantistici
+
+[0: Host: Alessandro Bianchi]: Ciao a tutti, benvenuti a "Tecnologia Futura". Oggi parleremo di un argomento molto interessante: la fine della crittografia tradizionale a causa dell'avvento dei computer quantistici.
+
+[1: Guest: Prof. Maria Rossi]: Sì, esatto. I computer quantistici hanno il potenziale di rompere la maggior parte dei problemi di crittografia matematica standard, rendendo la crittografia tradizionale obsoleta.
+
+[2: Guest: Dr. Luca Ferrari]: Ecco, la crittografia tradizionale si basa su algoritmi che sono vulnerabili ai computer quantistici. Ad esempio, l'algoritmo RSA è molto diffuso, ma i computer quantistici possono facilmente romperlo.
+
+[3: Guest: Prof. Alessandro Ricci]: Sì, e non solo. I computer quantistici possono anche rompere altri algoritmi di crittografia, come il Diffie-Hellman e il Elliptic Curve Cryptography.
+
+[4: Guest: Dr. Francesca Bianchi]: Ma non è tutto perduto. Gli scienziati stanno lavorando a nuove soluzioni, come la crittografia quantistica, che utilizza la meccanica quantistica per garantire la sicurezza dei dati.
+
+[5: Guest: Prof. Giovanni De Santis]: Sì, e anche la crittografia a chiave simmetrica, che utilizza la stessa chiave per la crittografia e la decrittografia.
+
+[6: Guest: Dr. Marco Rossi]: Ecco, la crittografia a chiave simmetrica è più sicura dei metodi tradizionali, ma richiede una gestione più complessa delle chiavi.
+
+[0: Host: Alessandro Bianchi]: Grazie a tutti per aver partecipato a questa discussione. In sintesi, i computer quantistici rappresentano un futuro molto interessante per la crittografia, ma anche un grande rischio per la sicurezza dei dati.
+
+[0: Host: Alessandro Bianchi]: Ringrazio i nostri ospiti per aver condiviso le loro conoscenze e esperienze con noi. Spero che questo dibattito abbia chiarito alcuni dei punti chiave della crittografia quantistica.
+
+[0: Host: Alessandro Bianchi]: Ecco, grazie a tutti e arrivederci nella prossima puntata di "Tecnologia Futura".

@@ -1,0 +1,42 @@
+**NVIDIA DIGITS Tutorial Summary**
+**Resumen del tutorial NVIDIA DIGITS**
+
+[0: Host: Rachel]: Welcome to today's episode of "AI Insights"! I'm your host, Rachel, and we're here to explore the world of deep learning with our guest expert, Dr. Alex Chen. Dr. Chen, thanks for joining us today!
+
+[1: Guest: Dr. Alex Chen]: Thanks, Rachel! I'm excited to share my knowledge on NVIDIA DIGITS.
+
+[0: Host: Rachel]: For our listeners who may be new to deep learning, can you start by explaining what DIGITS is and why it's an important tool in the field?
+
+[1: Guest: Dr. Alex Chen]: Sure. DIGITS is a powerful tool for training and deploying deep neural networks. It's a wrapper for TensorFlow that provides a graphical web interface for engineers and data scientists to manage data, design and train neural networks, and monitor performance in real-time.
+
+[0: Host: Rachel]: That sounds like a game-changer for data scientists. Can you walk us through the process of writing a custom plugin for DIGITS?
+
+[1: Guest: Dr. Alex Chen]: Absolutely. Writing a custom plugin for DIGITS allows users to extend its functionality and ingest data from custom sources. We'll be exploring the process of adding a custom plugin to DIGITS, specifically the Sunnybrook plugin, which reads images from DICOM files and their ground-truth from text files.
+
+[0: Host: Rachel]: I see. So, it's like creating a custom module that can be integrated into the DIGITS system. Can you explain the file tree structure for a data plugin?
+
+[1: Guest: Dr. Alex Chen]: The file tree structure for a data plugin is quite straightforward. We have the main plugin directory, which contains the `setup.py` file, the `MANIFEST.in` file, and the `init.py` file. The `data.py` file implements the `Data Ingestion` class, which is the core of the plugin.
+
+[0: Host: Rachel]: Okay, I think I'm starting to get a sense of the structure. Can you walk us through the `setup.py` file and explain what's happening there?
+
+[1: Guest: Dr. Alex Chen]: Sure. The `setup.py` file is where we specify how to install the plugin. We use the `setuptools` package to define the plugin's metadata, such as its name, version, and author. We also specify the entry points for the plugin, which is where we define the `Data Ingestion` class.
+
+[0: Host: Rachel]: That makes sense. What about the `MANIFEST.in` file? What's its purpose?
+
+[1: Guest: Dr. Alex Chen]: The `MANIFEST.in` file specifies the resource files to include in the plugin package. In this case, we're including all the HTML files within the plugin directory.
+
+[0: Host: Rachel]: Okay, I think I understand the file tree structure now. Can you explain the process of installing the plugin?
+
+[1: Guest: Dr. Alex Chen]: To install the plugin, you need to run the `pip install .` command from the plugin directory. This will install the plugin and its dependencies. Once installed, you can restart DIGITS for the changes to take effect.
+
+[0: Host: Rachel]: That's great. What about troubleshooting? What resources are available for users who encounter issues with their plugins?
+
+[1: Guest: Dr. Alex Chen]: For troubleshooting, I recommend checking the DIGITS Release Notes Documentation website and the DIGITS 6.0 project on GitHub. These resources provide detailed information on known issues and workarounds.
+
+[0: Host: Rachel]: Thanks, Dr. Chen, for sharing your expertise with us today. I'm sure our listeners will find this information incredibly valuable.
+
+[1: Guest: Dr. Alex Chen]: Thank you, Rachel, for having me!
+
+[0: Host: Rachel]: Before we go, let's summarize the key points. DIGITS is a powerful tool for training and deploying deep neural networks. Writing a custom plugin for DIGITS allows users to extend its functionality and ingest data from custom sources. The file tree structure for a data plugin includes the `setup.py` file, the `MANIFEST.in` file, and the `init.py` file. To install the plugin, you need to run the `pip install .` command from the plugin directory. And for troubleshooting, I recommend checking the DIGITS Release Notes Documentation website and the DIGITS 6.0 project on GitHub.
+
+[0: Host: Rachel]: Thanks for tuning in to today's episode of "AI Insights"! If you have any questions or topics you'd like to discuss, please don't hesitate to reach out to us. Until next time, stay curious and keep learning!

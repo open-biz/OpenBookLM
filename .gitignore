@@ -29,6 +29,22 @@ yarn-error.log*
 
 **/old.*.py
 
+# exclude uploaded pdf source files besides starter examples
+./input/*.pdf
+!./input/The_End_of_Encryption_WP.pdf
+!./input/The_Illiad.pdf
+!./input/nvidia_digits.pdf
+!./input/sample_proposal.pdf
+!./input/situational_awareness.pdf
+
+# exclude generated files
+./output/dialogue/*.txt
+./output/text/*.txt
+./output/summaries/*.txt
+./output/audio/*.wav
+./output/audio/*.mp3
+./output/audio/*.mp4
+
 # vercel
 .vercel
 
