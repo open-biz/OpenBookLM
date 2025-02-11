@@ -19,11 +19,20 @@ spec:
             - containerPort: 5432
           env:
             - name: POSTGRES_DB
-              value: openbooklm
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-credentials
+                  key: POSTGRES_DB
             - name: POSTGRES_USER
-              value: postgres
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-credentials
+                  key: POSTGRES_USER
             - name: POSTGRES_PASSWORD
-              value: postgres_password
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-credentials
+                  key: POSTGRES_PASSWORD
             - name: PGDATA
               value: /var/lib/postgresql/data/pgdata
           volumeMounts:

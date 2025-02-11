@@ -33,15 +33,27 @@ spec:
                   name: clerk-credentials
                   key: CLERK_SECRET_KEY
             - name: DATABASE_URL
-              value: 'postgresql://postgres:postgres_password@postgres.openbooklm.svc.cluster.local:5432/openbooklm'
+              valueFrom:
+                secretKeyRef:
+                  name: db-credentials
+                  key: DATABASE_URL
             - name: REDIS_URL
-              value: 'redis://redis.openbooklm.svc.cluster.local:6379'
+              valueFrom:
+                secretKeyRef:
+                  name: redis-credentials
+                  key: REDIS_URL
             - name: NODE_ENV
               value: 'production'
             - name: NEXT_PUBLIC_API_URL
-              value: 'http://openbooklm-backend.openbooklm.svc.cluster.local:8000/python/api'
+              valueFrom:
+                configMapKeyRef:
+                  name: openbooklm-config
+                  key: API_URL
             - name: NEXT_PUBLIC_BASE_URL
-              value: 'http://143.42.127.58'
+              valueFrom:
+                configMapKeyRef:
+                  name: openbooklm-config
+                  key: BASE_URL
             # Add Cerebras API key to frontend
             - name: CEREBRAS_API_KEY
               valueFrom:
@@ -84,7 +96,6 @@ spec:
               npx prisma generate
               pnpm build
               pnpm start
-
         # Backend container (single definition)
         - name: backend
           image: python:3.12-slim
