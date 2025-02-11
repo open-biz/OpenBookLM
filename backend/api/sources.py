@@ -12,13 +12,13 @@ import requests
 from bs4 import BeautifulSoup
 
 # Add project root to Python path
-ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
+ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 sys.path.append(ROOT)
 
-from backend.groq.api.pdf_to_text import process_pdf
-from backend.groq.api.text_to_summary import process_text_document, ProcessingStatus, ProcessingProgress
+from backend.pdf_to_text import process_pdf
+from backend.text_to_summary import process_text_document, ProcessingStatus, ProcessingProgress
 from backend.utils.decorators import timeit
-from backend.groq.api.summary_to_dialogue import generate_dialogue
+from backend.summary_to_dialogue import generate_dialogue_script
 
 app = FastAPI()
 logging.basicConfig(level=logging.INFO)
@@ -86,18 +86,14 @@ async def process_pdf_endpoint(
             
             # Generate dialogue from summary
             dialogue_path = Path(temp_dir) / "dialogue.txt"
-            dialogue_result = generate_dialogue(
-                summary=summary_text,  # Pass the text directly
-                language="English",
-                num_guests=5,
-                num_tokens=1000
-            )
+            dialogue_result = generate_dialogue_script(str(summary_path))
             
             if dialogue_result:
-                dialogue_text = dialogue_result  # Use the result directly since it's text
+                with open(dialogue_result, "r", encoding='utf-8') as f:
+                    dialogue_text = f.read()
             else:
                 dialogue_text = ""
-
+            
             return {
                 "status": "success",
                 "message": "PDF processed successfully",
@@ -117,7 +113,7 @@ async def process_pdf_endpoint(
             "message": str(e),
             "sourceId": sourceId,
             "fileName": file.filename,
-            "progress": 0  # Fixed progress reference
+            "progress": processing_progress.progress
         }
 
 @router.get("/status/{sourceId}")
@@ -214,4 +210,4 @@ async def process_website(request: WebsiteSourceRequest):
         raise HTTPException(
             status_code=500,
             detail=f"Error processing website: {str(e)}"
-        )
+        ) 
