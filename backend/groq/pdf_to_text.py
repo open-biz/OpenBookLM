@@ -12,11 +12,10 @@ from io import BytesIO
 import textwrap
 from typing import List
 
-# Update the path to include backend directory
-ROOT = os.path.abspath(os.path.dirname(__file__))
+ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.append(ROOT)
 
-from utils.decorators import timeit  # Updated import path
+from backend.utils.decorators import timeit
 
 INPUT_DIR = os.path.join(ROOT, "input")  # Read PDFs from root/input/*.pdf
 OUTPUT_DIR = os.path.join(ROOT, "output", "text")  # Write text to root/output/text/*.txt
