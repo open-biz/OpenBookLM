@@ -5,6 +5,11 @@ metadata:
   namespace: openbooklm
   annotations:
     cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/proxy-body-size: '100m' # Allow up to 100MB files
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: '600' # 10 minutes connection timeout
+    nginx.ingress.kubernetes.io/proxy-send-timeout: '600'
+    nginx.ingress.kubernetes.io/proxy-read-timeout: '600'
+    nginx.ingress.kubernetes.io/client-max-body-size: '100m' # Also set client max body size
 spec:
   ingressClassName: nginx
   tls:
