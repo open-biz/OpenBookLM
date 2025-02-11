@@ -35,13 +35,19 @@ spec:
             - name: DATABASE_URL
               value: 'postgresql://postgres:postgres_password@postgres.openbooklm.svc.cluster.local:5432/openbooklm'
             - name: REDIS_URL
-              value: 'redis://redis:6379'
+              value: 'redis://redis.openbooklm.svc.cluster.local:6379'
             - name: NODE_ENV
               value: 'production'
             - name: NEXT_PUBLIC_API_URL
               value: 'http://openbooklm-backend.openbooklm.svc.cluster.local:8000/python/api'
             - name: NEXT_PUBLIC_BASE_URL
               value: 'http://143.42.127.58'
+            # Add Cerebras API key to frontend
+            - name: CEREBRAS_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: api-credentials
+                  key: CEREBRAS_API_KEY
             # Google API credentials
             - name: NEXT_PUBLIC_GOOGLE_CLIENT_ID
               valueFrom:
