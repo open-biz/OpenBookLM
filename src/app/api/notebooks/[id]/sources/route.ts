@@ -41,13 +41,10 @@ export async function POST(
         backendFormData.append("userId", userId);
 
         try {
-          const backendResponse = await fetch(
-            `${process.env.BACKEND_URL}/api/process-pdf`,
-            {
-              method: "POST",
-              body: backendFormData,
-            }
-          );
+          const backendResponse = await fetch(`/python/process-pdf`, {
+            method: "POST",
+            body: backendFormData,
+          });
 
           if (!backendResponse.ok) {
             const errorData = await backendResponse.json();

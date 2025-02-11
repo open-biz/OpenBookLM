@@ -22,7 +22,7 @@ spec:
                 name: openbooklm-frontend
                 port:
                   number: 3000
-          - path: /api
+          - path: /python/
             pathType: Prefix
             backend:
               service:
