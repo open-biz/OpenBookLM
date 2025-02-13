@@ -33,7 +33,7 @@ import {
 
 interface CreateNotebookDialogProps {
   children?: React.ReactNode;
-  onNotebookCreated?: () => void;
+  onNotebookCreated?: (notebook: any) => void;
 }
 
 interface UploadProgress {
@@ -48,6 +48,22 @@ export function CreateNotebookDialog({ children, onNotebookCreated }: CreateNote
   const router = useRouter();
 
   const handleCreateNotebook = async () => {
+    // Create an optimistic notebook
+    const optimisticNotebook = {
+      id: `temp-${Date.now()}`,
+      title: "New Notebook",
+      sources: [],
+      updatedAt: new Date().toISOString(),
+      role: "owner",
+      ownerName: "", // Will be filled by server
+      userId: "", // Will be filled by server
+    };
+
+    // Call the callback immediately with optimistic data
+    if (onNotebookCreated) {
+      onNotebookCreated(optimisticNotebook);
+    }
+
     try {
       const response = await fetch("/api/notebooks", {
         method: "POST",
@@ -65,16 +81,11 @@ export function CreateNotebookDialog({ children, onNotebookCreated }: CreateNote
 
       const notebook = await response.json();
       
-      // Call the callback to refresh notebooks
-      if (onNotebookCreated) {
-        onNotebookCreated();
-      }
-      
-      // Refresh the page data to show the new notebook
-      router.refresh();
-      
-      // Then redirect to the notebook
+      // Navigate to the new notebook
       router.push(`/notebook/${notebook.id}`);
+      
+      // Refresh the router cache in the background
+      router.refresh();
     } catch (error) {
       console.error("Error creating notebook:", error);
       toast.error("Failed to create notebook");
