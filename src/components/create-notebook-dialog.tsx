@@ -206,16 +206,16 @@ export function CreateNotebookDialog({ children }: CreateNotebookDialogProps) {
       <DialogTrigger asChild onClick={() => setIsOpen(true)}>
         {children || (
           <Button
-            size="sm"
-            className="bg-[#E8F0FE] hover:bg-[#E8F0FE]/80 text-[#1967D2] font-medium px-4 h-9 rounded-full flex items-center"
+            size="lg"
+            className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 flex items-center gap-2"
           >
-            <Plus className="h-4 w-4 mr-1.5" />
-            Create new
+            <Plus className="h-5 w-5" />
+            Create Notebook
           </Button>
         )}
       </DialogTrigger>
       <DialogContent
-        className="sm:max-w-[425px]"
+        className="sm:max-w-[425px] bg-[#1A1A1A] border-[#2A2A2A]"
         onPointerDownOutside={(e) => {
           if (isPickerOpen) {
             e.preventDefault();
@@ -227,77 +227,76 @@ export function CreateNotebookDialog({ children }: CreateNotebookDialogProps) {
           }
         }}
       >
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <div className="h-8 w-8">
-              <svg viewBox="0 0 24 24" className="text-white w-full h-full">
-                <path
-                  fill="currentColor"
-                  d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"
-                />
-              </svg>
-            </div>
-            <span className="text-2xl font-semibold text-white">
-              Add sources
-            </span>
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h2 className="text-2xl font-semibold text-white mb-2">Create New Notebook</h2>
+            <p className="text-gray-400">
+              Start your learning journey with a new notebook
+            </p>
           </div>
-          <DialogTrigger asChild></DialogTrigger>
-        </div>
-        <p className="text-gray-400 mb-2">
-          Sources let OpenBookLM base its responses on the information that
-          matters most to you.
-        </p>
-        <p className="text-gray-400 mb-6">
-          (Examples: marketing plans, course reading, research notes, meeting
-          transcripts, sales documents, etc.)
-        </p>
-
-        <div
-          {...getRootProps()}
-          className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
-            isDragActive ? "border-blue-500 bg-blue-500/10" : "border-[#2A2A2A]"
-          }`}
-        >
-          <input {...getInputProps()} />
-          <Upload className="h-10 w-10 mx-auto mb-4 text-gray-400" />
-          <h3 className="text-lg font-semibold text-white mb-2">
-            Upload sources
-          </h3>
-          <p className="text-sm text-gray-400 mb-2">
-            Drag & drop or{" "}
-            <button className="text-blue-500 hover:underline">
-              choose file
-            </button>{" "}
-            to upload
-          </p>
-          <p className="text-xs text-gray-500">
-            Supported file types: PDF, .txt, Markdown, Audio (e.g. mp3)
-          </p>
         </div>
 
-        {files.length > 0 && (
-          <div className="mt-4 space-y-2">
-            {files.map((file, index) => (
-              <div
-                key={index}
-                className="flex items-center justify-between p-2 bg-[#2A2A2A] rounded-lg"
+        <div className="space-y-6">
+          <div>
+            <label htmlFor="title" className="block text-sm font-medium text-gray-200 mb-2">
+              Notebook Title
+            </label>
+            <input
+              type="text"
+              id="title"
+              placeholder="My Research Notes"
+              className="w-full px-3 py-2 bg-[#2A2A2A] border border-[#3A3A3A] rounded-md text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-200 mb-2">
+              Add Sources (Optional)
+            </label>
+            <div className="grid grid-cols-2 gap-4">
+              <Button
+                variant="outline"
+                className="w-full justify-start gap-2 border-[#3A3A3A] hover:bg-[#2A2A2A]"
+                onClick={() => setShowPasteText(true)}
               >
-                <div className="flex items-center space-x-2">
-                  <FileText className="h-4 w-4 text-gray-400" />
-                  <span className="text-sm text-gray-200">{file.name}</span>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => handleRemoveFile(index)}
-                  className="text-gray-400 hover:text-white"
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
-            ))}
+                <FileText className="h-4 w-4" />
+                Paste Text
+              </Button>
+              <Button
+                variant="outline"
+                className="w-full justify-start gap-2 border-[#3A3A3A] hover:bg-[#2A2A2A]"
+                onClick={() => setShowLinkInput(true)}
+              >
+                <LinkIcon className="h-4 w-4" />
+                Add Link
+              </Button>
+            </div>
           </div>
-        )}
+        </div>
+
+        <div className="mt-6 flex justify-end gap-3">
+          <Button
+            variant="outline"
+            onClick={() => setIsOpen(false)}
+            className="border-[#3A3A3A] hover:bg-[#2A2A2A]"
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleSubmit}
+            disabled={isSubmitting}
+            className="bg-blue-600 hover:bg-blue-700 text-white min-w-[100px]"
+          >
+            {isSubmitting ? (
+              <div className="flex items-center gap-2">
+                <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                Creating...
+              </div>
+            ) : (
+              "Create"
+            )}
+          </Button>
+        </div>
 
         {showLinkInput ? (
           <div className="mt-6">
