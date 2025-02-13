@@ -7,31 +7,36 @@ input: ./output/summaries/*.txt
 output: ./output/dialogue/*.txt
 """
 
+# Change imports
 import os
 import sys
 import argparse
 import time
 from dotenv import load_dotenv
-from llamaapi import LlamaAPI
+from groq import Groq
 import glob
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.append(ROOT)
 
-from utils.llama_api_helpers import make_api_call
-from utils.decorators import timeit
+from .utils.llama_api_helpers import make_api_call
+
+from .utils.decorators import timeit
 
 INPUT_DIR = os.path.join(ROOT, "output", "summaries")
 OUTPUT_DIR = os.path.join(ROOT, "output", "dialogue")
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
+# Change API setup
 load_dotenv()
-LLAMA_API_KEY = os.getenv('LLAMA_API_KEY')
-if not LLAMA_API_KEY:
-    raise ValueError("LLAMA_API_KEY environment variable not set")
-llama = LlamaAPI(LLAMA_API_KEY)
+GROQ_API_KEY = os.getenv('GROQ_API_KEY')
+if not GROQ_API_KEY:
+    raise ValueError("GROQ_API_KEY environment variable not set")
+groq_client = Groq(api_key=GROQ_API_KEY)
 
-DIALOGUE_PROMPT_PATH = os.path.join(ROOT, "backend", "prompts", "multi_lang_guests.txt")
+# To this:
+DIALOGUE_PROMPT_PATH = os.path.join(ROOT, "prompts", "multi_lang_guests.txt")
+
 with open(DIALOGUE_PROMPT_PATH, 'r') as f:
     DIALOGUE_PROMPT = f.read().strip()
 
@@ -93,21 +98,9 @@ def generate_dialogue(
     num_tokens: int = 1000,
     debug: bool = False
 ) -> str:
-    """
-    Generate natural dialogue using LLaMA model.
-    take the system prompt template and the summary as input
-    add token parameters to the system prompt
-    make an API call to generate the dialogue
-    return the generated dialogue
-    """
-
-    # TODO: get targeted token output working in the future
-    # Calculate token targets for each section
-    # intro_tokens = num_tokens // 10
-    # main_tokens = num_tokens * 7 // 10  # Reduced to leave room for conclusion
-    # conclusion_tokens = num_tokens * 2 // 10  # Increased for better wrap-up
-
-    # Replace template variables in base prompt first
+    """Generate natural dialogue using Groq model."""
+    
+    # Replace template variables in base prompt
     system_prompt = (DIALOGUE_PROMPT
         .replace("[LANGUAGE]", language)
         .replace("[NUM_GUESTS]", str(num_guests))
@@ -115,36 +108,31 @@ def generate_dialogue(
         .replace("[NUM_TOKENS]", str(num_tokens))
     )
 
-    # TODO: get targeted token output working in the future
-    # token_constraints = f"""\n\nYou must target {num_tokens} for your generated response with
-    # approximately {intro_tokens} for the intro, {main_tokens} for the main dialogue,
-    # and {conclusion_tokens} for the final wrap-up.\n"""
-    # system_prompt += token_constraints
-
-    messages = [
-        {
-            "role": "system",
-            "content": system_prompt
-        }
-    ]
-
     try:
-        print("Starting API request")
-        dialogue = make_api_call(
-            llama_client=llama,
-            messages=messages,
-            model=LLAMA_MODEL,
-            timeout=(10, 30),
+        print("Starting Groq API request")
+        completion = groq_client.chat.completions.create(
+            messages=[
+                {
+                    "role": "system",
+                    "content": system_prompt
+                }
+            ],
+            model="mixtral-8x7b-32768",
+            temperature=0.7,
+            max_tokens=num_tokens,
+            top_p=1,
             stream=False
         )
 
-        if not dialogue:
+        if not completion or not completion.choices:
             print("Error: Empty response from API")
             return ""
 
+        dialogue = completion.choices[0].message.content
+
         if debug:
             print("\nRaw API Response:")
-            print(dialogue)  # Print full response
+            print(dialogue)
 
         return dialogue
 
