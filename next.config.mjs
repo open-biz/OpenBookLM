@@ -7,6 +7,9 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
+  experimental: {
+    runtime: 'nodejs'
+  }
 };
 
 export default nextConfig;
