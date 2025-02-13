@@ -31,6 +31,15 @@ kubectl create secret generic clerk-credentials \
     --from-literal=CLERK_SECRET_KEY="$CLERK_SECRET_KEY" \
     --dry-run=client -o yaml | kubectl apply -f -
 
+# Create API credentials secret
+echo -e "${GREEN}Creating API credentials secret...${NC}"
+kubectl create secret generic api-credentials \
+    --namespace openbooklm \
+    --from-literal=CEREBRAS_API_KEY="$CEREBRAS_API_KEY" \
+    --from-literal=LLAMA_API_KEY="$LLAMA_API_KEY" \
+    --from-literal=OPENAI_API_KEY="$OPENAI_API_KEY" \
+    --dry-run=client -o yaml | kubectl apply -f -
+
 # Create GitHub Container Registry secret
 echo -e "${GREEN}Creating Container Registry secret...${NC}"
 kubectl create secret docker-registry ghcr-secret \
@@ -55,4 +64,4 @@ kubectl get service openbooklm -n openbooklm
 echo -e "\nUseful commands:"
 echo -e "View pods: ${YELLOW}kubectl get pods -n openbooklm${NC}"
 echo -e "View logs: ${YELLOW}kubectl logs -f deployment/openbooklm -n openbooklm${NC}"
-echo -e "Get service IP: ${YELLOW}kubectl get service openbooklm -n openbooklm${NC}" 
+echo -e "Get service IP: ${YELLOW}kubectl get service openbooklm -n openbooklm${NC}"

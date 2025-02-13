@@ -15,7 +15,7 @@ from dotenv import load_dotenv
 from llamaapi import LlamaAPI
 import glob
 
-ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 sys.path.append(ROOT)
 
 from utils.llama_api_helpers import make_api_call
@@ -31,7 +31,8 @@ if not LLAMA_API_KEY:
     raise ValueError("LLAMA_API_KEY environment variable not set")
 llama = LlamaAPI(LLAMA_API_KEY)
 
-DIALOGUE_PROMPT_PATH = os.path.join(ROOT, "backend", "prompts", "multi_lang_guests.txt")
+# Update the prompt path to use the groq directory's prompts
+DIALOGUE_PROMPT_PATH = os.path.join(ROOT, "prompts", "multi_lang_guests.txt")
 with open(DIALOGUE_PROMPT_PATH, 'r') as f:
     DIALOGUE_PROMPT = f.read().strip()
 
