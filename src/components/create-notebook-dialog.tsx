@@ -257,7 +257,7 @@ export function CreateNotebookDialog({ children }: CreateNotebookDialogProps) {
           <DialogTrigger asChild></DialogTrigger>
         </div>
         <p className="text-gray-400 mb-2">
-          Sources let NotebookLM base its responses on the information that
+          Sources let OpenBookLM base its responses on the information that
           matters most to you.
         </p>
         <p className="text-gray-400 mb-6">

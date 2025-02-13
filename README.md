@@ -1,6 +1,6 @@
 # OpenBookLM
 
-An open-source version of Google's NotebookLM, built with Next.js and shadcn/ui.
+An open-source version of OpenBookLM, built with Next.js and shadcn/ui.
 
 ## Features
 
