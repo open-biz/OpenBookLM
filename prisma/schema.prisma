@@ -57,6 +57,7 @@ model Source {
   chunks      Chunk[]
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+  dialogue String? @db.Text
 
   @@index([notebookId])
 }
