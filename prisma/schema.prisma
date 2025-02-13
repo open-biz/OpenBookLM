@@ -15,9 +15,11 @@ datasource db {
 
 model User {
   id            String     @id @default(cuid())
-  clerkId       String     @unique
-  email         String     @unique
+  clerkId       String?    @unique
+  sessionId     String?    @unique
+  email         String?    @unique
   name          String?
+  isGuest       Boolean    @default(false)
   notebooks     Notebook[]
   bookmarks     Notebook[] @relation("BookmarkedNotebooks")
   sharedWithMe  Notebook[] @relation("SharedNotebooks")

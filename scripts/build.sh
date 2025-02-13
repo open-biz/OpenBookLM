@@ -6,7 +6,7 @@ source .env
 set +a
 
 # Configuration
-GITHUB_REPO=${1:-"OpenBookLM/openbooklm"}
+GITHUB_REPO=${1:-"open-biz/openbooklm"}
 
 # Set the new image tag
 export TAG=$(git rev-parse HEAD)
