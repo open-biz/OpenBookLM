@@ -31,10 +31,10 @@ from dotenv import load_dotenv
 from llamaapi import LlamaAPI
 
 # Local imports
-from utils.decorators import timeit
-from utils.token_counter import count_tokens
-from utils.llama_api_token_limits import get_llama_total_token_limit
-from utils.llama_api_helpers import (
+from .utils.decorators import timeit
+from .utils.token_counter import count_tokens
+from .utils.llama_api_token_limits import get_llama_total_token_limit
+from .utils.llama_api_helpers import (
     estimate_token_cost_per_model,
     APIError,
     make_api_call,

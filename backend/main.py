@@ -5,14 +5,12 @@ import sys
 import os
 from pathlib import Path
 
-# Add project root and backend to Python path
-root = str(Path(__file__).parent.parent.parent)
-backend_path = str(Path(__file__).parent.parent)
-sys.path.extend([root, backend_path])
+# Add project root to Python path
+root = str(Path(__file__).parent.parent)
+sys.path.append(root)
 
-# Import routers from local api directory
-from api.sources import router as sources_router
-from api.audio_generation import router as audio_router
+# Import centralized routers
+from backend.routers import routers
 from dotenv import load_dotenv
 
 # Load environment variables
@@ -32,9 +30,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Include routers with prefixes
-app.include_router(sources_router, prefix="/python/api")
-app.include_router(audio_router, prefix="/python/api")
+# Include all routers from the registry
+for router_config in routers.values():
+    app.include_router(
+        router_config["router"],
+        prefix=router_config["prefix"],
+        tags=router_config["tags"]
+    )
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
