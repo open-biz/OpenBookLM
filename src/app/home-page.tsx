@@ -29,9 +29,23 @@ export default function HomePage({
 }: {
   notebooks: Notebook[];
 }) {
+  const [notebooks, setNotebooks] = useState(initialNotebooks);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [leftSidebarOpen, setLeftSidebarOpen] = useState(true);
   const [rightSidebarOpen, setRightSidebarOpen] = useState(true);
+
+  // Fetch notebooks when needed
+  const refreshNotebooks = async () => {
+    try {
+      const response = await fetch('/api/notebooks');
+      if (response.ok) {
+        const data = await response.json();
+        setNotebooks(data);
+      }
+    } catch (error) {
+      console.error('Error fetching notebooks:', error);
+    }
+  };
 
   const getNotebookEmoji = (notebook: Notebook) => {
     if (notebook.title.includes("Introduction")) return "👋";
@@ -55,9 +69,9 @@ export default function HomePage({
               Your AI-powered research companion. Transform content into meaningful conversations through open-source flexibility and collaborative learning.
             </p>
             <div className="flex items-center gap-4">
-              <CreateNotebookDialog>
+              <CreateNotebookDialog onNotebookCreated={refreshNotebooks}>
                 <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-white px-8">
-                  Start Learning
+                  Create New Notebook
                 </Button>
               </CreateNotebookDialog>
               <Button size="lg" variant="outline" asChild>
@@ -116,7 +130,7 @@ export default function HomePage({
                     </tr>
                   </thead>
                   <tbody>
-                    {initialNotebooks.map((notebook) => (
+                    {notebooks.map((notebook) => (
                       <tr
                         key={notebook.id}
                         className="group hover:bg-[#2A2A2A] transition-colors"
@@ -169,7 +183,7 @@ export default function HomePage({
               </div>
             ) : (
               <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                {initialNotebooks.map((notebook) => (
+                {notebooks.map((notebook) => (
                   <div key={notebook.id} className="relative">
                     <Link href={`/notebook/${notebook.id}`}>
                       <Card className="aspect-[1.4/1] p-6 hover:bg-[#2A2A2A] transition-colors border-[#333333] bg-[#1E1E1E] group">

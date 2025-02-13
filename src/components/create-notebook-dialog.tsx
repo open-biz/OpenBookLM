@@ -33,6 +33,7 @@ import {
 
 interface CreateNotebookDialogProps {
   children?: React.ReactNode;
+  onNotebookCreated?: () => void;
 }
 
 interface UploadProgress {
@@ -42,7 +43,7 @@ interface UploadProgress {
   };
 }
 
-export function CreateNotebookDialog({ children }: CreateNotebookDialogProps) {
+export function CreateNotebookDialog({ children, onNotebookCreated }: CreateNotebookDialogProps) {
   const [isOpen, setIsOpen] = useState(false);
   const router = useRouter();
 
@@ -63,6 +64,16 @@ export function CreateNotebookDialog({ children }: CreateNotebookDialogProps) {
       }
 
       const notebook = await response.json();
+      
+      // Call the callback to refresh notebooks
+      if (onNotebookCreated) {
+        onNotebookCreated();
+      }
+      
+      // Refresh the page data to show the new notebook
+      router.refresh();
+      
+      // Then redirect to the notebook
       router.push(`/notebook/${notebook.id}`);
     } catch (error) {
       console.error("Error creating notebook:", error);
