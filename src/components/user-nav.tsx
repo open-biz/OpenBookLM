@@ -1,6 +1,6 @@
 'use client';
 
-import { SignInButton, SignOutButton } from "@clerk/nextjs";
+import { SignOutButton } from "@clerk/nextjs";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,15 +12,16 @@ import {
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/lib/hooks/use-auth";
+import { AuthButton } from "@/components/auth-button";
 
 export function UserNav() {
   const { isSignedIn, isGuest } = useAuth();
 
   if (!isSignedIn && !isGuest) {
     return (
-      <SignInButton mode="modal">
-        <Button variant="outline">Sign In</Button>
-      </SignInButton>
+      <AuthButton mode="modal" variant="outline">
+        Sign In
+      </AuthButton>
     );
   }
 
@@ -46,6 +47,13 @@ export function UserNav() {
         {!isGuest && (
           <DropdownMenuItem>
             <SignOutButton>Sign out</SignOutButton>
+          </DropdownMenuItem>
+        )}
+        {isGuest && (
+          <DropdownMenuItem asChild>
+            <AuthButton mode="modal" variant="ghost" className="w-full justify-start">
+              Sign in to save your work
+            </AuthButton>
           </DropdownMenuItem>
         )}
       </DropdownMenuContent>

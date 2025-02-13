@@ -1,5 +1,5 @@
 import { NextResponse, NextRequest } from 'next/server';
-import { clerkMiddleware, ClerkMiddlewareOptions } from "@clerk/nextjs/server";
+import { clerkMiddleware } from "@clerk/nextjs/server";
 import { v4 as uuidv4 } from 'uuid';
 
 // Handle guest session middleware

@@ -26,16 +26,10 @@ export default async function RootLayout({
   return (
     <html lang="en" className="dark">
       <body className={cn("min-h-screen bg-[#1A1A1A] text-white", inter.className)}>
-        {isGuest ? (
-          <>
-            {children}
-            <GuestBanner />
-          </>
-        ) : (
-          <ClerkProvider>
-            {children}
-          </ClerkProvider>
-        )}
+        <ClerkProvider>
+          {children}
+          {isGuest && <GuestBanner />}
+        </ClerkProvider>
       </body>
     </html>
   );

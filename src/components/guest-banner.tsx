@@ -1,9 +1,9 @@
 'use client';
 
-import { SignInButton } from "@clerk/nextjs";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
+import { AuthButton } from "@/components/auth-button";
 
 export function GuestBanner() {
   const [isVisible, setIsVisible] = useState(true);
@@ -17,11 +17,14 @@ export function GuestBanner() {
           You&apos;re using OpenBookLM as a guest. Sign in to keep your notebooks forever!
         </div>
         <div className="flex items-center gap-2">
-          <SignInButton mode="modal">
-            <Button variant="outline" size="sm" className="text-blue-200 border-blue-500/20 hover:bg-blue-500/20">
-              Sign in
-            </Button>
-          </SignInButton>
+          <AuthButton
+            mode="modal"
+            variant="outline"
+            size="sm"
+            className="text-blue-200 border-blue-500/20 hover:bg-blue-500/20"
+          >
+            Sign in
+          </AuthButton>
           <Button 
             variant="ghost" 
             size="sm"
