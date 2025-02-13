@@ -6,9 +6,6 @@ const nextConfig = {
   },
   eslint: {
     ignoreDuringBuilds: true,
-  },
-  experimental: {
-    runtime: 'nodejs'
   }
 };
 
