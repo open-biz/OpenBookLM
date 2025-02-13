@@ -27,28 +27,31 @@ export async function getOrCreateUser() {
   }
 
   // Handle Clerk auth for non-guest users
-  const { userId } = await clerkAuth();
-  if (!userId) {
+  try {
+    const { userId } = await clerkAuth();
+    if (!userId) return null;
+
+    let user = await prisma.user.findUnique({
+      where: { clerkId: userId },
+    });
+
+    if (!user) {
+      const clerkUser = await currentUser();
+      user = await prisma.user.create({
+        data: {
+          clerkId: userId,
+          email: clerkUser?.emailAddresses[0]?.emailAddress || "placeholder@example.com",
+          name: clerkUser?.firstName || "New User",
+          isGuest: false,
+        },
+      });
+    }
+
+    return user;
+  } catch (error) {
+    // If Clerk auth fails, return null
     return null;
   }
-
-  let user = await prisma.user.findUnique({
-    where: { clerkId: userId },
-  });
-
-  if (!user) {
-    const clerkUser = await currentUser();
-    user = await prisma.user.create({
-      data: {
-        clerkId: userId,
-        email: clerkUser?.emailAddresses[0]?.emailAddress || "placeholder@example.com",
-        name: clerkUser?.firstName || "New User",
-        isGuest: false,
-      },
-    });
-  }
-
-  return user;
 }
 
 export async function auth() {

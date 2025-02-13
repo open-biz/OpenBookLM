@@ -7,6 +7,7 @@ export function useAuth() {
   const clerkAuth = useClerkAuth();
   const [isGuest, setIsGuest] = useState<boolean>(false);
   const [guestId, setGuestId] = useState<string | null>(null);
+  const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
     // Check for guest session cookie
@@ -19,7 +20,17 @@ export function useAuth() {
       setIsGuest(true);
       setGuestId(guestSessionId);
     }
+    setIsLoaded(true);
   }, []);
+
+  if (!isLoaded) {
+    return {
+      isSignedIn: false,
+      isGuest: false,
+      userId: null,
+      isLoaded: false,
+    };
+  }
 
   if (isGuest) {
     return {
@@ -30,5 +41,9 @@ export function useAuth() {
     };
   }
 
-  return clerkAuth;
+  return {
+    ...clerkAuth,
+    isGuest: false,
+    isLoaded: true,
+  };
 }
