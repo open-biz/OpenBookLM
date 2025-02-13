@@ -76,42 +76,29 @@ export function CreateNotebookDialog({ children }: CreateNotebookDialogProps) {
   };
 
   const handleSubmit = async () => {
-    if (files.length === 0) {
-      toast.error("Please add at least one source");
-      return;
-    }
-
-    setIsSubmitting(true);
     try {
-      // First create the notebook
-      const notebookResponse = await fetch("/api/notebooks", {
+      setIsSubmitting(true);
+
+      const response = await fetch("/api/notebooks", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title: "New Notebook" }), // We can make this editable later
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          title: "New Notebook", // We'll let users rename it later
+        }),
       });
 
-      if (!notebookResponse.ok) throw new Error("Failed to create notebook");
-      const notebook = await notebookResponse.json();
+      if (!response.ok) {
+        throw new Error("Failed to create notebook");
+      }
 
-      // Then upload each file
-      const formData = new FormData();
-      files.forEach((file) => {
-        formData.append("files", file);
-      });
-
-      const uploadResponse = await fetch(
-        `/api/notebooks/${notebook.id}/sources`,
-        {
-          method: "POST",
-          body: formData,
-        }
-      );
-
-      if (!uploadResponse.ok) throw new Error("Failed to upload sources");
-
-      toast.success("Notebook created successfully");
-      router.refresh();
+      const notebook = await response.json();
+      
+      // Close the dialog and redirect to the new notebook
+      setIsOpen(false);
       router.push(`/notebook/${notebook.id}`);
+
     } catch (error) {
       console.error("Error creating notebook:", error);
       toast.error("Failed to create notebook");
