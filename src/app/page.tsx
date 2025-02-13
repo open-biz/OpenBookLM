@@ -1,12 +1,10 @@
 import { redirect } from "next/navigation";
-import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/db";
 import { getOrCreateUser } from "@/lib/auth";
 import { setAllNotebooks } from "@/lib/redis-utils";
 import HomePage from "./home-page";
 
 export default async function Page() {
-  const { userId } = await auth();
   const user = await getOrCreateUser();
 
   if (!user) {
@@ -30,32 +28,23 @@ export default async function Page() {
       ],
     },
     include: {
-      sources: true,
       user: true,
+      bookmarkedBy: true,
       sharedWith: true,
+      sources: true,
+      chats: true,
+      notes: true,
+      tags: true,
     },
     orderBy: {
-      updatedAt: "desc",
+      updatedAt: 'desc',
     },
   });
 
-  // Cache all notebooks in Redis
-  const serializedNotebooks = notebooks.map((notebook) => ({
-    ...notebook,
-    sources: notebook.sources,
-    updatedAt: notebook.updatedAt.toISOString(),
-    createdAt: notebook.createdAt.toISOString(),
-    role:
-      notebook.userId === user.id
-        ? "Owner"
-        : notebook.sharedWith.some((u) => u.id === user.id)
-        ? "Editor"
-        : "Reader",
-    ownerName: notebook.user.name || "Unknown",
-    userId: notebook.userId,
-  }));
+  // Cache notebooks in Redis
+  await setAllNotebooks(user.id, notebooks);
 
-  await setAllNotebooks(user.id, serializedNotebooks);
-
-  return <HomePage notebooks={serializedNotebooks} />;
+  return (
+    <HomePage notebooks={notebooks} />
+  );
 }

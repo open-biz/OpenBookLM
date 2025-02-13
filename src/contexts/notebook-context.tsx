@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect } from "react";
-import { useAuth } from "@clerk/nextjs";
+import { useAuth } from "@/lib/hooks/use-auth";
 import type { Notebook, Source, Chat, Note } from "@prisma/client";
 
 type NotebookWithRelations = Notebook & {

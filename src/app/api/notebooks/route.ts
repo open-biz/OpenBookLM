@@ -2,6 +2,7 @@ import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/db";
 import { NextResponse } from "next/server";
 import { getOrCreateUser } from "@/lib/auth";
+import { getOrCreateGuestUser } from "@/lib/guest-utils";
 
 export async function GET() {
   try {
@@ -32,23 +33,29 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
-    const user = await getOrCreateUser();
+    const { userId } = auth();
+    const body = await req.json();
+
+    let user;
+    if (userId) {
+      // Get authenticated user
+      user = await prisma.user.findUnique({
+        where: { clerkId: userId },
+      });
+    } else {
+      // Get or create guest user
+      user = await getOrCreateGuestUser();
+    }
+
     if (!user) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
-    const body = await req.json();
-    const { title } = body;
-
-    if (!title) {
-      return new NextResponse("Title is required", { status: 400 });
-    }
-
     const notebook = await prisma.notebook.create({
       data: {
-        title,
-        userId: user?.id,
-        content: "",
+        title: body.title || "Untitled notebook",
+        userId: user.id,
+        isPublic: false,
       },
     });
 

@@ -15,7 +15,7 @@ import ReactMarkdown from "react-markdown";
 import type { Components } from "react-markdown";
 import { ChatInput } from "@/components/chat-input";
 import { getChatHistory, setChatHistory } from "@/lib/redis-utils";
-import { useAuth } from "@clerk/nextjs";
+import { useAuth } from "@/lib/hooks/use-auth";
 
 type MessageRole = "user" | "assistant" | "system";
 

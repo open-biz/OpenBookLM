@@ -1,7 +1,9 @@
 import { Inter } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import "./globals.css";
-import { RootLayout } from "@/components/root-layout";
+import { cn } from "@/lib/utils";
+import { isGuestSession } from "@/lib/guest-utils";
+import { GuestBanner } from "@/components/guest-banner";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -14,14 +16,21 @@ export const metadata = {
   },
 };
 
-export default function Layout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const isGuest = await isGuestSession();
+
   return (
-    <ClerkProvider>
-      <html lang="en" className="dark">
-        <body className={`${inter.className} bg-[#1A1A1A] text-white`}>
-          <RootLayout>{children}</RootLayout>
-        </body>
-      </html>
-    </ClerkProvider>
+    <html lang="en" className="dark">
+      <body className={cn("min-h-screen bg-[#1A1A1A] text-white", inter.className)}>
+        <ClerkProvider>
+          {children}
+          {isGuest && <GuestBanner />}
+        </ClerkProvider>
+      </body>
+    </html>
   );
 }
