@@ -39,11 +39,12 @@ optimum>=1.23.3
 pydub>=0.25.1
 python-ffmpeg>=2.0.12
 
-# Cerebras dependencies
-cerebras_cloud_sdk>=1.16.0
-
 # New dependency
 aiofiles>=23.2.1
 beautifulsoup4>=4.12.2
 
+
+# Cerebras dependencies
+cerebras_cloud_sdk>=1.16.0
 #cerebras_pytorch>=2.4.0
+optillm>=0.1.4
