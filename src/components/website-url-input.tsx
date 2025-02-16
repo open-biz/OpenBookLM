@@ -93,7 +93,7 @@ export function WebsiteURLInput({
 
       <div className="space-y-4">
         <p className="text-gray-300">
-          Paste in a Web URL below to upload as a source in NotebookLM.
+          Paste in a Web URL below to upload as a source in OpenBookLM.
         </p>
 
         <div className="space-y-6">
