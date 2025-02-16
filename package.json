@@ -10,8 +10,7 @@
     "build": "SKIP_ENV_VALIDATION=1 next build",
     "start": "next start",
     "lint": "next lint",
-    "typecheck": "tsc --noEmit",
-    "db:connect": "./scripts/db-connect.sh"
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@cerebras/cerebras_cloud_sdk": "^1.16.0",
