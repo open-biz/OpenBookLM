@@ -3,9 +3,6 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "logs:backend": "kubectl logs -f -n openbooklm -c backend $(kubectl get pods -n openbooklm -l app=openbooklm -o jsonpath='{.items[0].metadata.name}')",
-    "logs:frontend": "kubectl logs -f -n openbooklm -c frontend $(kubectl get pods -n openbooklm -l app=openbooklm -o jsonpath='{.items[0].metadata.name}')",
-    "k8s:restart": "kubectl rollout restart deployment openbooklm -n openbooklm",
     "dev": "next dev",
     "build": "SKIP_ENV_VALIDATION=1 next build",
     "start": "next start",
