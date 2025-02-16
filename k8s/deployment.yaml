@@ -39,25 +39,9 @@ spec:
             - name: NODE_ENV
               value: 'production'
             - name: NEXT_PUBLIC_API_URL
-              value: 'http://openbooklm-backend.openbooklm.svc.cluster.local:8000/python/api'
+              value: 'http://172.234.2.105:8000'
             - name: NEXT_PUBLIC_BASE_URL
               value: 'http://143.42.127.58'
-            # Google API credentials
-            - name: NEXT_PUBLIC_GOOGLE_CLIENT_ID
-              valueFrom:
-                secretKeyRef:
-                  name: google-credentials
-                  key: NEXT_PUBLIC_GOOGLE_CLIENT_ID
-            - name: GOOGLE_CLIENT_SECRET
-              valueFrom:
-                secretKeyRef:
-                  name: google-credentials
-                  key: GOOGLE_CLIENT_SECRET
-            - name: NEXT_PUBLIC_GOOGLE_API_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: google-credentials
-                  key: NEXT_PUBLIC_GOOGLE_API_KEY
           resources:
             requests:
               cpu: '500m'
@@ -72,7 +56,7 @@ spec:
               apt-get update
               apt-get install -y git openssl libssl-dev ca-certificates
               npm install -g pnpm
-              git clone -b feat/connor/tmp-host https://github.com/open-biz/openbooklm.git
+              git clone -b main https://github.com/open-biz/openbooklm.git 
               cd openbooklm
               pnpm install
               npx prisma generate
