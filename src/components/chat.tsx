@@ -19,7 +19,7 @@ import { useAuth } from "@clerk/nextjs";
 
 type MessageRole = "user" | "assistant" | "system";
 
-interface Message {
+export interface Message {
   role: MessageRole;
   content: string;
 }
@@ -76,60 +76,6 @@ export const Chat = forwardRef<ChatRef, ChatProps>(
     const [messages, setMessages] = useState<Message[]>(initialMessages);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [debugInfo, setDebugInfo] = useState<any>(null);
-
-    const loadChatHistory = async () => {
-      if (!userId || !notebookId) return;
-
-      try {
-        console.log("Loading chat history for:", { userId, notebookId });
-        const response = await fetch(
-          `/api/chat/history?notebookId=${notebookId}`
-        );
-
-        if (!response.ok) throw new Error("Failed to load chat history");
-
-        const history = await response.json();
-        setDebugInfo({
-          key: `chat:${userId}:${notebookId}`,
-          historyLength: history?.length || 0,
-          history: history,
-        });
-
-        if (history && history.length > 0) {
-          setMessages(history);
-          console.log("Loaded messages:", history);
-        }
-      } catch (error) {
-        console.error("Error loading chat history:", error);
-        setError("Failed to load chat history");
-      }
-    };
-
-    const saveChatHistory = async (messages: Message[]) => {
-      if (!userId || !notebookId || messages.length === 0) return;
-
-      try {
-        const response = await fetch("/api/chat/history", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ messages, notebookId }),
-        });
-
-        if (!response.ok) throw new Error("Failed to save chat history");
-      } catch (error) {
-        console.error("Error saving chat history:", error);
-      }
-    };
-
-    useEffect(() => {
-      loadChatHistory();
-    }, [userId, notebookId]);
-
-    useEffect(() => {
-      saveChatHistory(messages);
-    }, [messages, userId, notebookId]);
-
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const [input, setInput] = useState("");
     const [isLoadingHistory, setIsLoadingHistory] = useState(true);
@@ -144,6 +90,7 @@ export const Chat = forwardRef<ChatRef, ChatProps>(
           const history = await getChatHistory(userId, notebookId);
           if (history && history.length > 0) {
             setMessages(history);
+            scrollToBottom();
           }
         } catch (error) {
           console.error("Failed to load chat history:", error);
@@ -156,13 +103,21 @@ export const Chat = forwardRef<ChatRef, ChatProps>(
       loadChatHistory();
     }, [userId, notebookId]);
 
-    const scrollToBottom = () => {
-      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-    };
+    // Scroll to bottom when initial messages are loaded
+    useEffect(() => {
+      if (initialMessages.length > 0) {
+        scrollToBottom();
+      }
+    }, [initialMessages]);
 
+    // Scroll to bottom when messages change
     useEffect(() => {
       scrollToBottom();
     }, [messages]);
+
+    const scrollToBottom = () => {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    };
 
     const sendMessage = async () => {
       if (!input.trim() || !userId) return;
@@ -181,27 +136,65 @@ export const Chat = forwardRef<ChatRef, ChatProps>(
           },
           body: JSON.stringify({
             messages: [...messages, userMessage],
-            notebookId, // Add notebookId to the request
+            notebookId,
             stream: true,
           }),
         });
 
         if (!response.ok) {
-          const error = await response.json();
-          throw new Error(error.error || "Failed to get response from AI");
+          const errorData = await response.json().catch(() => null);
+          throw new Error(
+            errorData?.error || 
+            `Server error: ${response.status} ${response.statusText}`
+          );
         }
 
-        const data = await response.json();
-        if (data.choices && data.choices[0]?.message) {
-          const assistantMessage: Message = {
-            role: "assistant",
-            content: data.choices[0].message.content,
-          };
-          setMessages((prevMessages) => [...prevMessages, assistantMessage]);
-        } else {
-          throw new Error("Invalid response format from AI");
+        const reader = response.body?.getReader();
+        if (!reader) throw new Error("Failed to get response stream");
+
+        let assistantMessage = { role: "assistant" as const, content: "" };
+        setMessages((prevMessages) => [...prevMessages, assistantMessage]);
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          // Convert the chunk to text
+          const chunk = new TextDecoder().decode(value);
+          try {
+            const data = JSON.parse(chunk);
+            console.log('Received chunk:', data); // Debug log
+            
+            if (data.error) {
+              throw new Error(data.error);
+            }
+            
+            // Handle different response formats
+            const content = 
+              data.choices?.[0]?.delta?.content || // OpenAI/Cerebras format
+              data.choices?.[0]?.message?.content || // Alternative format
+              data.content; // Simple format
+              
+            if (content) {
+              assistantMessage.content += content;
+              setMessages((prevMessages) => {
+                const newMessages = [...prevMessages];
+                newMessages[newMessages.length - 1] = { ...assistantMessage };
+                return newMessages;
+              });
+            }
+          } catch (e) {
+            console.error("Error parsing chunk:", e, "Raw chunk:", chunk);
+            if (e instanceof Error && e.message !== "Unexpected end of JSON input") {
+              throw e;
+            }
+          }
         }
       } catch (error) {
+        // Remove the assistant's message if there was an error
+        setMessages((prevMessages) => 
+          prevMessages.filter(msg => msg.content !== "")
+        );
         setError(
           error instanceof Error
             ? error.message
@@ -227,6 +220,7 @@ export const Chat = forwardRef<ChatRef, ChatProps>(
           },
           body: JSON.stringify({
             messages: [...messages, userMessage],
+            notebookId,
             stream: true,
           }),
         });
@@ -236,15 +230,46 @@ export const Chat = forwardRef<ChatRef, ChatProps>(
           throw new Error(error.error || "Failed to get response from AI");
         }
 
-        const data = await response.json();
-        if (data.choices && data.choices[0]?.message) {
-          const assistantMessage: Message = {
-            role: "assistant",
-            content: data.choices[0].message.content,
-          };
-          setMessages((prevMessages) => [...prevMessages, assistantMessage]);
-        } else {
-          throw new Error("Invalid response format from AI");
+        const reader = response.body?.getReader();
+        if (!reader) throw new Error("Failed to get response stream");
+
+        let assistantMessage = { role: "assistant" as const, content: "" };
+        setMessages((prevMessages) => [...prevMessages, assistantMessage]);
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          // Convert the chunk to text
+          const chunk = new TextDecoder().decode(value);
+          try {
+            const data = JSON.parse(chunk);
+            console.log('Received chunk:', data); // Debug log
+            
+            if (data.error) {
+              throw new Error(data.error);
+            }
+            
+            // Handle different response formats
+            const content = 
+              data.choices?.[0]?.delta?.content || // OpenAI/Cerebras format
+              data.choices?.[0]?.message?.content || // Alternative format
+              data.content; // Simple format
+              
+            if (content) {
+              assistantMessage.content += content;
+              setMessages((prevMessages) => {
+                const newMessages = [...prevMessages];
+                newMessages[newMessages.length - 1] = { ...assistantMessage };
+                return newMessages;
+              });
+            }
+          } catch (e) {
+            console.error("Error parsing chunk:", e, "Raw chunk:", chunk);
+            if (e instanceof Error && e.message !== "Unexpected end of JSON input") {
+              throw e;
+            }
+          }
         }
       } catch (error) {
         setError(error instanceof Error ? error.message : "An error occurred");
@@ -259,13 +284,6 @@ export const Chat = forwardRef<ChatRef, ChatProps>(
 
     return (
       <div className="flex flex-col h-full">
-        {process.env.NODE_ENV === "development" && debugInfo && (
-          <div className="p-4 bg-gray-800 text-xs rounded-lg mb-4">
-            <pre className="whitespace-pre-wrap break-words font-mono text-gray-300 overflow-x-auto">
-              {JSON.stringify(debugInfo, null, 2)}
-            </pre>
-          </div>
-        )}
         {isLoadingHistory ? (
           <div className="flex items-center justify-center h-full">
             <div className="flex items-center space-x-2">

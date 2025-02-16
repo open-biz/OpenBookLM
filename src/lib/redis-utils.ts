@@ -119,7 +119,7 @@ export async function setChatHistory(
   if (!redis) return null;
 
   const key = `chat:${userId}:${notebookId}`;
-  await redis.set(key, JSON.stringify(messages));
+  await redis.set(key, JSON.stringify({ messages }));
   await redis.expire(key, 60 * 60 * 24 * 7); // 7 days
 }
 
@@ -129,7 +129,7 @@ export async function getChatHistory(userId: string, notebookId: string) {
 
   const key = `chat:${userId}:${notebookId}`;
   const history = await redis.get(key);
-  return history ? JSON.parse(history) : [];
+  return history ? JSON.parse(history) : { messages: [] };
 }
 
 export async function clearChatHistory(userId: string, notebookId: string) {
@@ -278,6 +278,32 @@ export async function getAllNotebooks(userId: string) {
 
     return null;
   }
+}
+
+/**
+ * Delete all Redis keys related to a notebook
+ */
+export async function deleteNotebookFromRedis(userId: string, notebookId: string) {
+  const redis = getRedisClient();
+  if (!redis) return;
+
+  const keys = [
+    `notebook:${userId}:${notebookId}`,
+    `notebooks:${userId}`,
+    `sources:${userId}:${notebookId}`,
+    `chat:${userId}:${notebookId}`
+  ];
+
+  await Promise.all([
+    ...keys.map(key => redis.del(key)),
+    // Also remove from the all notebooks cache
+    getAllNotebooks(userId).then(notebooks => {
+      if (notebooks) {
+        const filtered = notebooks.filter(n => n.id !== notebookId);
+        return setAllNotebooks(userId, filtered);
+      }
+    })
+  ]);
 }
 
 export async function checkRedisConnection() {

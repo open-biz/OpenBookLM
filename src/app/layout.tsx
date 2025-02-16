@@ -7,7 +7,7 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
   title: "OpenBookLM",
-  description: "Open source version of NotebookLM",
+  description: "Open source version of OpenBookLM",
   icons: {
     icon: '/favicon.ico',
     apple: '/logo.png',

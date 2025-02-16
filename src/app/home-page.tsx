@@ -9,10 +9,19 @@ import {
   MoreVertical,
   PanelLeftClose,
   PanelRightClose,
+  Trash2,
 } from "lucide-react";
 import { CreateNotebookDialog } from "@/components/create-notebook-dialog";
 import { Card } from "@/components/ui/card";
 import { ShareDialog } from "@/components/share-dialog";
+import { Plus, ChevronDown } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { toast } from "sonner";
 
 interface Notebook {
   id: string;
@@ -29,175 +38,179 @@ export default function HomePage({
 }: {
   notebooks: Notebook[];
 }) {
+  const [notebooks, setNotebooks] = useState(initialNotebooks);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
-  const [leftSidebarOpen, setLeftSidebarOpen] = useState(true);
-  const [rightSidebarOpen, setRightSidebarOpen] = useState(true);
+  const [deletingNotebookId, setDeletingNotebookId] = useState<string | null>(null);
+
+  const refreshNotebooks = async () => {
+    // Start fetching in the background
+    fetch('/api/notebooks')
+      .then(response => response.json())
+      .then(data => {
+        setNotebooks(data);
+      })
+      .catch(error => {
+        console.error('Error fetching notebooks:', error);
+      });
+  };
+
+  const handleNotebookCreated = (newNotebook: Notebook) => {
+    // Optimistically add the new notebook to the list
+    setNotebooks(prev => [newNotebook, ...prev]);
+    
+    // Refresh in the background to get the latest state
+    refreshNotebooks();
+  };
+
+  const handleDeleteNotebook = async (notebookId: string) => {
+    // Optimistically remove the notebook
+    setDeletingNotebookId(notebookId);
+    const previousNotebooks = [...notebooks];
+    setNotebooks(prev => prev.filter(n => n.id !== notebookId));
+
+    try {
+      const response = await fetch(`/api/notebooks/${notebookId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        const error = await response.text();
+        throw new Error(error || 'Failed to delete notebook');
+      }
+
+      toast.success('Notebook deleted successfully');
+    } catch (error) {
+      console.error('Error deleting notebook:', error);
+      toast.error('Failed to delete notebook');
+      
+      // Revert the optimistic update with the exact previous state
+      setNotebooks(previousNotebooks);
+    } finally {
+      setDeletingNotebookId(null);
+    }
+  };
 
   const getNotebookEmoji = (notebook: Notebook) => {
     if (notebook.title.includes("Introduction")) return "👋";
     return "📔";
   };
 
-  return (
-    <div className="flex flex-col min-h-[calc(100vh-56px)]">
-      <div
-        className={`p-12 transition-all duration-300 
-        ${leftSidebarOpen ? "ml-28" : "ml-0"} 
-        ${rightSidebarOpen ? "mr-8" : "mr-0"} 
-        mt-28`}
-      >
-        <div className="flex items-center justify-between mb-6">
-          <h1
-            className="text-[60px] leading-[1.2] font-[500] font-['Google_Sans','Helvetica_Neue',sans-serif] 
-            bg-gradient-to-r from-[#3882f6] via-[#328fb7] via-[#2e9a80] to-[#2e9a80] 
-            inline-block text-transparent bg-clip-text"
-          >
-            Welcome to OpenBookLM
-          </h1>
-        </div>
+  const getGradientClass = (index: number) => {
+    const gradients = [
+      "bg-gradient-to-br from-yellow-900/40 via-gray-900 to-gray-900",
+      "bg-gradient-to-br from-blue-900/40 via-gray-900 to-gray-900",
+      "bg-gradient-to-br from-red-900/40 via-gray-900 to-gray-900",
+      "bg-gradient-to-br from-green-900/40 via-gray-900 to-gray-900"
+    ];
+    return gradients[index % gradients.length];
+  };
 
-        <h2 className="text-[28px] font-normal text-white mb-6">
-          My Notebooks
-        </h2>
-        <hr className="border-t border-[#2A2A2A] mb-6" />
+  return (
+    <div className="min-h-screen bg-[#1a1a1a] text-white">
+      <div className="max-w-[1400px] mx-auto px-16 py-16">
+        <h1 className="text-[56px] font-medium leading-tight mb-16">
+          <span className="text-[#4285f4]">Welcome to </span>
+          <span className="text-[#8ab4f8]">OpenBookLM</span>
+        </h1>
+        
         <div>
           <div className="flex items-center justify-between mb-6">
-            <CreateNotebookDialog></CreateNotebookDialog>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="ghost"
-                size="sm"
-                className={`text-gray-400 hover:text-white ${
-                  viewMode === "grid" ? "bg-[#2A2A2A]" : ""
-                }`}
-                onClick={() => setViewMode("grid")}
+            <h2 className="text-[22px] font-medium text-gray-100">My Notebooks</h2>
+            <div className="flex items-center gap-3">
+              <CreateNotebookDialog onNotebookCreated={handleNotebookCreated}>
+                <Button 
+                  size="sm" 
+                  className="flex items-center gap-2 bg-[#4285f4] hover:bg-[#4285f4]/90 text-white rounded-full px-4 h-9"
+                >
+                  <Plus className="h-4 w-4" />
+                  Create new
+                </Button>
+              </CreateNotebookDialog>
+              <div className="flex items-center gap-0.5 bg-[#2A2A2A] rounded-lg p-1">
+                <Button
+                  size="sm"
+                  variant={viewMode === "grid" ? "secondary" : "ghost"}
+                  className={`h-8 w-8 p-0 rounded-md ${
+                    viewMode === "grid" ? "bg-[#202020]" : ""
+                  }`}
+                  onClick={() => setViewMode("grid")}
+                >
+                  <Grid2X2 className="h-4 w-4" />
+                </Button>
+                <Button
+                  size="sm"
+                  variant={viewMode === "list" ? "secondary" : "ghost"}
+                  className={`h-8 w-8 p-0 rounded-md ${
+                    viewMode === "list" ? "bg-[#202020]" : ""
+                  }`}
+                  onClick={() => setViewMode("list")}
+                >
+                  <List className="h-4 w-4" />
+                </Button>
+              </div>
+              <Button 
+                size="sm" 
+                variant="ghost" 
+                className="text-gray-400 hover:text-gray-300 h-9 px-3"
               >
-                <Grid2X2 className="h-4 w-4" />
+                Most recent
+                <ChevronDown className="h-4 w-4 ml-1" />
               </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                className={`text-gray-400 hover:text-white ${
-                  viewMode === "list" ? "bg-[#2A2A2A]" : ""
-                }`}
-                onClick={() => setViewMode("list")}
-              >
-                <List className="h-4 w-4" />
-              </Button>
-              <select className="bg-[#1A1A1A] text-gray-400 border border-[#2A2A2A] rounded px-2 py-1 text-sm">
-                <option>Most recent</option>
-              </select>
             </div>
           </div>
 
-          {viewMode === "list" ? (
-            <div className="list-view">
-              <table className="w-full border-separate border-spacing-0">
-                <thead>
-                  <tr className="text-gray-400 text-sm">
-                    <th className="text-left font-medium py-2 px-4">Title</th>
-                    <th className="text-left font-medium w-32 py-2 px-4">
-                      Sources
-                    </th>
-                    <th className="text-left font-medium w-40 py-2 px-4">
-                      Created
-                    </th>
-                    <th className="text-left font-medium w-24 py-2 px-4">
-                      Role
-                    </th>
-                    <th className="w-32 py-2 px-4"></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {initialNotebooks.map((notebook) => (
-                    <tr
-                      key={notebook.id}
-                      className="group hover:bg-[#2A2A2A] transition-colors"
-                    >
-                      <td className="py-2 px-4">
-                        <Link
-                          href={`/notebook/${notebook.id}`}
-                          className="flex items-center gap-3 text-white hover:text-blue-400"
-                        >
-                          <span>📓</span>
-                          {notebook.title}
-                        </Link>
-                      </td>
-                      <td className="py-2 px-4 text-gray-400">
-                        {notebook.sources.length}{" "}
-                        {notebook.sources.length === 1 ? "Source" : "Sources"}
-                      </td>
-                      <td className="py-2 px-4 text-gray-400">
-                        {new Date(notebook.updatedAt).toLocaleDateString()}
-                      </td>
-                      <td className="py-2 px-4 text-gray-400">
-                        {notebook.role === "Owner" ? (
-                          "Owner"
-                        ) : (
-                          <div className="flex items-center gap-1">
-                            <span>Reader</span>
-                            <span className="text-xs">·</span>
-                            <span className="text-xs">
-                              by {notebook.ownerName}
-                            </span>
-                          </div>
-                        )}
-                      </td>
-                      <td className="py-2 px-4 flex justify-end gap-2">
-                        {notebook.role === "Owner" && (
-                          <ShareDialog notebookId={notebook.id} />
-                        )}
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="opacity-0 group-hover:opacity-100 transition-opacity"
-                        >
-                          <MoreVertical className="h-4 w-4" />
-                        </Button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ) : (
-            <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              {initialNotebooks.map((notebook) => (
-                <div key={notebook.id} className="relative">
-                  <Link href={`/notebook/${notebook.id}`}>
-                    <Card className="aspect-[1.4/1] p-6 hover:bg-[#2A2A2A] transition-colors border-[#333333] bg-[#1E1E1E] group">
-                      <div className="flex flex-col h-full">
-                        <div className="mb-2">
-                          <span className="text-2xl">
-                            {getNotebookEmoji(notebook)}
-                          </span>
-                        </div>
-                        <h3 className="text-lg font-medium text-white mb-2">
-                          {notebook.title}
-                        </h3>
-                        <div className="mt-auto">
-                          <p className="text-sm text-gray-400">
-                            {new Date(notebook.updatedAt).toLocaleDateString()}{" "}
-                            · {notebook.sources.length} sources
-                          </p>
-                          {notebook.role !== "Owner" && (
-                            <p className="text-xs text-gray-500 mt-1">
-                              Shared by {notebook.ownerName}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                    </Card>
-                  </Link>
-                  {notebook.role === "Owner" && (
-                    <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <ShareDialog notebookId={notebook.id} />
-                    </div>
-                  )}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {notebooks.map((notebook, index) => (
+              <Link
+                key={notebook.id}
+                href={`/notebook/${notebook.id}`}
+                className="group relative rounded-2xl overflow-hidden aspect-[4/3] p-6 bg-gradient-to-br from-gray-800/50 via-gray-900 to-gray-900 hover:ring-1 hover:ring-white/10 transition-all"
+              >
+                <div className="absolute top-3 right-3">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity text-gray-400 hover:text-white rounded-full"
+                        disabled={deletingNotebookId === notebook.id}
+                      >
+                        <MoreVertical className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-40">
+                      <DropdownMenuItem
+                        className="text-red-500 focus:text-red-500"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleDeleteNotebook(notebook.id);
+                        }}
+                      >
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Delete
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
-              ))}
-            </div>
-          )}
+                <div className="flex flex-col h-full">
+                  <div>
+                    <div className="text-2xl mb-3">{getNotebookEmoji(notebook)}</div>
+                    <h3 className="text-[17px] font-medium text-gray-100 line-clamp-2 leading-snug">
+                      {notebook.title}
+                    </h3>
+                  </div>
+                  <div className="flex items-center text-sm text-gray-500 mt-auto pt-4">
+                    <span>{new Date(notebook.updatedAt).toLocaleDateString()}</span>
+                    <span className="mx-2">•</span>
+                    <span>{notebook.sources.length} source{notebook.sources.length !== 1 ? 's' : ''}</span>
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
         </div>
       </div>
     </div>
