@@ -2,7 +2,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: openbooklm
-  namespace: openbooklm
   labels:
     app: openbooklm
 spec:
@@ -15,7 +14,10 @@ spec:
       labels:
         app: openbooklm
     spec:
+      imagePullSecrets:
+      - name: ghcr-secret
       containers:
+
         # Frontend container
         - name: frontend
           image: node:20-slim
@@ -33,15 +35,23 @@ spec:
                   name: clerk-credentials
                   key: CLERK_SECRET_KEY
             - name: DATABASE_URL
-              value: 'postgresql://postgres:postgres_password@postgres.openbooklm.svc.cluster.local:5432/openbooklm'
-            - name: REDIS_URL
-              value: 'redis://redis:6379'
-            - name: NODE_ENV
-              value: 'production'
-            - name: NEXT_PUBLIC_API_URL
-              value: 'http://172.234.2.105:8000'
-            - name: NEXT_PUBLIC_BASE_URL
-              value: 'http://143.42.127.58'
+              value: postgresql://postgres:CKcomXQCBUCFMxhgkcHynsvqPzRDzCpd@autorack.proxy.rlwy.net:53649/railway
+            - name: UPSTASH_REDIS_REST_URL
+              value: https://darling-muskrat-30013.upstash.io
+            - name: UPSTASH_REDIS_REST_TOKEN
+              value: AXU9AAIjcDFkZTQzMWMxZjQ1NTA0ZGIwYTBkZTUzOWZiOTNiNjk0MXAxMA
+          command: ['/bin/sh', '-c']
+          args:
+            - |
+              apt-get update
+              apt-get install -y git openssl libssl-dev ca-certificates
+              npm install -g pnpm
+              git clone -b feat/connor/fe-be-connect-demo-api https://github.com/open-biz/openbooklm.git 
+              cd openbooklm
+              pnpm install
+              npx prisma generate
+              pnpm build
+              pnpm start
           resources:
             requests:
               cpu: '500m'
@@ -49,21 +59,22 @@ spec:
             limits:
               cpu: '1000m'
               memory: '2Gi'
-          command: ['/bin/sh', '-c']
-          args:
-            - |
-              set -e
-              apt-get update
-              apt-get install -y git openssl libssl-dev ca-certificates
-              npm install -g pnpm
-              git clone -b main https://github.com/open-biz/openbooklm.git 
-              cd openbooklm
-              pnpm install
-              npx prisma generate
-              pnpm build
-              pnpm start
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 3000
+            initialDelaySeconds: 120
+            periodSeconds: 10
+            timeoutSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 3000
+            initialDelaySeconds: 180
+            periodSeconds: 15
+            timeoutSeconds: 5
 
-        # Backend container (single definition)
+        # Backend container
         - name: backend
           image: python:3.12-slim
           ports:
@@ -84,25 +95,65 @@ spec:
                 secretKeyRef:
                   name: api-credentials
                   key: OPENAI_API_KEY
-          # Backend container
           command: ['/bin/sh', '-c']
           args:
             - |
-              set -e
               apt-get update
-              apt-get install -y git python3-pip python3-venv ffmpeg libsndfile1 libportaudio2
-              git clone -b main https://github.com/open-biz/openbooklm.git
+              apt-get install -y git python3-pip ffmpeg libsndfile1 libportaudio2
+              git clone -b feat/connor/fe-be-connect-demo-api https://github.com/open-biz/openbooklm.git
               cd openbooklm
-              chmod +x setup/create_venv.sh
-              ./setup/create_venv.sh
-              source venv/bin/activate
-              # Run the Groq server
-              python3 backend/groq/main.py
+              pip install -r requirements.txt
+              python3 -m uvicorn backend.api.main:app --host 0.0.0.0 --port 8000
           resources:
             requests:
               cpu: '500m'
-              memory: '4Gi'
+              memory: '2Gi'
             limits:
               cpu: '1000m'
-              memory: '8Gi'
-          # Removed readinessProbe and livenessProbe
+              memory: '4Gi'
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 8000
+            initialDelaySeconds: 60
+            periodSeconds: 10
+            timeoutSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 8000
+            initialDelaySeconds: 120
+            periodSeconds: 15
+            timeoutSeconds: 5
+
+      - name: openbooklm
+        image: ghcr.io/open-biz/openbooklm:sha-96454f5f31b03236eada4c4f5fe53a97b0445565
+        ports:
+        - containerPort: 3000
+        envFrom:
+        - configMapRef:
+            name: openbooklm-config
+        - secretRef:
+            name: openbooklm-secrets
+        - secretRef:
+            name: clerk-credentials
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "256Mi"
+          limits:
+            cpu: "500m"
+            memory: "512Mi"
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 3000
+          initialDelaySeconds: 10
+          periodSeconds: 5
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 3000
+          initialDelaySeconds: 15
+          periodSeconds: 10
+

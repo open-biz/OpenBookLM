@@ -2,30 +2,22 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: openbooklm-ingress
-  namespace: openbooklm
   annotations:
     cert-manager.io/cluster-issuer: letsencrypt-prod
+    kubernetes.io/ingress.class: nginx
 spec:
-  ingressClassName: nginx
   tls:
-    - hosts:
-        - openbooklm.com
-      secretName: openbooklm-tls
+  - hosts:
+    - openbooklm.com
+    secretName: openbooklm-tls
   rules:
-    - host: openbooklm.com
-      http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: openbooklm-frontend
-                port:
-                  number: 3000
-          - path: /api
-            pathType: Prefix
-            backend:
-              service:
-                name: openbooklm-backend
-                port:
-                  number: 8000
+  - host: openbooklm.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: openbooklm
+            port:
+              number: 80
