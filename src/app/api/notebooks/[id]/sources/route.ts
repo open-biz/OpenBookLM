@@ -41,7 +41,7 @@ export async function POST(
         backendFormData.append("userId", userId);
 
         try {
-          const backendResponse = await fetch(`/python/api/process-pdf`, {
+          const backendResponse = await fetch(`/python/process-pdf`, {
             method: "POST",
             body: backendFormData,
           });
