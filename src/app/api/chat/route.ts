@@ -5,6 +5,9 @@ import Cerebras from "@cerebras/cerebras_cloud_sdk";
 import { setChatHistory } from "@/lib/redis-utils";
 import { prisma } from "@/lib/db";
 import { DEFAULT_MODEL, MODEL_SETTINGS } from "@/lib/ai-config";
+import { getOrCreateUser } from "@/lib/auth";
+import { CreditManager } from "@/lib/credit-manager";
+import { UsageType } from "@prisma/client";
 
 const getClient = () => {
   if (!process.env.CEREBRAS_API_KEY) {
@@ -26,8 +29,8 @@ interface ResponseChunk {
 
 export async function POST(req: Request) {
   try {
-    const { userId } = await auth();
-    if (!userId) {
+    const user = await getOrCreateUser();
+    if (!user) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
@@ -39,6 +42,23 @@ export async function POST(req: Request) {
       return NextResponse.json(
         { error: "Invalid messages format" },
         { status: 400 }
+      );
+    }
+
+    // Calculate token usage (approximate)
+    const totalTokens = messages.reduce((sum, msg) => sum + msg.content.length / 4, 0);
+    
+    // Check credit availability
+    const hasCredits = await CreditManager.checkCredits(
+      user.id,
+      UsageType.CONTEXT_TOKENS,
+      totalTokens
+    );
+
+    if (!hasCredits) {
+      return NextResponse.json(
+        { error: "Insufficient credits" },
+        { status: 402 }
       );
     }
 
@@ -55,8 +75,16 @@ export async function POST(req: Request) {
       },
     });
 
+    // Use credits
+    await CreditManager.useCredits(
+      user.id,
+      UsageType.CONTEXT_TOKENS,
+      totalTokens,
+      notebookId
+    );
+
     // Then store in Redis
-    await setChatHistory(userId, notebookId, messages);
+    await setChatHistory(user.id, notebookId, messages);
 
     const client = getClient();
     console.log('Sending request with messages:', messages);

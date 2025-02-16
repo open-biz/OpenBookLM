@@ -14,127 +14,158 @@ datasource db {
 }
 
 model User {
-  id            String     @id @default(cuid())
-  clerkId       String     @unique
-  email         String     @unique
-  name          String?
-  notebooks     Notebook[]
-  bookmarks     Notebook[] @relation("BookmarkedNotebooks")
-  sharedWithMe  Notebook[] @relation("SharedNotebooks")
-  createdAt     DateTime   @default(now())
-  updatedAt     DateTime   @updatedAt
+  id           String     @id @default(cuid())
+  clerkId      String?    @unique
+  email        String     @unique
+  name         String?
+  isGuest      Boolean    @default(false)
+  credits      Credit[]
+  usageHistory Usage[]
+  notebooks    Notebook[]
+  bookmarks    Notebook[] @relation("BookmarkedNotebooks")
+  sharedWithMe Notebook[] @relation("SharedNotebooks")
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
 }
 
 model Notebook {
-  id          String     @id @default(cuid())
-  title       String
-  description String?
-  content     String?    @db.Text
-  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId      String
-  bookmarkedBy User[]    @relation("BookmarkedNotebooks")
-  sharedWith  User[]     @relation("SharedNotebooks")
-  isPublic    Boolean    @default(false)
-  sources     Source[]
-  notes       Note[]
-  chats       Chat[]
-  tags        Tag[]
-  isArchived  Boolean    @default(false)
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  id           String   @id @default(cuid())
+  title        String
+  description  String?
+  content      String?  @db.Text
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId       String
+  bookmarkedBy User[]   @relation("BookmarkedNotebooks")
+  sharedWith   User[]   @relation("SharedNotebooks")
+  isPublic     Boolean  @default(false)
+  sources      Source[]
+  notes        Note[]
+  chats        Chat[]
+  tags         Tag[]
+  usages       Usage[]
+  isArchived   Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   @@index([userId])
 }
 
 model Source {
-  id          String    @id @default(cuid())
-  title       String
-  content     String    @db.Text
-  type        SourceType
-  url         String?
-  notebook    Notebook  @relation(fields: [notebookId], references: [id], onDelete: Cascade)
-  notebookId  String
-  chunks      Chunk[]
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id         String     @id @default(cuid())
+  title      String
+  content    String     @db.Text
+  type       SourceType
+  url        String?
+  notebook   Notebook   @relation(fields: [notebookId], references: [id], onDelete: Cascade)
+  notebookId String
+  chunks     Chunk[]
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
 
   @@index([notebookId])
 }
 
 model Chunk {
-  id          String    @id @default(cuid())
-  content     String    @db.Text
-  embedding   Json?     // Vector embedding for semantic search
-  source      Source    @relation(fields: [sourceId], references: [id], onDelete: Cascade)
-  sourceId    String
-  startIndex  Int
-  endIndex    Int
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id         String   @id @default(cuid())
+  content    String   @db.Text
+  embedding  Json? // Vector embedding for semantic search
+  source     Source   @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  sourceId   String
+  startIndex Int
+  endIndex   Int
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
   @@index([sourceId])
 }
 
 model Chat {
-  id          String       @id @default(cuid())
-  title       String?
-  notebook    Notebook     @relation(fields: [notebookId], references: [id], onDelete: Cascade)
-  notebookId  String
-  messages    Message[]
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
+  id         String    @id @default(cuid())
+  title      String?
+  notebook   Notebook  @relation(fields: [notebookId], references: [id], onDelete: Cascade)
+  notebookId String
+  messages   Message[]
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
 
   @@index([notebookId])
 }
 
 model Message {
-  id          String    @id @default(cuid())
-  content     String    @db.Text
-  role        Role
-  chat        Chat      @relation(fields: [chatId], references: [id], onDelete: Cascade)
-  chatId      String
-  citations   Citation[]
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id        String     @id @default(cuid())
+  content   String     @db.Text
+  role      Role
+  chat      Chat       @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  chatId    String
+  citations Citation[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
 
   @@index([chatId])
 }
 
 model Citation {
-  id          String    @id @default(cuid())
-  message     Message   @relation(fields: [messageId], references: [id], onDelete: Cascade)
-  messageId   String
-  chunkId     String
-  startIndex  Int
-  endIndex    Int
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id         String   @id @default(cuid())
+  message    Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  messageId  String
+  chunkId    String
+  startIndex Int
+  endIndex   Int
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
   @@index([messageId])
 }
 
 model Note {
-  id          String    @id @default(cuid())
-  title       String
-  content     String    @db.Text
-  notebook    Notebook  @relation(fields: [notebookId], references: [id], onDelete: Cascade)
-  notebookId  String
-  tags        Tag[]
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id         String   @id @default(cuid())
+  title      String
+  content    String   @db.Text
+  notebook   Notebook @relation(fields: [notebookId], references: [id], onDelete: Cascade)
+  notebookId String
+  tags       Tag[]
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
   @@index([notebookId])
 }
 
 model Tag {
-  id          String     @id @default(cuid())
-  name        String
-  notebooks   Notebook[]
-  notes       Note[]
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  id        String     @id @default(cuid())
+  name      String
+  notebooks Notebook[]
+  notes     Note[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
 
   @@unique([name])
+}
+
+model Credit {
+  id        String     @id @default(cuid())
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  amount    Int
+  type      CreditType
+  expiresAt DateTime?
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  @@index([userId])
+}
+
+model Usage {
+  id         String    @id @default(cuid())
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId     String
+  type       UsageType
+  amount     Int
+  notebook   Notebook? @relation(fields: [notebookId], references: [id])
+  notebookId String?
+  createdAt  DateTime  @default(now())
+
+  @@index([userId])
+  @@index([createdAt])
 }
 
 enum SourceType {
@@ -149,4 +180,16 @@ enum Role {
   USER
   ASSISTANT
   SYSTEM
+}
+
+enum CreditType {
+  TRIAL
+  COMMUNITY
+  COMPUTE
+}
+
+enum UsageType {
+  AUDIO_GENERATION
+  DOCUMENT_PROCESSING
+  CONTEXT_TOKENS
 }
