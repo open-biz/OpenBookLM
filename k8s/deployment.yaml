@@ -91,24 +91,18 @@ spec:
               set -e
               apt-get update
               apt-get install -y git python3-pip python3-venv ffmpeg libsndfile1 libportaudio2
-              git clone -b feat/connor/tmp-host https://github.com/open-biz/openbooklm.git
+              git clone -b main https://github.com/open-biz/openbooklm.git
               cd openbooklm
               chmod +x setup/create_venv.sh
-              # Install packages in smaller groups to manage memory better
-              python3 -m venv venv
-              . venv/bin/activate
-              pip install --no-cache-dir -U pip setuptools wheel
-              # Install core dependencies first
-              pip install --no-cache-dir torch transformers scipy numpy
-              # Install remaining packages
-              pip install --no-cache-dir -r requirements.txt
+              ./setup/create_venv.sh
+              source venv/bin/activate
               # Run the Groq server
               python3 backend/groq/main.py
           resources:
             requests:
               cpu: '500m'
-              memory: '8Gi' # Increased from 4Gi
+              memory: '4Gi'
             limits:
               cpu: '1000m'
-              memory: '16Gi' # Increased from 8Gi
+              memory: '8Gi'
           # Removed readinessProbe and livenessProbe

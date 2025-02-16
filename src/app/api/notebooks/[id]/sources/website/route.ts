@@ -32,7 +32,7 @@ export async function POST(
     });
 
     // Send to backend for processing
-    const backendResponse = await fetch(`python/website`, {
+    const backendResponse = await fetch(`${process.env.BACKEND_URL}/website`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
