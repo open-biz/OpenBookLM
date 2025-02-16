@@ -42,7 +42,7 @@ export async function POST(
 
         try {
           const backendResponse = await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL}/process-pdf`,
+            `${process.env.BACKEND_URL}/api/process-pdf`,
             {
               method: "POST",
               body: backendFormData,
