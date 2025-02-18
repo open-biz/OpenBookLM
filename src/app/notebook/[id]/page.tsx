@@ -37,6 +37,7 @@ import { EditableTitle } from "@/components/editable-title";
 import { AddNoteDialog } from "@/components/add-note-dialog";
 import { NoteModal } from "@/components/note-modal";
 import { ShareDialog } from "@/components/share-dialog";
+import { SourceViewer } from "@/components/source-viewer";
 
 interface Notebook {
   id: string;
@@ -142,7 +143,18 @@ export default function NotebookPage({ params }: { params: { id: string } }) {
       setIsGeneratingAudio(false);
     }
   };
+  const [selectedSource, setSelectedSource] = useState<{
+    title: string;
+    content: string;
+  } | null>(null);
 
+  // Update the handler function to just set the source content
+  const handleSourceClick = (source: Source) => {
+    setSelectedSource({
+      title: source.title,
+      content: source.content,
+    });
+  };
   if (loading) {
     return (
       <div className="flex items-center justify-center h-[calc(100vh-56px)] bg-[#1C1C1C]">
@@ -217,15 +229,20 @@ export default function NotebookPage({ params }: { params: { id: string } }) {
             {/* Sources content */}
             <div className="mb-4">
               {notebook?.sources?.map((source) => (
-                <SummaryView
+                <div
                   key={source.id}
-                  summary={{
-                    content: source.content,
-                    metadata: {
-                      sourceTitle: source.title,
-                    },
-                  }}
-                />
+                  onClick={() => handleSourceClick(source)}
+                  className="cursor-pointer"
+                >
+                  <SummaryView
+                    summary={{
+                      content: source.content,
+                      metadata: {
+                        sourceTitle: source.title,
+                      },
+                    }}
+                  />
+                </div>
               ))}
             </div>
             {/* Add source button and dialog */}
@@ -312,7 +329,14 @@ export default function NotebookPage({ params }: { params: { id: string } }) {
 
         {/* Chat Panel */}
         <div className="flex-1 bg-[#1C1C1C]">
-          <Chat ref={chatRef} notebookId={params.id} />
+          {selectedSource ? (
+            <SourceViewer
+              source={selectedSource}
+              onClose={() => setSelectedSource(null)}
+            />
+          ) : (
+            <Chat ref={chatRef} notebookId={params.id} />
+          )}
         </div>
 
         {/* Studio Panel */}

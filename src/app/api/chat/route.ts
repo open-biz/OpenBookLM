@@ -32,7 +32,49 @@ export async function POST(req: Request) {
       );
     }
 
-    // Save to database first
+    // Get the source content from the notebook
+    const notebook = await prisma.notebook.findUnique({
+      where: { id: notebookId },
+      include: { sources: true },
+    });
+
+    // Prepare the context with source content first
+    const sourceContexts = notebook?.sources?.map(source => ({
+      role: "system",
+      content: `Source: ${source.title}\n\n${source.content}`,
+    })) || [];
+
+    // Calculate remaining space for chat messages
+    const MAX_CHARS = 6000;
+    const sourceChars = sourceContexts.reduce((acc, src) => acc + src.content.length, 0);
+    const remainingChars = MAX_CHARS - sourceChars;
+
+    // Get the last message (current user query)
+    const lastMessage = messages[messages.length - 1];
+
+    // Prepare truncated chat history
+    const chatHistory = [];
+    let currentChars = lastMessage.content.length;
+
+    // Add messages from newest to oldest until we hit the limit
+    for (let i = messages.length - 2; i >= 0 && currentChars < remainingChars; i--) {
+      const msg = messages[i];
+      if (currentChars + msg.content.length <= remainingChars) {
+        chatHistory.unshift(msg);
+        currentChars += msg.content.length;
+      } else {
+        break;
+      }
+    }
+
+    // Combine sources and chat history
+    const finalMessages = [
+      ...sourceContexts,
+      ...chatHistory,
+      lastMessage
+    ];
+
+    // Save to database
     await prisma.chat.create({
       data: {
         notebookId,
@@ -45,15 +87,12 @@ export async function POST(req: Request) {
       },
     });
 
-    // Then store in Redis
+    // Store in Redis
     await setChatHistory(userId, notebookId, messages);
 
     const client = getClient();
     const completionResponse = await client.chat.completions.create({
-      messages: messages.map((msg) => ({
-        role: msg.role,
-        content: msg.content,
-      })),
+      messages: finalMessages,
       model: "llama3.3-70b",
       temperature: 0.7,
       max_tokens: 1000,
@@ -62,6 +101,12 @@ export async function POST(req: Request) {
     return NextResponse.json(completionResponse);
   } catch (error) {
     console.error("[CHAT_ERROR]", error);
+    if (error.error?.code === "context_length_exceeded") {
+      return NextResponse.json(
+        { error: "Message history too long. Some older messages have been truncated." },
+        { status: 400 }
+      );
+    }
     return new NextResponse("Internal Error", { status: 500 });
   }
 }

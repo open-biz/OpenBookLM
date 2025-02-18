@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { useDropzone } from "react-dropzone";
 import {
   Dialog,
@@ -42,6 +42,16 @@ interface UploadProgress {
   };
 }
 
+// Add this import at the top with other imports
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
+
 export function CreateNotebookDialog({ children }: CreateNotebookDialogProps) {
   const [files, setFiles] = useState<File[]>([]);
   const [showPasteText, setShowPasteText] = useState(false);
@@ -54,6 +64,48 @@ export function CreateNotebookDialog({ children }: CreateNotebookDialogProps) {
   const [isPickerOpen, setIsPickerOpen] = useState(false);
   const router = useRouter();
   const [uploadProgress, setUploadProgress] = useState<UploadProgress>({});
+  const [selectedProvider, setSelectedProvider] = useState<string>("groq");
+  const [providerHealth, setProviderHealth] = useState<Record<string, boolean>>(
+    {
+      groq: false,
+      cerebras: false,
+    }
+  );
+
+  // Add health check effect
+  useEffect(() => {
+    const checkHealth = async () => {
+      try {
+        const providers = ["groq", "cerebras"];
+        const healthStatus: Record<string, boolean> = {};
+
+        for (const provider of providers) {
+          try {
+            const response = await fetch(
+              `${process.env.NEXT_PUBLIC_API_URL}/${provider}/health`
+            );
+            const data = await response.json();
+            healthStatus[provider] = data.status === "ok";
+          } catch (error) {
+            console.error(`Health check failed for ${provider}:`, error);
+            healthStatus[provider] = false;
+          }
+        }
+
+        setProviderHealth(healthStatus);
+      } catch (error) {
+        console.error("Health check failed:", error);
+        setProviderHealth({
+          groq: false,
+          cerebras: false,
+        });
+      }
+    };
+
+    checkHealth();
+    const interval = setInterval(checkHealth, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     setFiles((prev) => [...prev, ...acceptedFiles]);
@@ -83,11 +135,14 @@ export function CreateNotebookDialog({ children }: CreateNotebookDialogProps) {
 
     setIsSubmitting(true);
     try {
-      // First create the notebook
+      // First create the notebook with provider
       const notebookResponse = await fetch("/api/notebooks", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title: "New Notebook" }), // We can make this editable later
+        body: JSON.stringify({
+          title: "New Notebook",
+          provider: selectedProvider,
+        }),
       });
 
       if (!notebookResponse.ok) throw new Error("Failed to create notebook");
@@ -206,11 +261,16 @@ export function CreateNotebookDialog({ children }: CreateNotebookDialogProps) {
     }
   };
 
+  // Add this before the return statement
+  const handleOptionChange = (value: string) => {
+    setSelectedOption(value);
+  };
+
+  console.log("providerHealth", providerHealth);
   return (
     <Dialog
       open={isOpen}
       onOpenChange={(open) => {
-        // Only allow closing if picker is not open
         if (!isPickerOpen) {
           setIsOpen(open);
         }
@@ -227,19 +287,10 @@ export function CreateNotebookDialog({ children }: CreateNotebookDialogProps) {
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent
-        className="sm:max-w-[425px]"
-        onPointerDownOutside={(e) => {
-          if (isPickerOpen) {
-            e.preventDefault();
-          }
-        }}
-        onInteractOutside={(e) => {
-          if (isPickerOpen || document.querySelector(".picker-dialog")) {
-            e.preventDefault();
-          }
-        }}
-      >
+      <DialogContent className="sm:max-w-[425px]">
+        {/* Add provider selection at the top */}
+        <div className="mb-4"></div>
+
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <div className="h-8 w-8">
@@ -264,6 +315,8 @@ export function CreateNotebookDialog({ children }: CreateNotebookDialogProps) {
           (Examples: marketing plans, course reading, research notes, meeting
           transcripts, sales documents, etc.)
         </p>
+
+        {/* Remove the AI Provider selector from here */}
 
         <div
           {...getRootProps()}
@@ -360,7 +413,7 @@ export function CreateNotebookDialog({ children }: CreateNotebookDialogProps) {
             <div className="space-y-4">
               <Button
                 variant="outline"
-                className="w-full justify-start"
+                className="w-full justify-start "
                 size="lg"
                 onClick={handleGoogleDrive}
                 disabled={isGoogleDriveLoading}
@@ -394,7 +447,20 @@ export function CreateNotebookDialog({ children }: CreateNotebookDialogProps) {
           </div>
         )}
 
-        <div className="mt-6 flex justify-end">
+        <Label htmlFor="provider">Select Provider</Label>
+        <div className=" flex items-center justify-end gap-4">
+          <div className="w-full">
+            <Select
+              value={selectedProvider}
+              onChange={(e) => setSelectedProvider(e.target.value)}
+              options={[
+                { value: "cerebras", label: "Cerebras" },
+                { value: "groq", label: "Groq" },
+                { value: "anthropic", label: "Anthropic" },
+                { value: "openai", label: "OpenAI" },
+              ]}
+            />
+          </div>
           <Button
             onClick={handleSubmit}
             disabled={isSubmitting || files.length === 0}
