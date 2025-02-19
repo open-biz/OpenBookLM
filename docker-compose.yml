@@ -2,7 +2,6 @@ version: '3.8'
 
 services:
   app:
-    platform: linux/arm64/v8
     build:
       context: .
       target: development
@@ -39,8 +38,7 @@ services:
       - redis
 
   db:
-    platform: linux/arm64/v8
-    image: postgres:16
+    image: postgres:latest
     ports:
       - "5432:5432"
     environment:
@@ -60,8 +58,7 @@ services:
       retries: 5
 
   redis:
-    platform: linux/arm64/v8
-    image: redis:7
+    image: redis:latest
     ports:
       - "6379:6379"
     volumes:
@@ -79,7 +76,6 @@ services:
 
   redis-insight:
     image: redislabs/redisinsight:latest
-    platform: linux/arm64/v8  # For M1/M2 Macs
     ports:
       - "8001:8001"
     depends_on:
