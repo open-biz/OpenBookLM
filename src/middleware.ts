@@ -1,7 +1,14 @@
-// Temporarily disabled Clerk authentication
-import { clerkMiddleware } from "@clerk/nextjs/server";
+import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+
+// Define protected routes using createRouteMatcher
+const protectedRoutes = createRouteMatcher([
+  '/api/chat(.*)',
+  '/api/notebooks(.*)',
+  '/api/credits(.*)',
+  '/api/user(.*)',
+]);
 
 // Define public paths that don't require authentication
 const publicPaths = [
@@ -18,38 +25,26 @@ const isPublic = (path: string) => {
   );
 };
 
-export default clerkMiddleware((req: NextRequest) => {
-  if (isPublic(req.nextUrl.pathname)) {
+export default clerkMiddleware(async (auth, req) => {
+  const path = req.nextUrl.pathname;
+
+  if (isPublic(path)) {
     return NextResponse.next();
   }
 
-  // Allow guest mode access to specific routes
-  const guestAllowedPaths = [
-    "/api/chat",
-    "/api/notebooks",
-    "/api/credits/usage",
-    "/api/user",
-  ];
-
-  if (guestAllowedPaths.some(path => req.nextUrl.pathname.startsWith(path))) {
-    return NextResponse.next();
+  if (protectedRoutes(req)) {
+    await auth.protect();
   }
 
-  // For all other routes, Clerk will handle the authentication
   return NextResponse.next();
 });
 
 // Stop Middleware running on static files
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - _next
-     * - static (static files)
-     * - favicon.ico (favicon file)
-     * - public folder
-     */
-    "/((?!static|.*\\..*|_next|favicon.ico).*)",
-    "/",
+    // Skip Next.js internals and all static files
+    '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
+    // Always run for API routes
+    '/(api|trpc)(.*)',
   ],
 };

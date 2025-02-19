@@ -1,5 +1,5 @@
 import { prisma } from "./db";
-import { CreditType, UsageType } from "@prisma/client";
+import { UsageType } from "@prisma/client";
 
 const CREDIT_LIMITS = {
   GUEST: {
@@ -14,6 +14,9 @@ const CREDIT_LIMITS = {
   },
 };
 
+const GUEST_INITIAL_CREDITS = 100;
+const GUEST_EXPIRY_DAYS = 7;
+
 const HISTORY_RETENTION_DAYS = {
   GUEST: 7,
   USER: 30,
@@ -21,12 +24,17 @@ const HISTORY_RETENTION_DAYS = {
 
 export class CreditManager {
   static async initializeGuestCredits(userId: string) {
-    await prisma.credit.create({
+    await prisma.user.update({
+      where: { id: userId },
       data: {
-        userId,
-        amount: CREDIT_LIMITS.GUEST.AUDIO_GENERATION,
-        type: CreditType.TRIAL,
-        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
+        credits: GUEST_INITIAL_CREDITS,
+        creditHistory: {
+          create: {
+            amount: GUEST_INITIAL_CREDITS,
+            operation: "ADD",
+            description: "Initial guest credits",
+          },
+        },
       },
     });
   }
@@ -38,16 +46,6 @@ export class CreditManager {
   ): Promise<boolean> {
     const user = await prisma.user.findUnique({
       where: { id: userId },
-      include: {
-        credits: {
-          where: {
-            OR: [
-              { expiresAt: null },
-              { expiresAt: { gt: new Date() } },
-            ],
-          },
-        },
-      },
     });
 
     if (!user) return false;
@@ -75,12 +73,7 @@ export class CreditManager {
       return false;
     }
 
-    const availableCredits = user.credits.reduce(
-      (sum, credit) => sum + credit.amount,
-      0
-    );
-
-    return availableCredits >= amount;
+    return user.credits >= amount;
   }
 
   static async useCredits(
@@ -104,32 +97,21 @@ export class CreditManager {
         },
       });
 
-      // Deduct from credits
-      const credits = await tx.credit.findMany({
-        where: {
-          userId,
-          OR: [
-            { expiresAt: null },
-            { expiresAt: { gt: new Date() } },
-          ],
-        },
-        orderBy: [
-          { type: "asc" },
-          { expiresAt: "asc" },
-        ],
+      // Deduct credits
+      await tx.user.update({
+        where: { id: userId },
+        data: { credits: { decrement: amount } },
       });
 
-      let remainingAmount = amount;
-      for (const credit of credits) {
-        if (remainingAmount <= 0) break;
-
-        const deduction = Math.min(remainingAmount, credit.amount);
-        await tx.credit.update({
-          where: { id: credit.id },
-          data: { amount: credit.amount - deduction },
-        });
-        remainingAmount -= deduction;
-      }
+      // Record credit history
+      await tx.creditHistory.create({
+        data: {
+          userId,
+          amount,
+          operation: "SUBTRACT",
+          description: `Used ${amount} credits for ${usageType}`,
+        },
+      });
     });
 
     return true;
@@ -153,7 +135,11 @@ export class CreditManager {
       where: { id: userId },
     });
 
-    const limits = user?.isGuest ? CREDIT_LIMITS.GUEST : CREDIT_LIMITS.USER;
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    const limits = user.isGuest ? CREDIT_LIMITS.GUEST : CREDIT_LIMITS.USER;
 
     return Object.values(UsageType).map((type) => {
       const typeUsage = usage.find((u) => u.type === type);

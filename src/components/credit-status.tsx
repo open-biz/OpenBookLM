@@ -4,8 +4,16 @@ import { useEffect, useState } from "react";
 import { UsageType } from "@prisma/client";
 import { Progress } from "@/components/ui/progress";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertCircle } from "lucide-react";
-import { mockUsageSummary } from "@/lib/mock-data";
+import { AlertCircle, Coins, ChevronDown } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface UsageSummary {
   type: UsageType;
@@ -19,13 +27,17 @@ export function CreditStatus() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Simulate API call with mock data
     const fetchUsage = async () => {
       try {
-        // In production, this would be a real API call
-        // const response = await fetch("/api/credits/usage");
-        // const data = await response.json();
-        setUsageSummary(mockUsageSummary);
+        const response = await fetch("/api/credits/usage");
+        if (!response.ok) {
+          throw new Error("Failed to fetch usage data");
+        }
+        const data = await response.json();
+        if (!Array.isArray(data)) {
+          throw new Error("Invalid usage data format");
+        }
+        setUsageSummary(data);
       } catch (err) {
         setError("Failed to load credit usage");
         console.error(err);
@@ -35,24 +47,9 @@ export function CreditStatus() {
     };
 
     fetchUsage();
-    // Refresh every minute
     const interval = setInterval(fetchUsage, 60000);
     return () => clearInterval(interval);
   }, []);
-
-  if (loading) {
-    return <div className="animate-pulse h-20 bg-muted rounded-lg" />;
-  }
-
-  if (error) {
-    return (
-      <Alert variant="destructive">
-        <AlertCircle className="h-4 w-4" />
-        <AlertTitle>Error</AlertTitle>
-        <AlertDescription>{error}</AlertDescription>
-      </Alert>
-    );
-  }
 
   const getUsageColor = (used: number, limit: number) => {
     const percentage = (used / limit) * 100;
@@ -68,37 +65,85 @@ export function CreditStatus() {
       .join(" ");
   };
 
+  const getAvailableCredits = () => {
+    if (!usageSummary.length) return 0;
+    
+    // Only count non-token credits
+    const relevantTypes = usageSummary.filter(
+      (usage) => usage.type !== "CONTEXT_TOKENS"
+    );
+    
+    return relevantTypes.reduce((total, usage) => {
+      return total + (usage.limit - usage.used);
+    }, 0);
+  };
+
+  if (loading) {
+    return (
+      <Button variant="ghost" className="animate-pulse" disabled>
+        <Coins className="h-4 w-4 mr-2" />
+        Loading...
+      </Button>
+    );
+  }
+
+  if (error) {
+    return (
+      <Button variant="destructive" size="sm">
+        <AlertCircle className="h-4 w-4 mr-2" />
+        Error loading credits
+      </Button>
+    );
+  }
+
+  const availableCredits = getAvailableCredits();
+
   return (
-    <div className="space-y-4 p-4 bg-card rounded-lg border">
-      <h3 className="text-lg font-semibold">Credit Usage</h3>
-      <div className="space-y-6">
-        {usageSummary.map((usage) => (
-          <div key={usage.type} className="space-y-2">
-            <div className="flex justify-between text-sm">
-              <span>{formatUsageType(usage.type)}</span>
-              <span>
-                {usage.used} / {usage.limit}
-              </span>
-            </div>
-            <Progress
-              value={(usage.used / usage.limit) * 100}
-              className={getUsageColor(usage.used, usage.limit)}
-            />
-            {usage.used >= usage.limit * 0.9 && (
-              <Alert variant="destructive" className="mt-2">
-                <AlertCircle className="h-4 w-4" />
-                <AlertTitle>Credit Limit Warning</AlertTitle>
-                <AlertDescription>
-                  You are approaching your {formatUsageType(usage.type)} limit.
-                  {usage.used >= usage.limit
-                    ? " You will not be able to perform more operations of this type."
-                    : " Consider upgrading your account for more credits."}
-                </AlertDescription>
-              </Alert>
-            )}
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button variant="ghost" className="flex items-center gap-2">
+          <Coins className="h-4 w-4" />
+          <span>{availableCredits} available</span>
+          <ChevronDown className="h-3 w-3 opacity-50" />
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>Credit Usage Details</DialogTitle>
+        </DialogHeader>
+        <div className="grid gap-4">
+          {usageSummary.map((usage) => (
+            <Card key={usage.type}>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium">
+                  {formatUsageType(usage.type)}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  <div className="flex justify-between text-sm text-muted-foreground">
+                    <span>Used: {usage.used}</span>
+                    <span>Available: {usage.limit - usage.used}</span>
+                  </div>
+                  <Progress
+                    value={(usage.used / usage.limit) * 100}
+                    className={getUsageColor(usage.used, usage.limit)}
+                  />
+                  {usage.used >= usage.limit * 0.9 && (
+                    <p className="text-xs text-destructive mt-1">
+                      <AlertCircle className="h-3 w-3 inline mr-1" />
+                      Approaching limit
+                    </p>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+          <div className="mt-4 text-center text-sm text-muted-foreground">
+            Total Credits Available: {availableCredits}
           </div>
-        ))}
-      </div>
-    </div>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }
