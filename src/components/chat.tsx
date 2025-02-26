@@ -70,8 +70,22 @@ interface ChatProps {
   initialMessages?: Message[];
 }
 
+// Add to existing imports
+import { Copy, ChevronDown, ChevronUp } from "lucide-react";
+
 export const Chat = forwardRef<ChatRef, ChatProps>(
   ({ notebookId, initialMessages = [] }, ref) => {
+    // Add new state for source content
+    const [sourceContent, setSourceContent] = useState<string | null>(null);
+
+    // Add new state for debug panel
+    const [isDebugExpanded, setIsDebugExpanded] = useState(false);
+
+    // Add copy function
+    const handleCopyDebug = () => {
+      navigator.clipboard.writeText(JSON.stringify(debugInfo, null, 2));
+    };
+
     const { userId } = useAuth();
     const [messages, setMessages] = useState<Message[]>(initialMessages);
     const [isLoading, setIsLoading] = useState(false);
@@ -181,14 +195,13 @@ export const Chat = forwardRef<ChatRef, ChatProps>(
           },
           body: JSON.stringify({
             messages: [...messages, userMessage],
-            notebookId, // Add notebookId to the request
-            stream: true,
+            notebookId,
           }),
         });
 
         if (!response.ok) {
-          const error = await response.json();
-          throw new Error(error.error || "Failed to get response from AI");
+          const errorData = await response.text();
+          throw new Error(errorData || "Failed to get response from AI");
         }
 
         const data = await response.json();
@@ -214,11 +227,11 @@ export const Chat = forwardRef<ChatRef, ChatProps>(
     };
 
     const handleUrlSummary = async (url: string) => {
-      const prompt = `generate a massive summary of ${url}`;
-      const userMessage: Message = { role: "user", content: prompt };
+      const userMessage: Message = { role: "user", content: url };
       setMessages((prevMessages) => [...prevMessages, userMessage]);
       setIsLoading(true);
-
+      setError(null);
+    
       try {
         const response = await fetch("/api/chat", {
           method: "POST",
@@ -227,16 +240,22 @@ export const Chat = forwardRef<ChatRef, ChatProps>(
           },
           body: JSON.stringify({
             messages: [...messages, userMessage],
-            stream: true,
+            notebookId,
           }),
         });
-
-        if (!response.ok) {
-          const error = await response.json();
-          throw new Error(error.error || "Failed to get response from AI");
+    
+        const text = await response.text();
+        let data;
+        try {
+          data = JSON.parse(text);
+        } catch (e) {
+          throw new Error(text || "Failed to parse response from server");
         }
-
-        const data = await response.json();
+    
+        if (!response.ok) {
+          throw new Error(data.error || "Failed to get response from AI");
+        }
+    
         if (data.choices && data.choices[0]?.message) {
           const assistantMessage: Message = {
             role: "assistant",
@@ -247,6 +266,7 @@ export const Chat = forwardRef<ChatRef, ChatProps>(
           throw new Error("Invalid response format from AI");
         }
       } catch (error) {
+        console.error("Chat error:", error);
         setError(error instanceof Error ? error.message : "An error occurred");
       } finally {
         setIsLoading(false);
@@ -261,7 +281,36 @@ export const Chat = forwardRef<ChatRef, ChatProps>(
       <div className="flex flex-col h-full">
         {process.env.NODE_ENV === "development" && debugInfo && (
           <div className="p-4 bg-gray-800 text-xs rounded-lg mb-4">
-            <pre className="whitespace-pre-wrap break-words font-mono text-gray-300 overflow-x-auto">
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-gray-400">Debug Info</span>
+              <div className="flex gap-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleCopyDebug}
+                  className="h-6 px-2 hover:bg-gray-700"
+                >
+                  <Copy className="h-3 w-3" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setIsDebugExpanded(!isDebugExpanded)}
+                  className="h-6 px-2 hover:bg-gray-700"
+                >
+                  {isDebugExpanded ? (
+                    <ChevronUp className="h-3 w-3" />
+                  ) : (
+                    <ChevronDown className="h-3 w-3" />
+                  )}
+                </Button>
+              </div>
+            </div>
+            <pre
+              className={`whitespace-pre-wrap break-words font-mono text-gray-300 overflow-x-auto transition-all duration-200 ${
+                isDebugExpanded ? "max-h-[500px]" : "max-h-20"
+              } overflow-y-auto`}
+            >
               {JSON.stringify(debugInfo, null, 2)}
             </pre>
           </div>

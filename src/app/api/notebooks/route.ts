@@ -38,7 +38,7 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    const { title } = body;
+    const { title, provider } = body;
 
     if (!title) {
       return new NextResponse("Title is required", { status: 400 });
@@ -49,6 +49,7 @@ export async function POST(req: Request) {
         title,
         userId: user?.id,
         content: "",
+        provider: provider || "groq", // Default to groq if not specified
       },
     });
 

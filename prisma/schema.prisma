@@ -30,6 +30,7 @@ model Notebook {
   title       String
   description String?
   content     String?    @db.Text
+  provider    String     @default("groq")  // Add this line
   user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId      String
   bookmarkedBy User[]    @relation("BookmarkedNotebooks")
