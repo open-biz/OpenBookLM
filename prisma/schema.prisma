@@ -57,16 +57,17 @@ model Notebook {
 }
 
 model Source {
-  id         String     @id @default(cuid())
-  title      String
-  content    String
-  type       SourceType
-  url        String?
-  notebookId String
-  createdAt  DateTime   @default(now())
-  updatedAt  DateTime   @updatedAt
-  chunks     Chunk[]
-  notebook   Notebook   @relation(fields: [notebookId], references: [id], onDelete: Cascade)
+  id          String    @id @default(cuid())
+  title       String
+  content     String    @db.Text
+  type        SourceType
+  url         String?
+  notebook    Notebook  @relation(fields: [notebookId], references: [id], onDelete: Cascade)
+  notebookId  String
+  chunks      Chunk[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  dialogue String? @db.Text
 
   @@index([notebookId])
 }

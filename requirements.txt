@@ -45,5 +45,5 @@ cerebras_cloud_sdk>=1.16.0
 # New dependency
 aiofiles>=23.2.1
 beautifulsoup4>=4.12.2
-
+groq>=0.18.0
 #cerebras_pytorch>=2.4.0
