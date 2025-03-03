@@ -2,96 +2,78 @@
 
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Settings, LogIn } from "lucide-react";
+import { Settings, LogIn, Github } from "lucide-react";
 import { CreateNotebookDialog } from "@/components/create-notebook-dialog";
 import { SignInButton, useAuth, UserButton } from "@clerk/nextjs";
+import { GitHubStats } from "@/components/github-stats";
+import Image from "next/image";
+import { CreditStatus } from "@/components/credit-status";
+import { GuestModeIndicator } from "@/components/guest-mode-indicator";
 
 interface RootLayoutProps {
   children: React.ReactNode;
 }
 
 export function RootLayout({ children }: RootLayoutProps) {
-  const { isSignedIn } = useAuth();
+  const { userId, isSignedIn } = useAuth();
 
   return (
-    <div className="flex flex-col h-screen bg-[#1A1A1A]">
-      {/* Global Header */}
-      <header className="flex items-center justify-between h-14 px-4 border-b border-[#2A2A2A]">
-        <div className="flex items-center">
-          <Link href="/">
-            <h1 className="text-xl font-semibold text-white">OpenBookLM</h1>
-          </Link>
-        </div>
-        <div className="flex items-center space-x-2">
-          {isSignedIn ? (
-            <>
-              <UserButton
-                afterSignOutUrl="/"
-                appearance={{
-                  elements: {
-                    avatarBox: "w-8 h-8",
-                  },
-                }}
-              />
-              <Button
-                variant="ghost"
-                size="icon"
-                className="text-gray-400 hover:text-white"
+    <div className="flex min-h-screen flex-col">
+      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="container flex h-14 items-center">
+          <div className="mr-4 flex">
+            <Link href="/" className="mr-6 flex items-center space-x-2">
+              <Image src="/logo.png" alt="Logo" width={32} height={32} />
+              <span className="hidden font-bold sm:inline-block">
+                OpenBookLM
+              </span>
+            </Link>
+          </div>
+          <div className="flex flex-1 items-center justify-between space-x-2 md:justify-end">
+            <div className="w-full flex-1 md:w-auto md:flex-none">
+              {userId && <CreateNotebookDialog />}
+            </div>
+            <nav className="flex items-center space-x-4">
+              <CreditStatus />
+              <Link
+                href="https://github.com/open-biz/OpenBookLM"
+                target="_blank"
+                rel="noreferrer"
+                className="flex items-center"
               >
-                <Settings className="h-5 w-5" />
-              </Button>
-            </>
-          ) : (
-            <SignInButton mode="modal">
-              <Button
-                variant="outline"
-                size="sm"
-                className="text-gray-200 hover:text-white"
-              >
-                <LogIn className="h-4 w-4 mr-2" />
-                Sign In
-              </Button>
-            </SignInButton>
-          )}
+                <div className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground h-9 py-2 w-9 px-0">
+                  <Github className="h-5 w-5" />
+                </div>
+                <GitHubStats />
+              </Link>
+
+              {isSignedIn ? (
+                <>
+                  <UserButton
+                    afterSignOutUrl="/"
+                    appearance={{
+                      elements: {
+                        avatarBox: "w-9 h-9",
+                      },
+                    }}
+                  />
+                </>
+              ) : (
+                <SignInButton mode="modal">
+                  <Button variant="ghost" size="icon">
+                    <LogIn className="h-5 w-5" />
+                  </Button>
+                </SignInButton>
+              )}
+            </nav>
+          </div>
         </div>
       </header>
-
-      {/* Main Content */}
-      <main className="flex-1 overflow-hidden">
-        {!isSignedIn ? (
-          <div className="flex min-h-[calc(100vh-57px)] flex-col items-center justify-center p-24">
-            <div className="max-w-2xl text-center">
-              <h1 className="text-6xl font-bold mb-6 bg-gradient-to-r from-blue-500 to-teal-500 bg-clip-text text-transparent">
-                Welcome to OpenBookLM
-              </h1>
-              <p className="text-xl text-gray-400 mb-12">
-                Your AI-powered research companion. Transform content into
-                meaningful conversations.
-              </p>
-              <div className="flex flex-col space-y-4 w-64 mx-auto">
-                <SignInButton mode="modal">
-                  <Button
-                    size="lg"
-                    className="w-full bg-blue-600 hover:bg-blue-700"
-                  >
-                    Sign In
-                  </Button>
-                </SignInButton>
-                <SignInButton mode="modal">
-                  <Button
-                    variant="outline"
-                    size="lg"
-                    className="w-full border-[#333333] hover:bg-[#2A2A2A] text-gray-200"
-                  >
-                    Sign Up
-                  </Button>
-                </SignInButton>
-              </div>
-            </div>
-          </div>
-        ) : (
-          <div className="h-[calc(100vh-56px)] overflow-auto">{children}</div>
-        )}
+      <main className="flex-1">
+        <div className="container">
+          {userId && <GuestModeIndicator />}
+          {children}
+        </div>
       </main>
     </div>
   );

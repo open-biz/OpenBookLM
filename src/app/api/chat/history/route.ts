@@ -32,6 +32,9 @@ export async function GET(req: Request) {
     const chats = await prisma.chat.findMany({
       where: {
         notebookId,
+        notebook: {
+          userId
+        }
       },
       include: {
         messages: {
@@ -43,16 +46,16 @@ export async function GET(req: Request) {
       orderBy: {
         createdAt: "desc",
       },
-      take: 1,
     });
 
-    const messages =
-      chats.length > 0
-        ? chats[0].messages.map((msg) => ({
-            role: msg.role.toLowerCase(),
-            content: msg.content,
-          }))
-        : [];
+    // Combine all messages from all chats, ordered by creation time
+    const messages = chats
+      .flatMap(chat => chat.messages)
+      .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
+      .map(msg => ({
+        role: msg.role.toLowerCase(),
+        content: msg.content,
+      }));
 
     // Cache in Redis if available
     if (redis) {

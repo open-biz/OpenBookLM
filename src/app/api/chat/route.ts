@@ -4,6 +4,10 @@ import { NextResponse } from "next/server";
 import Cerebras from "@cerebras/cerebras_cloud_sdk";
 import { setChatHistory } from "@/lib/redis-utils";
 import { prisma } from "@/lib/db";
+import { DEFAULT_MODEL, MODEL_SETTINGS } from "@/lib/ai-config";
+import { getOrCreateUser } from "@/lib/auth";
+import { CreditManager } from "@/lib/credit-manager";
+import { UsageType } from "@prisma/client";
 
 const getClient = () => {
   if (!process.env.CEREBRAS_API_KEY) {
@@ -14,15 +18,24 @@ const getClient = () => {
   });
 };
 
+interface ResponseChunk {
+  choices?: Array<{
+    finish_reason?: string;
+    message: {
+      content: string;
+    };
+  }>;
+}
+
 export async function POST(req: Request) {
   try {
-    const { userId } = await auth();
-    if (!userId) {
+    const user = await getOrCreateUser();
+    if (!user) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
     const body = await req.json();
-    const { messages, notebookId } = body;
+    const { messages, notebookId, modelId } = body;
 
     // Validate messages
     if (!Array.isArray(messages) || messages.length === 0) {
@@ -32,8 +45,25 @@ export async function POST(req: Request) {
       );
     }
 
+    // Calculate token usage (approximate)
+    const totalTokens = messages.reduce((sum, msg) => sum + msg.content.length / 4, 0);
+    
+    // Check credit availability
+    const hasCredits = await CreditManager.checkCredits(
+      user.id,
+      UsageType.CONTEXT_TOKENS,
+      totalTokens
+    );
+
+    if (!hasCredits) {
+      return NextResponse.json(
+        { error: "Insufficient credits" },
+        { status: 402 }
+      );
+    }
+
     // Save to database first
-    await prisma.chat.create({
+    const chat = await prisma.chat.create({
       data: {
         notebookId,
         messages: {
@@ -45,23 +75,53 @@ export async function POST(req: Request) {
       },
     });
 
+    // Use credits
+    await CreditManager.useCredits(
+      user.id,
+      UsageType.CONTEXT_TOKENS,
+      totalTokens,
+      notebookId
+    );
+
     // Then store in Redis
-    await setChatHistory(userId, notebookId, messages);
+    await setChatHistory(user.id, notebookId, messages);
 
     const client = getClient();
-    const completionResponse = await client.chat.completions.create({
+    console.log('Sending request with messages:', messages);
+    const response = await client.chat.completions.create({
       messages: messages.map((msg) => ({
-        role: msg.role,
+        role: msg.role.toLowerCase(),
         content: msg.content,
       })),
-      model: "llama3.3-70b",
-      temperature: 0.7,
-      max_tokens: 1000,
+      model: modelId || DEFAULT_MODEL.id,
+      ...MODEL_SETTINGS,
+    }) as ResponseChunk;
+
+    console.log('Got response:', response);
+
+    if (!response.choices?.[0]?.message?.content) {
+      throw new Error('Invalid response from chat completion API');
+    }
+
+    // Save the assistant's response to the database
+    await prisma.chat.update({
+      where: { id: chat.id },
+      data: {
+        messages: {
+          create: {
+            role: "ASSISTANT",
+            content: response.choices[0].message.content,
+          },
+        },
+      },
     });
 
-    return NextResponse.json(completionResponse);
+    return NextResponse.json(response);
   } catch (error) {
-    console.error("[CHAT_ERROR]", error);
-    return new NextResponse("Internal Error", { status: 500 });
+    console.error('Error in chat completion:', error);
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : 'An error occurred' },
+      { status: 500 }
+    );
   }
 }
