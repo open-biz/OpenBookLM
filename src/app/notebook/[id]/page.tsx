@@ -10,6 +10,11 @@ import { StudioSidebar } from "@/components/notebook/studio-sidebar";
 import { MobileNotebook } from "@/components/notebook/mobile-notebook";
 import { cn } from "@/lib/utils";
 import { Source } from "@prisma/client";
+import { EditableTitle } from "@/components/editable-title";
+import { AddNoteDialog } from "@/components/add-note-dialog";
+import { NoteModal } from "@/components/note-modal";
+import { ShareDialog } from "@/components/share-dialog";
+import { SourceViewer } from "@/components/source-viewer";
 
 interface Notebook {
   id: string;
@@ -89,6 +94,53 @@ export default function NotebookPage({ params }: { params: { id: string } }) {
     chatRef.current?.handleUrlSummary(url);
   };
 
+  const handleGenerateAudio = async () => {
+    setIsGeneratingAudio(true);
+    setAudioError(null);
+
+    try {
+      const response = await fetch(`/api/notebooks/${params.id}/audio`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          conversation: {
+            style: "deep_dive",
+            hosts: 2,
+            language: "en",
+          },
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to generate audio");
+      }
+
+      // Success case handling here (without toast)
+    } catch (error) {
+      console.error("Error generating audio:", error);
+      setAudioError(
+        error instanceof Error ? error.message : "Failed to generate audio"
+      );
+    } finally {
+      setIsGeneratingAudio(false);
+    }
+  };
+  const [selectedSource, setSelectedSource] = useState<{
+    title: string;
+    content: string;
+  } | null>(null);
+
+  // Update the handler function to just set the source content
+  const handleSourceClick = (source: Source) => {
+    setSelectedSource({
+      title: source.title,
+      content: source.content,
+    });
+  };
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen bg-[#1C1C1C]">

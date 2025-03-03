@@ -5,6 +5,9 @@ import Cerebras from "@cerebras/cerebras_cloud_sdk";
 import { setChatHistory } from "@/lib/redis-utils";
 import { prisma } from "@/lib/db";
 import { DEFAULT_MODEL, MODEL_SETTINGS } from "@/lib/ai-config";
+import { getOrCreateUser } from "@/lib/auth";
+import { CreditManager } from "@/lib/credit-manager";
+import { UsageType } from "@prisma/client";
 
 const getClient = () => {
   if (!process.env.CEREBRAS_API_KEY) {
@@ -26,8 +29,8 @@ interface ResponseChunk {
 
 export async function POST(req: Request) {
   try {
-    const { userId } = await auth();
-    if (!userId) {
+    const user = await getOrCreateUser();
+    if (!user) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
@@ -42,8 +45,69 @@ export async function POST(req: Request) {
       );
     }
 
+    // Calculate token usage (approximate)
+    const totalTokens = messages.reduce((sum, msg) => sum + msg.content.length / 4, 0);
+    
+    // Check credit availability
+    const hasCredits = await CreditManager.checkCredits(
+      user.id,
+      UsageType.CONTEXT_TOKENS,
+      totalTokens
+    );
+
+    if (!hasCredits) {
+      return NextResponse.json(
+        { error: "Insufficient credits" },
+        { status: 402 }
+      );
+    }
+
     // Save to database first
     const chat = await prisma.chat.create({
+    // Get the source content from the notebook
+    const notebook = await prisma.notebook.findUnique({
+      where: { id: notebookId },
+      include: { sources: true },
+    });
+
+    // Prepare the context with source content first
+    const sourceContexts = notebook?.sources?.map(source => ({
+      role: "system",
+      content: `Source: ${source.title}\n\n${source.content}`,
+    })) || [];
+
+    // Calculate remaining space for chat messages
+    const MAX_CHARS = 6000;
+    const sourceChars = sourceContexts.reduce((acc, src) => acc + src.content.length, 0);
+    const remainingChars = MAX_CHARS - sourceChars;
+
+    // Get the last message (current user query)
+    const lastMessage = messages[messages.length - 1];
+
+    // Prepare truncated chat history
+    const chatHistory = [];
+    let currentChars = lastMessage.content.length;
+
+    // Add messages from newest to oldest until we hit the limit
+    for (let i = messages.length - 2; i >= 0 && currentChars < remainingChars; i--) {
+      const msg = messages[i];
+      if (currentChars + msg.content.length <= remainingChars) {
+        chatHistory.unshift(msg);
+        currentChars += msg.content.length;
+      } else {
+        break;
+      }
+    }
+
+    // Combine sources and chat history
+    const finalMessages = [
+      ...sourceContexts,
+      ...chatHistory,
+      lastMessage
+    ];
+
+    // Save to database
+    await prisma.chat.create({
       data: {
         notebookId,
         messages: {
@@ -55,8 +119,16 @@ export async function POST(req: Request) {
       },
     });
 
+    // Use credits
+    await CreditManager.useCredits(
+      user.id,
+      UsageType.CONTEXT_TOKENS,
+      totalTokens,
+      notebookId
+    );
+
     // Then store in Redis
-    await setChatHistory(userId, notebookId, messages);
+    await setChatHistory(user.id, notebookId, messages);
 
     const client = getClient();
     console.log('Sending request with messages:', messages);
@@ -90,10 +162,13 @@ export async function POST(req: Request) {
 
     return NextResponse.json(response);
   } catch (error) {
-    console.error('Error in chat completion:', error);
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'An error occurred' },
-      { status: 500 }
-    );
+    console.error("[CHAT_ERROR]", error);
+    if (error.error?.code === "context_length_exceeded") {
+      return NextResponse.json(
+        { error: "Message history too long. Some older messages have been truncated." },
+        { status: 400 }
+      );
+    }
+    return new NextResponse("Internal Error", { status: 500 });
   }
 }

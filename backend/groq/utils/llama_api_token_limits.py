@@ -39,7 +39,7 @@ from dotenv import load_dotenv
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 sys.path.append(ROOT)
 
-from backend.utils.decorators import timeit
+from .decorators import timeit
 
 load_dotenv()
 LLAMA_MODEL = os.getenv('LLAMA_MODEL', 'llama-3.1-8b-instant')  # Default to 8b if not set

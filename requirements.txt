@@ -46,5 +46,6 @@ beautifulsoup4>=4.12.2
 
 # Cerebras dependencies
 cerebras_cloud_sdk>=1.16.0
+groq>=0.18.0
 #cerebras_pytorch>=2.4.0
 optillm>=0.1.4

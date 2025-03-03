@@ -10,6 +10,17 @@ ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 sys.path.append(ROOT)
 
 from backend.utils.decorators import timeit
+import asyncio
+from pathlib import Path
+import aiofiles
+from io import BytesIO
+import textwrap
+from typing import List
+
+ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.append(ROOT)
+
+from .utils.decorators import timeit
 
 INPUT_DIR = os.path.join(ROOT, "input")  # Read PDFs from root/input/*.pdf
 OUTPUT_DIR = os.path.join(ROOT, "output", "text")  # Write text to root/output/text/*.txt
@@ -159,6 +170,18 @@ def wrap_line(line: str, width: int = 120) -> str:
 def convert_pdf_to_text(input_pdf_path: str, output_txt_path: str) -> None:
     """Convert a PDF file to text using PyPDF2."""
     try:
+    """Check if line indicates start of section that should be skipped."""
+    line = line.strip()
+    return any(re.match(pattern, line, re.IGNORECASE) for pattern in SKIP_SECTIONS)
+
+def wrap_line(line: str, width: int = 80) -> str:
+    """Wrap a line of text to specified width."""
+    return '\n'.join(textwrap.wrap(line, width=width))
+
+async def convert_pdf_to_text(input_pdf_path: str, output_txt_path: str) -> None:
+    """Convert PDF to text with metadata and content processing."""
+    try:
+        # Read PDF
         reader = PdfReader(input_pdf_path)
         metadata = reader.metadata
 
@@ -183,6 +206,7 @@ def convert_pdf_to_text(input_pdf_path: str, output_txt_path: str) -> None:
                 lines = page_text.split('\n')
                 cleaned_lines = []
 
+                
                 for line in lines:
                     if should_skip_section(line):
                         skip_remaining = True
@@ -283,6 +307,64 @@ def process_pdf(input_pdf_path: str, output_txt_path: str) -> None:
 
 @timeit
 def process_pdf_documents(input_dir: str, output_dir: str) -> None:
+        # Write processed text to file
+        final_text = '\n'.join(text_parts)
+        async with aiofiles.open(output_txt_path, 'w', encoding='utf-8') as f:
+            await f.write(final_text)
+
+        logger.info(f"Successfully converted {input_pdf_path} to {output_txt_path}")
+        
+    except Exception as e:
+        logger.error(f"Error converting PDF to text: {str(e)}")
+        raise
+
+async def process_pdf(input_pdf_path: str, output_txt_path: str) -> None:
+    """Process PDF in multiple steps with proper file handling."""
+    # Step 1: Convert PDF to text
+    await convert_pdf_to_text(input_pdf_path, output_txt_path)
+
+    # Step 2: Remove appendix sections
+    await remove_appendix_and_references(output_txt_path)
+
+    # Step 3: Clean up text formatting
+    await clean_text_formatting(output_txt_path)
+
+    print(f"Processed {os.path.basename(input_pdf_path)} -> {output_txt_path}")
+
+async def remove_appendix_and_references(filepath: str) -> None:
+    """Remove appendix sections with proper file handling."""
+    async with aiofiles.open(filepath, 'r') as f:
+        content = await f.read()
+        lines = content.splitlines()
+    
+    appendix_line = -1
+    for i, line in enumerate(lines):
+        stripped = line.strip()
+        if stripped and not line.startswith(' '):
+            if stripped == 'Appendix':
+                logger.info("Found appendix marker")
+                appendix_line = i
+                break
+    
+    if appendix_line >= 0:
+        logger.info(f"Truncating file at line: {appendix_line}")
+        async with aiofiles.open(filepath, 'w') as f:
+            await f.write('\n'.join(lines[:appendix_line]))
+
+async def clean_text_formatting(filepath: str) -> None:
+    """Clean up text formatting."""
+    async with aiofiles.open(filepath, 'r') as f:
+        text = await f.read()
+    
+    # Clean text
+    cleaned = clean_text(text)
+    
+    # Write back
+    async with aiofiles.open(filepath, 'w') as f:
+        await f.write(cleaned)
+
+@timeit
+async def process_pdf_documents(input_dir: str, output_dir: str) -> None:
     """Process all PDF documents in the input directory and save as text files."""
 
     for filename in os.listdir(input_dir):
@@ -297,3 +379,8 @@ def process_pdf_documents(input_dir: str, output_dir: str) -> None:
 
 if __name__ == "__main__":
     process_pdf_documents(INPUT_DIR, OUTPUT_DIR)
+        await process_pdf(pdf_path, output_path)
+
+
+if __name__ == "__main__":
+    asyncio.run(process_pdf_documents(INPUT_DIR, OUTPUT_DIR))

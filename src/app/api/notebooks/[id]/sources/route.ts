@@ -12,6 +12,16 @@ export async function POST(
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
+    // Get the notebook to determine the provider
+    const notebook = await prisma.notebook.findUnique({
+      where: { id: params.id },
+      select: { provider: true },
+    });
+
+    if (!notebook) {
+      return new NextResponse("Notebook not found", { status: 404 });
+    }
+
     // Handle multipart form data
     const formData = await req.formData();
     const files = formData.getAll("files");
@@ -39,10 +49,13 @@ export async function POST(
         backendFormData.append("sourceId", source.id);
         backendFormData.append("notebookId", params.id);
         backendFormData.append("userId", userId);
-
         try {
           const backendResponse = await fetch(
-            `${process.env.BACKEND_URL}/api/process-pdf`,
+<<<<<<< HEAD
+            `${process.env.NEXT_PUBLIC_API_URL}/groq/process-pdf`,
+=======
+            `${process.env.NEXT_PUBLIC_API_URL}/${notebook.provider}/process-pdf`,
+>>>>>>> main
             {
               method: "POST",
               body: backendFormData,
@@ -56,6 +69,47 @@ export async function POST(
 
           const responseData = await backendResponse.json();
           console.log("[PDF_PROCESSING]", responseData);
+
+          // Generate dialogue using the summary
+          if (responseData.summary) {
+            const dialogueFormData = new FormData();
+            dialogueFormData.append("sourceId", source.id);
+            dialogueFormData.append("summary", responseData.summary);
+
+            const dialogueResponse = await fetch(
+<<<<<<< HEAD
+              `${process.env.NEXT_PUBLIC_API_URL}/groq/generate-dialogue`,
+=======
+              `${process.env.NEXT_PUBLIC_API_URL}/${notebook.provider}/generate-dialogue`,
+>>>>>>> main
+              {
+                method: "POST",
+                body: dialogueFormData,
+              }
+            );
+
+            if (dialogueResponse.ok) {
+              const dialogueData = await dialogueResponse.json();
+              console.log("[DIALOGUE_GENERATION]", dialogueData);
+
+              // Update source with both summary and dialogue
+              await prisma.source.update({
+                where: { id: source.id },
+                data: {
+                  content: responseData.summary,
+                  dialogue: dialogueData.dialogue,
+                },
+              });
+            }
+          } else {
+            // Update source with just the processed content if no summary
+            await prisma.source.update({
+              where: { id: source.id },
+              data: {
+                content: responseData.extractedText,
+              },
+            });
+          }
 
           // Update source with processed content
           await prisma.source.update({
@@ -72,7 +126,6 @@ export async function POST(
               content: `Error processing PDF: ${error.message}`,
             },
           });
-          // Don't throw here - we want to continue processing other files
         }
 
         return source;

@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -14,22 +8,57 @@ datasource db {
 }
 
 model User {
-  id            String     @id @default(cuid())
-  clerkId       String     @unique
-  email         String     @unique
-  name          String?
-  notebooks     Notebook[]
-  bookmarks     Notebook[] @relation("BookmarkedNotebooks")
-  sharedWithMe  Notebook[] @relation("SharedNotebooks")
-  createdAt     DateTime   @default(now())
-  updatedAt     DateTime   @updatedAt
+  id              String           @id @default(cuid())
+  clerkId         String?          @unique
+  email           String           @unique
+  name            String?
+  isGuest         Boolean          @default(false)
+  credits         Int              @default(100)
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  notebooks       Notebook[]
+  bookmarks       Notebook[]       @relation("BookmarkedNotebooks")
+  sharedWithMe    Notebook[]       @relation("SharedNotebooks")
+  creditHistory   CreditHistory[]
+  usages          Usage[]
+}
+
+model CreditHistory {
+  id          String    @id @default(cuid())
+  userId      String
+  amount      Int
+  operation   String    // "ADD", "SUBTRACT"
+  description String
+  createdAt   DateTime  @default(now())
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 model Notebook {
+<<<<<<< HEAD
+  id           String   @id @default(cuid())
+  title        String
+  description  String?
+  userId       String
+  isArchived   Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  content      String?
+  isPublic     Boolean  @default(false)
+  chats        Chat[]
+  notes        Note[]
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sources      Source[]
+  bookmarkedBy User[]   @relation("BookmarkedNotebooks")
+  tags         Tag[]    @relation("NotebookToTag")
+  sharedWith   User[]   @relation("SharedNotebooks")
+=======
   id          String     @id @default(cuid())
   title       String
   description String?
   content     String?    @db.Text
+  provider    String     @default("groq")  // Add this line
   user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId      String
   bookmarkedBy User[]    @relation("BookmarkedNotebooks")
@@ -42,6 +71,7 @@ model Notebook {
   isArchived  Boolean    @default(false)
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
+>>>>>>> main
 
   @@index([userId])
 }
@@ -57,84 +87,96 @@ model Source {
   chunks      Chunk[]
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+  dialogue String? @db.Text
 
   @@index([notebookId])
 }
 
 model Chunk {
-  id          String    @id @default(cuid())
-  content     String    @db.Text
-  embedding   Json?     // Vector embedding for semantic search
-  source      Source    @relation(fields: [sourceId], references: [id], onDelete: Cascade)
-  sourceId    String
-  startIndex  Int
-  endIndex    Int
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id         String   @id @default(cuid())
+  content    String
+  embedding  Json?
+  sourceId   String
+  startIndex Int
+  endIndex   Int
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  source     Source   @relation(fields: [sourceId], references: [id], onDelete: Cascade)
 
   @@index([sourceId])
 }
 
 model Chat {
-  id          String       @id @default(cuid())
-  title       String?
-  notebook    Notebook     @relation(fields: [notebookId], references: [id], onDelete: Cascade)
-  notebookId  String
-  messages    Message[]
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
+  id         String    @id @default(cuid())
+  title      String?
+  notebookId String
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  notebook   Notebook  @relation(fields: [notebookId], references: [id], onDelete: Cascade)
+  messages   Message[]
 
   @@index([notebookId])
 }
 
 model Message {
-  id          String    @id @default(cuid())
-  content     String    @db.Text
-  role        Role
-  chat        Chat      @relation(fields: [chatId], references: [id], onDelete: Cascade)
-  chatId      String
-  citations   Citation[]
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id        String     @id @default(cuid())
+  content   String
+  role      Role
+  chatId    String
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  citations Citation[]
+  chat      Chat       @relation(fields: [chatId], references: [id], onDelete: Cascade)
 
   @@index([chatId])
 }
 
 model Citation {
-  id          String    @id @default(cuid())
-  message     Message   @relation(fields: [messageId], references: [id], onDelete: Cascade)
-  messageId   String
-  chunkId     String
-  startIndex  Int
-  endIndex    Int
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id         String   @id @default(cuid())
+  messageId  String
+  chunkId    String
+  startIndex Int
+  endIndex   Int
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  message    Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
 
   @@index([messageId])
 }
 
 model Note {
-  id          String    @id @default(cuid())
-  title       String
-  content     String    @db.Text
-  notebook    Notebook  @relation(fields: [notebookId], references: [id], onDelete: Cascade)
-  notebookId  String
-  tags        Tag[]
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id         String   @id @default(cuid())
+  title      String
+  content    String
+  notebookId String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  notebook   Notebook @relation(fields: [notebookId], references: [id], onDelete: Cascade)
+  tags       Tag[]    @relation("NoteToTag")
 
   @@index([notebookId])
 }
 
 model Tag {
-  id          String     @id @default(cuid())
-  name        String
-  notebooks   Notebook[]
-  notes       Note[]
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  id        String     @id @default(cuid())
+  name      String     @unique
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  notes     Note[]     @relation("NoteToTag")
+  notebooks Notebook[] @relation("NotebookToTag")
+}
 
-  @@unique([name])
+model Usage {
+  id        String    @id @default(cuid())
+  userId    String
+  type      UsageType
+  amount    Int
+  notebookId String?
+  createdAt DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([type])
 }
 
 enum SourceType {
@@ -149,4 +191,10 @@ enum Role {
   USER
   ASSISTANT
   SYSTEM
+}
+
+enum UsageType {
+  AUDIO_GENERATION
+  DOCUMENT_PROCESSING
+  CONTEXT_TOKENS
 }
