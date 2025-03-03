@@ -19,7 +19,7 @@ load_dotenv()
 app = FastAPI()
 
 # Get frontend URL from environment variable, default to localhost:3000
-FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://170.187.161.93:3000')
+FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://localhost:3000')
 
 # Add CORS middleware with configurable frontend URL
 app.add_middleware(
@@ -29,6 +29,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 # Include all routers from the registry
 for router_config in routers.values():

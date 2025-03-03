@@ -12,6 +12,16 @@ export async function POST(
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
+    // Get the notebook to determine the provider
+    const notebook = await prisma.notebook.findUnique({
+      where: { id: params.id },
+      select: { provider: true },
+    });
+
+    if (!notebook) {
+      return new NextResponse("Notebook not found", { status: 404 });
+    }
+
     // Handle multipart form data
     const formData = await req.formData();
     const files = formData.getAll("files");
@@ -41,7 +51,11 @@ export async function POST(
         backendFormData.append("userId", userId);
         try {
           const backendResponse = await fetch(
+<<<<<<< HEAD
             `${process.env.NEXT_PUBLIC_API_URL}/groq/process-pdf`,
+=======
+            `${process.env.NEXT_PUBLIC_API_URL}/${notebook.provider}/process-pdf`,
+>>>>>>> main
             {
               method: "POST",
               body: backendFormData,
@@ -63,7 +77,11 @@ export async function POST(
             dialogueFormData.append("summary", responseData.summary);
 
             const dialogueResponse = await fetch(
+<<<<<<< HEAD
               `${process.env.NEXT_PUBLIC_API_URL}/groq/generate-dialogue`,
+=======
+              `${process.env.NEXT_PUBLIC_API_URL}/${notebook.provider}/generate-dialogue`,
+>>>>>>> main
               {
                 method: "POST",
                 body: dialogueFormData,

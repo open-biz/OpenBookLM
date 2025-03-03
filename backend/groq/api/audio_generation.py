@@ -10,6 +10,19 @@ sys.path.append(ROOT)
 
 from backend.groq.dialogue_to_audio import convert_dialogue_to_audio, chunk_dialogue, generate_chunk_audio
 from backend.groq.utils.llama_api_helpers import make_api_call
+ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.append(ROOT)
+
+try:
+    from utils.cerebras_connect import generate_audio
+except ImportError:
+    # Fallback function if Cerebras is not available
+    async def generate_audio(notebook_id: str, conversation_config: Dict[str, Any]):
+        # For testing/development
+        return {
+            "url": "http://170.187.161.93:8000/test-audio.wav",
+            "duration": 30.0
+        }
 
 router = APIRouter()
 
@@ -61,4 +74,4 @@ async def generate_audio_endpoint(request: AudioGenerationRequest):
         raise HTTPException(
             status_code=500,
             detail=str(e)
-        )
+        ) 

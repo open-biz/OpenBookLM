@@ -36,6 +36,7 @@ model CreditHistory {
 }
 
 model Notebook {
+<<<<<<< HEAD
   id           String   @id @default(cuid())
   title        String
   description  String?
@@ -52,6 +53,25 @@ model Notebook {
   bookmarkedBy User[]   @relation("BookmarkedNotebooks")
   tags         Tag[]    @relation("NotebookToTag")
   sharedWith   User[]   @relation("SharedNotebooks")
+=======
+  id          String     @id @default(cuid())
+  title       String
+  description String?
+  content     String?    @db.Text
+  provider    String     @default("groq")  // Add this line
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String
+  bookmarkedBy User[]    @relation("BookmarkedNotebooks")
+  sharedWith  User[]     @relation("SharedNotebooks")
+  isPublic    Boolean    @default(false)
+  sources     Source[]
+  notes       Note[]
+  chats       Chat[]
+  tags        Tag[]
+  isArchived  Boolean    @default(false)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+>>>>>>> main
 
   @@index([userId])
 }
