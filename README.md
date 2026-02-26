@@ -189,7 +189,7 @@ To get a local copy up and running, follow these steps.
   ```sh
   npm install -g pnpm
   ```
-* Python (>=3.10)
+* Python (3.10 or later)
 
 ### Installation
 
