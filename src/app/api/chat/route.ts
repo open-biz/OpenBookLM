@@ -64,6 +64,17 @@ export async function POST(req: Request) {
 
     // Save to database first
     const chat = await prisma.chat.create({
+      data: {
+        notebookId,
+        messages: {
+          create: messages.map((msg: any) => ({
+            role: msg.role.toUpperCase(),
+            content: msg.content,
+          })),
+        },
+      },
+    });
+
     // Get the source content from the notebook
     const notebook = await prisma.notebook.findUnique({
       where: { id: notebookId },
@@ -105,19 +116,6 @@ export async function POST(req: Request) {
       ...chatHistory,
       lastMessage
     ];
-
-    // Save to database
-    await prisma.chat.create({
-      data: {
-        notebookId,
-        messages: {
-          create: messages.map((msg) => ({
-            role: msg.role.toUpperCase(),
-            content: msg.content,
-          })),
-        },
-      },
-    });
 
     // Use credits
     await CreditManager.useCredits(
@@ -163,7 +161,7 @@ export async function POST(req: Request) {
     return NextResponse.json(response);
   } catch (error) {
     console.error("[CHAT_ERROR]", error);
-    if (error.error?.code === "context_length_exceeded") {
+    if ((error as any).error?.code === "context_length_exceeded") {
       return NextResponse.json(
         { error: "Message history too long. Some older messages have been truncated." },
         { status: 400 }

@@ -24,7 +24,7 @@ export async function POST(
     // Create source record in database
     const source = await prisma.source.create({
       data: {
-        type: "URL",
+        type: "WEBPAGE",
         title: url,
         content: "Processing...", // Indicate processing status
         notebookId: params.id,
