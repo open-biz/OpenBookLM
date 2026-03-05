@@ -109,15 +109,14 @@ export async function POST(req: Request) {
         break;
       }
     }
+// Combine sources and chat history
+const finalMessages = [
+  ...sourceContexts,
+  ...chatHistory,
+  lastMessage
+];
 
-    // Combine sources and chat history
-    const finalMessages = [
-      ...sourceContexts,
-      ...chatHistory,
-      lastMessage
-    ];
-
-    // Use credits
+// Use credits
     await CreditManager.useCredits(
       user.id,
       UsageType.CONTEXT_TOKENS,
@@ -131,7 +130,7 @@ export async function POST(req: Request) {
     const client = getClient();
     console.log('Sending request with messages:', messages);
     const response = await client.chat.completions.create({
-      messages: messages.map((msg) => ({
+      messages: finalMessages.map((msg) => ({
         role: msg.role.toLowerCase(),
         content: msg.content,
       })),
