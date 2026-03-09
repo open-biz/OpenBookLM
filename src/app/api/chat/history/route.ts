@@ -9,13 +9,13 @@ export async function GET(req: Request) {
     const user = await getCurrentUser();
     const userId = user?.id;
     if (!userId) {
-      return new NextResponse("Unauthorized", { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const url = new URL(req.url);
     const notebookId = url.searchParams.get("notebookId");
     if (!notebookId) {
-      return new NextResponse("NotebookId is required", { status: 400 });
+      return NextResponse.json({ error: "NotebookId is required" }, { status: 400 });
     }
 
     const key = `chat:${userId}:${notebookId}`;
@@ -67,7 +67,7 @@ export async function GET(req: Request) {
     return NextResponse.json(messages);
   } catch (error) {
     console.error("[CHAT_HISTORY_GET]", error);
-    return new NextResponse("Internal Error", { status: 500 });
+    return NextResponse.json({ error: "Internal Error" }, { status: 500 });
   }
 }
 
@@ -76,12 +76,12 @@ export async function POST(req: Request) {
     const user = await getCurrentUser();
     const userId = user?.id;
     if (!userId) {
-      return new NextResponse("Unauthorized", { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const { messages, notebookId } = await req.json();
     if (!notebookId || !Array.isArray(messages)) {
-      return new NextResponse("Invalid request data", { status: 400 });
+      return NextResponse.json({ error: "Invalid request data" }, { status: 400 });
     }
 
     // Save to database first
@@ -107,6 +107,6 @@ export async function POST(req: Request) {
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("[CHAT_HISTORY_POST]", error);
-    return new NextResponse("Internal Error", { status: 500 });
+    return NextResponse.json({ error: "Internal Error" }, { status: 500 });
   }
 }

@@ -28,7 +28,7 @@ export async function GET(
 ) {
   const params = await props.params;
   try {
-    const user = await getOrCreateUser();
+    const user = await getOrCreateUser(true);
     if (!user) {
       return NextResponse.json(
         { error: "Please sign in to access notebooks" },
@@ -83,15 +83,15 @@ export async function PUT(
 ) {
   const params = await props.params;
   try {
-    const user = await getCurrentUser();
+    const user = await getOrCreateUser(true);
     const userId = user?.id;
     if (!userId) {
-      return new NextResponse("Unauthorized", { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const redis = getRedisClient();
     if (!redis) {
-      return new NextResponse("Redis connection failed", { status: 500 });
+      return NextResponse.json({ error: "Redis connection failed" }, { status: 500 });
     }
 
     const notebook = await req.json();
@@ -102,7 +102,7 @@ export async function PUT(
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("[NOTEBOOK_PUT]", error);
-    return new NextResponse("Internal Error", { status: 500 });
+    return NextResponse.json({ error: "Internal Error" }, { status: 500 });
   }
 }
 
@@ -112,7 +112,7 @@ export async function PATCH(
 ) {
   const params = await props.params;
   try {
-    const user = await getOrCreateUser();
+    const user = await getOrCreateUser(true);
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }

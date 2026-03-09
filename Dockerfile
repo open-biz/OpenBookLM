@@ -1,5 +1,5 @@
 # Use the official Bun image
-FROM oven/bun:1.1 AS base
+FROM oven/bun:latest AS base
 WORKDIR /app
 
 # No Clerk environment variables
@@ -34,10 +34,6 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
-# Create system user
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nextjs
-
 # Copy built application
 COPY --from=builder /app/package.json ./package.json
 COPY --from=builder /app/bun.lock ./bun.lock
@@ -48,9 +44,10 @@ COPY --from=builder /app/.next/static ./.next/static
 COPY --from=builder /app/prisma ./prisma
 
 # Set permissions
-RUN chown -R nextjs:nodejs .
+# Since we are using the official bun image, we just use the built-in bun user
+RUN chown -R bun:bun .
 
-USER nextjs
+USER bun
 
 EXPOSE 3000
 

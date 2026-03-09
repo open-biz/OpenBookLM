@@ -7,6 +7,7 @@ import { ChevronRight, Wand2, FileAudio, Presentation, FileVideo, GitMerge, File
 import { cn } from "@/lib/utils";
 import { AddNoteDialog } from "@/components/add-note-dialog";
 import { useRouter } from "next/navigation";
+import { NotImplementedDialog } from "@/components/not-implemented-dialog";
 
 interface Note {
   id: string;
@@ -47,6 +48,13 @@ export function StudioSidebar({
   onNoteSelect
 }: StudioSidebarProps) {
   const router = useRouter();
+  const [notImplementedOpen, setNotImplementedOpen] = useState(false);
+  const [selectedFeature, setSelectedFeature] = useState("");
+
+  const handleFeatureClick = (featureName: string) => {
+    setSelectedFeature(featureName);
+    setNotImplementedOpen(true);
+  };
 
   return (
     <div
@@ -78,6 +86,7 @@ export function StudioSidebar({
             <div 
               key={i} 
               className="flex flex-col items-start justify-center p-3 rounded-xl border border-[#2A2A2A] bg-[#1C1C1C] hover:bg-[#252525] cursor-pointer transition-colors"
+              onClick={() => handleFeatureClick(option.label)}
             >
               <option.icon className="h-5 w-5 mb-2 text-gray-400" />
               <span className="text-xs font-medium text-gray-300">{option.label}</span>
@@ -123,6 +132,12 @@ export function StudioSidebar({
           onNoteAdded={() => router.refresh()}
         />
       </div>
+
+      <NotImplementedDialog 
+        open={notImplementedOpen} 
+        onOpenChange={setNotImplementedOpen} 
+        featureName={selectedFeature} 
+      />
     </div>
   );
 }

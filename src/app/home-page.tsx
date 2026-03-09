@@ -10,7 +10,15 @@ import {
   PanelLeftClose,
   PanelRightClose,
   Trash2,
+  Settings,
+  LayoutGrid
 } from "lucide-react";
+import Image from "next/image";
+import { useSession, signOut } from "@/lib/auth-client";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
+import { LogOut } from "lucide-react";
+import { LoginModal } from "@/components/login-modal";
 import { CreateNotebookDialog } from "@/components/create-notebook-dialog";
 import { Card } from "@/components/ui/card";
 import { ShareDialog } from "@/components/share-dialog";
@@ -24,6 +32,7 @@ import {
 import { toast } from "sonner";
 
 import { NotImplementedDialog } from "@/components/not-implemented-dialog";
+import { NotebookCard } from "@/components/notebook-card";
 
 interface Notebook {
   id: string;
@@ -44,6 +53,8 @@ export default function HomePage({
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [deletingNotebookId, setDeletingNotebookId] = useState<string | null>(null);
   const [notImplementedOpen, setNotImplementedOpen] = useState(false);
+  const { data: session } = useSession();
+  const isSignedIn = !!session;
 
   useEffect(() => {
     const handleResize = () => {
@@ -129,7 +140,63 @@ export default function HomePage({
 
   return (
     <div className="min-h-screen bg-[#1a1a1a] text-white">
-      <div className="max-w-[1400px] mx-auto px-4 sm:px-16 py-8 sm:py-16">
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-16 py-6 sm:py-16">
+        
+        {/* Mobile Header (Hidden on Desktop) */}
+        <div className="flex sm:hidden items-center justify-between mb-8">
+          <Link href="/" className="flex items-center space-x-2">
+            <Image src="/logo.png" alt="Logo" width={28} height={28} />
+            <span className="font-medium text-xl">
+              NotebookLM
+            </span>
+          </Link>
+          
+          <div className="flex items-center gap-1">
+            <Button variant="ghost" size="icon" className="text-gray-300 hover:text-white rounded-full">
+              <Settings className="h-5 w-5" />
+            </Button>
+            <Button variant="ghost" size="icon" className="text-gray-300 hover:text-white rounded-full">
+              <LayoutGrid className="h-5 w-5" />
+            </Button>
+            {isSignedIn ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="relative h-8 w-8 rounded-full ml-1">
+                    <Avatar className="h-8 w-8 border border-[#333]">
+                      <AvatarImage src={session.user.image || ""} alt={session.user.name || "User"} />
+                      <AvatarFallback className="bg-[#2A3B5C] text-white text-xs">
+                        {session.user.name?.charAt(0).toUpperCase() || session.user.email?.charAt(0).toUpperCase() || "U"}
+                      </AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56 bg-[#1C1C1C] border-[#2A2A2A] text-white mt-2">
+                  <div className="flex items-center justify-start gap-2 p-2">
+                    <div className="flex flex-col space-y-1 leading-none">
+                      {session.user.name && <p className="font-medium">{session.user.name}</p>}
+                      {session.user.email && (
+                        <p className="w-[200px] truncate text-sm text-gray-400">
+                          {session.user.email}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  <DropdownMenuSeparator className="bg-[#2A2A2A]" />
+                  <DropdownMenuItem 
+                    onClick={() => signOut()} 
+                    className="text-red-500 focus:text-red-400 focus:bg-red-500/10 cursor-pointer"
+                  >
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>Log out</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <LoginModal />
+            )}
+          </div>
+        </div>
+
         <h1 className="text-4xl sm:text-[56px] font-medium leading-tight mb-8 sm:mb-16 hidden sm:block">
           <span className="text-[#4285f4]">Welcome to </span>
           <span className="text-[#8ab4f8]">OpenBookLM</span>
@@ -165,12 +232,11 @@ export default function HomePage({
                 My notebooks
               </button>
               <button 
-                className="px-4 py-1.5 rounded-full bg-transparent text-[#A8C7FA] text-sm font-medium border border-[#A8C7FA] whitespace-nowrap"
+                className="px-4 py-1.5 text-gray-400 hover:text-white text-sm font-medium transition-colors whitespace-nowrap"
                 onClick={() => setNotImplementedOpen(true)}
               >
                 Shared with me
-              </button>
-            </div>
+              </button>            </div>
 
             <div className="hidden sm:flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
               <div className="flex items-center gap-0.5 bg-[#2A2A2A] rounded-lg p-1">
@@ -243,63 +309,13 @@ export default function HomePage({
             )}
 
             {notebooks.map((notebook, index) => (
-              <Link
+              <NotebookCard 
                 key={notebook.id}
-                href={`/notebook/${notebook.id}`}
-                className={viewMode === "grid"
-                  ? "group relative rounded-2xl overflow-hidden aspect-[4/3] p-6 bg-[#1C1C1C] border border-[#2A2A2A] hover:bg-[#252525] hover:border-[#3A3A3A] transition-all flex flex-col h-full"
-                  : "group relative flex items-center justify-between py-4 border-b border-[#2A2A2A] hover:bg-[#1C1C1C] transition-colors px-2"
-                }
-              >
-                <div className={viewMode === "grid" ? "flex flex-col h-full" : "flex items-center gap-4 flex-1"}>
-                  <div className={viewMode === "grid" ? "text-2xl mb-3" : "text-xl"}>
-                    {getNotebookEmoji(notebook)}
-                  </div>
-                  <div className={viewMode === "grid" ? "" : "flex-1"}>
-                    <h3 className="text-[17px] font-medium text-gray-100 line-clamp-2 leading-snug">
-                      {notebook.title}
-                    </h3>
-                  </div>
-                  
-                  {viewMode === "grid" && (
-                    <div className="flex items-center text-sm text-gray-500 mt-auto pt-4">
-                      <span>{new Date(notebook.updatedAt).toLocaleDateString()}</span>
-                      <span className="mx-2">•</span>
-                      <span>{notebook.sources.length} source{notebook.sources.length !== 1 ? 's' : ''}</span>
-                    </div>
-                  )}
-                </div>
-
-                <div className={viewMode === "grid" ? "absolute top-3 right-3" : ""}>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className={viewMode === "grid" 
-                          ? "h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity text-gray-400 hover:text-white rounded-full"
-                          : "h-8 w-8 p-0 text-blue-400 hover:text-blue-300 hover:bg-[#2A2A2A] rounded-full"
-                        }
-                        disabled={deletingNotebookId === notebook.id}
-                      >
-                        <MoreVertical className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-40 bg-[#1C1C1C] border-[#2A2A2A] text-white">
-                      <DropdownMenuItem
-                        className="text-red-500 focus:text-red-400 focus:bg-red-500/10 cursor-pointer"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          handleDeleteNotebook(notebook.id);
-                        }}
-                      >
-                        <Trash2 className="h-4 w-4 mr-2" />
-                        Delete
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
-              </Link>
+                notebook={notebook}
+                viewMode={viewMode}
+                isDeleting={deletingNotebookId === notebook.id}
+                onDelete={handleDeleteNotebook}
+              />
             ))}
           </div>
         </div>
