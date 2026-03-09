@@ -16,7 +16,7 @@ export const auth = betterAuth({
   },
 });
 
-export async function getOrCreateUser() {
+export async function getOrCreateUser(shouldSetCookie = false) {
   const session = await auth.api.getSession({
     headers: await headers(),
   });
@@ -54,13 +54,15 @@ export async function getOrCreateUser() {
   // Initialize guest credits
   await CreditManager.initializeGuestCredits(guestUser.id);
 
-  // Set the guest cookie to persist the session
-  cookieStore.set("openbooklm_guest_id", guestUser.id, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    maxAge: 60 * 60 * 24 * 7, // 1 week
-  });
+  // Set the guest cookie to persist the session if requested (safe in Route Handlers/Server Actions)
+  if (shouldSetCookie) {
+    cookieStore.set("openbooklm_guest_id", guestUser.id, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 60 * 60 * 24 * 7, // 1 week
+    });
+  }
 
   return guestUser;
 }

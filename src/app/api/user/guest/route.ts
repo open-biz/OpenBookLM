@@ -4,7 +4,8 @@ import { getOrCreateUser } from "@/lib/auth";
 
 export async function POST() {
   try {
-    const user = await getOrCreateUser();
+    // Pass true to shouldSetCookie since we are in a Route Handler
+    const user = await getOrCreateUser(true);
     return NextResponse.json(user);
   } catch (error) {
     console.error("Error creating guest user:", error);
