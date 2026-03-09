@@ -8,7 +8,7 @@ import sys
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
 sys.path.append(ROOT)
 
-from backend.groq.dialogue_to_audio import convert_dialogue_to_audio, chunk_dialogue, generate_chunk_audio
+from backend.groq.api.dialogue_to_audio import convert_dialogue_to_audio, chunk_dialogue, generate_chunk_audio
 from backend.groq.utils.llama_api_helpers import make_api_call
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.append(ROOT)

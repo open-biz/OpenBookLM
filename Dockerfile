@@ -1,4 +1,4 @@
-# Use the official Bun image
+# Use the official Bun image for building
 FROM oven/bun:latest AS base
 WORKDIR /app
 
@@ -28,30 +28,32 @@ RUN bunx prisma generate
 RUN bun run build
 
 # Runner stage
-FROM base AS runner
+FROM node:20-slim AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
+# Create system user
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nextjs
+
 # Copy built application
-COPY --from=builder /app/package.json ./package.json
-COPY --from=builder /app/bun.lock ./bun.lock
-COPY --from=builder /app/next.config.mjs ./
-COPY --from=builder /app/public ./public
+# The standalone build includes everything needed to run the app
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
+COPY --from=builder /app/public ./public
 COPY --from=builder /app/prisma ./prisma
 
 # Set permissions
-# Since we are using the official bun image, we just use the built-in bun user
-RUN chown -R bun:bun .
+RUN chown -R nextjs:nodejs .
 
-USER bun
+USER nextjs
 
 EXPOSE 3000
 
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
-CMD ["bun", "run", "start"]
+# Use node to run the standalone server
+CMD ["node", "server.js"]
