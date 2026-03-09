@@ -1,11 +1,13 @@
-import { auth } from "@clerk/nextjs/server";
+export const dynamic = "force-dynamic";
+import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { NextResponse } from "next/server";
 import { getOrCreateUser } from "@/lib/auth";
 
 export async function GET() {
   try {
-    const { userId } = await auth();
+    const currentUser = await getCurrentUser();
+    const userId = currentUser?.id;
     if (!userId) {
       return new NextResponse("Unauthorized", { status: 401 });
     }

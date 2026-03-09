@@ -1,11 +1,13 @@
+export const dynamic = "force-dynamic";
 import { getOrCreateUser } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { NextResponse } from "next/server";
 
 export async function PATCH(
   req: Request,
-  { params }: { params: { id: string; noteId: string } }
+  props: { params: Promise<{ id: string; noteId: string }> }
 ) {
+  const params = await props.params;
   try {
     const user = await getOrCreateUser();
     if (!user) {

@@ -1,30 +1,31 @@
-import { auth, currentUser } from "@clerk/nextjs/server";
+import { betterAuth } from "better-auth";
+import { prismaAdapter } from "better-auth/adapters/prisma";
 import { prisma } from "./db";
 import { CreditManager } from "./credit-manager";
 import { nanoid } from "nanoid";
+import { headers } from "next/headers";
+
+export const auth = betterAuth({
+  secret: process.env.BETTER_AUTH_SECRET || "this-is-a-very-long-secret-key-for-better-auth-to-use-during-build",
+  baseURL: process.env.BETTER_AUTH_URL || "http://localhost:3000",
+  database: prismaAdapter(prisma, {
+    provider: "postgresql",
+  }),
+  emailAndPassword: {
+    enabled: true,
+  },
+});
 
 export async function getOrCreateUser() {
-  const { userId } = await auth();
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
   
   // Handle authenticated users
-  if (userId) {
-    let user = await prisma.user.findUnique({
-      where: { clerkId: userId },
+  if (session?.user) {
+    return prisma.user.findUnique({
+      where: { id: session.user.id },
     });
-
-    if (!user) {
-      const clerkUser = await currentUser();
-      user = await prisma.user.create({
-        data: {
-          clerkId: userId,
-          email: clerkUser?.emailAddresses[0]?.emailAddress || "placeholder@example.com",
-          name: clerkUser?.firstName || "New User",
-          isGuest: false,
-        },
-      });
-    }
-
-    return user;
   }
 
   // Handle guest users
@@ -34,6 +35,7 @@ export async function getOrCreateUser() {
       email: `guest_${guestId}@openbooklm.com`,
       name: "Guest User",
       isGuest: true,
+      emailVerified: true,
     },
   });
 
@@ -44,11 +46,13 @@ export async function getOrCreateUser() {
 }
 
 export async function getCurrentUser() {
-  const { userId } = await auth();
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
   
-  if (userId) {
+  if (session?.user) {
     return prisma.user.findUnique({
-      where: { clerkId: userId },
+      where: { id: session.user.id },
     });
   }
   

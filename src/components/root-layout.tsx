@@ -2,9 +2,9 @@
 
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Settings, LogIn, Github } from "lucide-react";
+import { LogIn, Github, LogOut } from "lucide-react";
 import { CreateNotebookDialog } from "@/components/create-notebook-dialog";
-import { SignInButton, useAuth, UserButton } from "@clerk/nextjs";
+import { useSession, signIn, signOut } from "@/lib/auth-client";
 import { GitHubStats } from "@/components/github-stats";
 import Image from "next/image";
 import { CreditStatus } from "@/components/credit-status";
@@ -15,7 +15,9 @@ interface RootLayoutProps {
 }
 
 export function RootLayout({ children }: RootLayoutProps) {
-  const { userId, isSignedIn } = useAuth();
+  const { data: session } = useSession();
+  const userId = session?.user?.id;
+  const isSignedIn = !!session;
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -48,22 +50,13 @@ export function RootLayout({ children }: RootLayoutProps) {
               </Link>
 
               {isSignedIn ? (
-                <>
-                  <UserButton
-                    afterSignOutUrl="/"
-                    appearance={{
-                      elements: {
-                        avatarBox: "w-9 h-9",
-                      },
-                    }}
-                  />
-                </>
+                <Button variant="ghost" size="icon" onClick={() => signOut()}>
+                  <LogOut className="h-5 w-5" />
+                </Button>
               ) : (
-                <SignInButton mode="modal">
-                  <Button variant="ghost" size="icon">
-                    <LogIn className="h-5 w-5" />
-                  </Button>
-                </SignInButton>
+                <Button variant="ghost" size="icon" onClick={() => signIn.social({ provider: 'github' })}>
+                  <LogIn className="h-5 w-5" />
+                </Button>
               )}
             </nav>
           </div>

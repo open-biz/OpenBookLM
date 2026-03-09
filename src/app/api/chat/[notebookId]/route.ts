@@ -1,10 +1,12 @@
+export const dynamic = "force-dynamic";
 import { prisma } from "@/lib/db";
 import { NextResponse } from "next/server";
 
 export async function POST(
   req: Request,
-  { params }: { params: { notebookId: string } }
+  props: { params: Promise<{ notebookId: string }> }
 ) {
+  const params = await props.params;
   try {
     const body = await req.json();
     const { messages } = body;

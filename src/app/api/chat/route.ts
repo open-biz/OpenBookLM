@@ -1,5 +1,6 @@
+export const dynamic = "force-dynamic";
 import { getRedisClient } from "@/lib/redis";
-import { auth } from "@clerk/nextjs/server";
+import { getCurrentUser } from "@/lib/auth";
 import { NextResponse } from "next/server";
 import Cerebras from "@cerebras/cerebras_cloud_sdk";
 import { setChatHistory } from "@/lib/redis-utils";

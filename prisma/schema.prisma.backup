@@ -1,4 +1,3 @@
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -9,34 +8,29 @@ datasource db {
 }
 
 model User {
-  id            String          @id @default(cuid())
-  clerkId       String?         @unique
-  email         String          @unique
-  name          String?
-  isGuest       Boolean         @default(false)
-  credits       Int             @default(100)
-  createdAt     DateTime        @default(now())
-  updatedAt     DateTime        @updatedAt
-  notebooks     Notebook[]
-  bookmarks     Notebook[]      @relation("BookmarkedNotebooks")
-  sharedWithMe  Notebook[]      @relation("SharedNotebooks")
-  creditHistory CreditHistory[]
-  usages        Usage[]
-  emailVerified Boolean         @default(false)
-  image         String?
-  sessions      Session[]
-  accounts      Account[]
-
+  id              String           @id @default(cuid())
+  clerkId         String?          @unique
+  email           String           @unique
+  name            String?
+  isGuest         Boolean          @default(false)
+  credits         Int              @default(100)
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  notebooks       Notebook[]
+  bookmarks       Notebook[]       @relation("BookmarkedNotebooks")
+  sharedWithMe    Notebook[]       @relation("SharedNotebooks")
+  creditHistory   CreditHistory[]
+  usages          Usage[]
 }
 
 model CreditHistory {
-  id          String   @id @default(cuid())
+  id          String    @id @default(cuid())
   userId      String
   amount      Int
-  operation   String // "ADD", "SUBTRACT"
+  operation   String    // "ADD", "SUBTRACT"
   description String
-  createdAt   DateTime @default(now())
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime  @default(now())
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
 }
@@ -64,17 +58,17 @@ model Notebook {
 }
 
 model Source {
-  id         String     @id @default(cuid())
-  title      String
-  content    String     @db.Text
-  type       SourceType
-  url        String?
-  notebook   Notebook   @relation(fields: [notebookId], references: [id], onDelete: Cascade)
-  notebookId String
-  chunks     Chunk[]
-  createdAt  DateTime   @default(now())
-  updatedAt  DateTime   @updatedAt
-  dialogue   String?    @db.Text
+  id          String    @id @default(cuid())
+  title       String
+  content     String    @db.Text
+  type        SourceType
+  url         String?
+  notebook    Notebook  @relation(fields: [notebookId], references: [id], onDelete: Cascade)
+  notebookId  String
+  chunks      Chunk[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  dialogue    String?   @db.Text
 
   @@index([notebookId])
 }
@@ -154,13 +148,13 @@ model Tag {
 }
 
 model Usage {
-  id         String    @id @default(cuid())
-  userId     String
-  type       UsageType
-  amount     Int
+  id        String    @id @default(cuid())
+  userId    String
+  type      UsageType
+  amount    Int
   notebookId String?
-  createdAt  DateTime  @default(now())
-  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([type])
@@ -184,49 +178,4 @@ enum UsageType {
   AUDIO_GENERATION
   DOCUMENT_PROCESSING
   CONTEXT_TOKENS
-}
-
-model Session {
-  id        String   @id
-  expiresAt DateTime
-  token     String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  ipAddress String?
-  userAgent String?
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([token])
-  @@index([userId])
-}
-
-model Account {
-  id                    String    @id
-  accountId             String
-  providerId            String
-  userId                String
-  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  accessToken           String?
-  refreshToken          String?
-  idToken               String?
-  accessTokenExpiresAt  DateTime?
-  refreshTokenExpiresAt DateTime?
-  scope                 String?
-  password              String?
-  createdAt             DateTime  @default(now())
-  updatedAt             DateTime  @updatedAt
-
-  @@index([userId])
-}
-
-model Verification {
-  id         String   @id
-  identifier String
-  value      String
-  expiresAt  DateTime
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-
-  @@index([identifier])
 }

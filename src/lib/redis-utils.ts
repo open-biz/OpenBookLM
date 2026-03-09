@@ -257,10 +257,10 @@ export async function setAllNotebooks(userId: string, notebooks: any[]) {
   }
 }
 
-export async function getAllNotebooks(userId: string) {
+export async function getAllNotebooks(userId: string): Promise<any[] | null> {
   try {
     const redis = getRedisClient();
-    if (!redis) return;
+    if (!redis) return null;
     const key = `notebooks:${userId}`;
     const notebooks = await redis.get(key);
     console.log("Retrieved notebooks:", {
@@ -273,6 +273,8 @@ export async function getAllNotebooks(userId: string) {
     if (typeof notebooks === "object") {
       return notebooks;
     }
+    
+    return null;
   } catch (error) {
     console.error("Error in getAllNotebooks:", error);
 
@@ -298,8 +300,8 @@ export async function deleteNotebookFromRedis(userId: string, notebookId: string
     ...keys.map(key => redis.del(key)),
     // Also remove from the all notebooks cache
     getAllNotebooks(userId).then(notebooks => {
-      if (notebooks) {
-        const filtered = notebooks.filter(n => n.id !== notebookId);
+      if (notebooks && Array.isArray(notebooks)) {
+        const filtered = notebooks.filter((n: any) => n.id !== notebookId);
         return setAllNotebooks(userId, filtered);
       }
     })

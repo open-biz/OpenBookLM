@@ -18,10 +18,10 @@ ENV NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL=$NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL
 ENV NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=$NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL
 
 # Install OpenSSL and other required dependencies
-RUN apt-get update -y && apt-get install -y openssl libssl-dev ca-certificates
+RUN apt-get update -y && apt-get install -y openssl libssl-dev ca-certificates unzip curl
 
-# Install pnpm
-RUN npm install -g pnpm
+# Install bun
+RUN npm install -g bun
 
 # Install dependencies only when needed
 FROM base AS deps
@@ -33,11 +33,11 @@ RUN apt-get update && \
 
 # Copy package files
 COPY package.json ./
-COPY pnpm-lock.yaml ./
+COPY bun.lock ./
 COPY prisma ./prisma/
 
 # Clean install dependencies
-RUN pnpm install
+RUN bun install
 
 # Development image
 FROM base AS development
@@ -47,7 +47,7 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
 # Generate Prisma Client for development
-RUN npx prisma generate
+RUN bunx prisma generate
 
 COPY docker-entrypoint.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
@@ -56,7 +56,7 @@ EXPOSE 3000
 
 # Start development server
 ENTRYPOINT ["docker-entrypoint.sh"]
-CMD ["pnpm", "dev"]
+CMD ["bun", "run", "dev"]
 
 # Rebuild the source code only when needed
 FROM base AS builder
@@ -70,10 +70,10 @@ ENV NEXT_TELEMETRY_DISABLED 1
 ENV NODE_ENV production
 
 # Generate Prisma Client
-RUN npx prisma generate
+RUN bunx prisma generate
 
 # Build application with --no-lint flag to skip linting
-RUN pnpm run build --no-lint
+RUN bun run build
 
 # Production image, copy all the files and run next
 FROM base AS runner
@@ -88,7 +88,7 @@ RUN adduser --system --uid 1001 nextjs
 
 # Install production dependencies
 COPY --from=builder /app/package.json ./package.json
-COPY --from=builder /app/pnpm-lock.yaml ./pnpm-lock.yaml
+COPY --from=builder /app/bun.lock ./bun.lock
 COPY --from=builder /app/next.config.mjs ./
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next/standalone ./
@@ -96,7 +96,7 @@ COPY --from=builder /app/.next/static ./.next/static
 COPY --from=builder /app/prisma ./prisma
 
 # Install only production dependencies
-RUN pnpm install --prod
+RUN bun install --production
 
 # Set permissions
 RUN chown -R nextjs:nodejs .
@@ -108,4 +108,4 @@ EXPOSE 3000
 ENV PORT 3000
 ENV HOSTNAME "0.0.0.0"
 
-CMD ["pnpm", "start"] 
+CMD ["bun", "run", "start"]

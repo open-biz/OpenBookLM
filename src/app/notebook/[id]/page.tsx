@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, use } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Chat, Message } from "@/components/chat";
@@ -25,7 +25,8 @@ interface Notebook {
   }[];
 }
 
-export default function NotebookPage({ params }: { params: { id: string } }) {
+export default function NotebookPage(props: { params: Promise<{ id: string }> }) {
+  const params = use(props.params);
   const [notebook, setNotebook] = useState<Notebook | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -154,6 +155,7 @@ export default function NotebookPage({ params }: { params: { id: string } }) {
 
       <div className="flex h-[calc(100vh-121px)] overflow-hidden">
         <SourcesSidebar
+          notebookId={params.id}
           isOpen={leftSidebarOpen}
           isMobile={false}
           mobileOpen={false}

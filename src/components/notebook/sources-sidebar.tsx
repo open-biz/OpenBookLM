@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { WebsiteURLInput } from "@/components/website-url-input";
 import { SummaryView } from "@/components/summary-view";
 import type { Source } from "@prisma/client";
+import { authClient } from "@/lib/auth-client";
 
 interface SourcesSidebarProps {
   isOpen: boolean;
@@ -15,6 +16,7 @@ interface SourcesSidebarProps {
   sources?: Source[];
   onWebsiteSubmit?: (url: string) => void;
   onSendToCerebras?: (url: string) => void;
+  notebookId: string;
 }
 
 export function SourcesSidebar({
@@ -24,10 +26,12 @@ export function SourcesSidebar({
   onCloseMobile,
   sources = [],
   onWebsiteSubmit,
-  onSendToCerebras
+  onSendToCerebras,
+  notebookId
 }: SourcesSidebarProps) {
   const [showWebsiteInput, setShowWebsiteInput] = useState(false);
   const [addSourceOpen, setAddSourceOpen] = useState(false);
+  const { data: session } = authClient.useSession();
 
   return (
     <div
@@ -77,10 +81,11 @@ export function SourcesSidebar({
             <DialogContent className="sm:max-w-[600px] bg-[#1A1A1A] border-[#2A2A2A]">
               {showWebsiteInput ? (
                 <WebsiteURLInput
+                  notebookId={notebookId}
+                  userId={session?.user?.id || ""}
                   onBack={() => setShowWebsiteInput(false)}
                   onSubmit={(url) => {
-                    onWebsiteSubmit?.(url);
-                    setShowWebsiteInput(false);
+                    onWebsiteSubmit?.(url);                    setShowWebsiteInput(false);
                     setAddSourceOpen(false);
                   }}
                   onSendToCerebras={onSendToCerebras}

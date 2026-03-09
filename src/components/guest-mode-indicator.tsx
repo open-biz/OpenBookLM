@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { SignInButton } from "@clerk/nextjs";
+import { signIn } from "@/lib/auth-client";
 import { User } from "@prisma/client";
 
 export function GuestModeIndicator() {
@@ -45,9 +45,7 @@ export function GuestModeIndicator() {
           <li>7-day history retention</li>
         </ul>
         <div className="flex justify-end">
-          <SignInButton mode="modal">
-            <Button variant="default">Sign In for More Credits</Button>
-          </SignInButton>
+          <Button variant="default" onClick={() => signIn.social({ provider: 'github' })}>Sign In for More Credits</Button>
         </div>
       </AlertDescription>
     </Alert>

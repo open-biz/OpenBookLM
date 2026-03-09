@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect } from "react";
-import { useAuth } from "@clerk/nextjs";
+import { useSession } from "@/lib/auth-client";
 import type { Notebook, Source, Chat, Note } from "@prisma/client";
 
 type NotebookWithRelations = Notebook & {
@@ -26,7 +26,8 @@ export function NotebookProvider({
   children: React.ReactNode;
   initialNotebook: NotebookWithRelations;
 }) {
-  const { userId } = useAuth();
+  const { data: session } = useSession();
+  const userId = session?.user?.id;
   const [notebook, setNotebook] =
     useState<NotebookWithRelations>(initialNotebook);
 

@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 import { getOrCreateUser } from "@/lib/auth";
 import { CreditManager } from "@/lib/credit-manager";
 import { NextResponse } from "next/server";

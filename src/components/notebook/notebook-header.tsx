@@ -8,7 +8,7 @@ import { ShareDialog } from "@/components/share-dialog";
 interface NotebookHeaderProps {
   notebookId: string;
   title: string;
-  onTitleUpdate: (title: string) => void;
+  onTitleUpdate: (title: string) => Promise<void>;
   onToggleLeftSidebar?: () => void;
   onToggleRightSidebar?: () => void;
   leftSidebarOpen?: boolean;
@@ -40,16 +40,10 @@ export function NotebookHeader({
         <EditableTitle
           initialTitle={title}
           onSave={onTitleUpdate}
-          className="text-lg md:text-xl font-medium"
         />
       </div>
       <div className="flex items-center gap-2">
-        <ShareDialog notebookId={notebookId}>
-          <Button variant="ghost" size="sm" className="gap-2 hidden md:flex">
-            <Share className="h-4 w-4" />
-            <span>Share</span>
-          </Button>
-        </ShareDialog>
+        <ShareDialog notebookId={notebookId} />
         <Button variant="ghost" size="sm" className="gap-2 hidden md:flex">
           <Settings className="h-4 w-4" />
           <span>Settings</span>

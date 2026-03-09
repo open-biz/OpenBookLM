@@ -15,7 +15,7 @@ import ReactMarkdown from "react-markdown";
 import type { Components } from "react-markdown";
 import { ChatInput } from "@/components/chat-input";
 import { getChatHistory, setChatHistory } from "@/lib/redis-utils";
-import { useAuth } from "@clerk/nextjs";
+import { useSession } from "@/lib/auth-client";
 
 type MessageRole = "user" | "assistant" | "system";
 
@@ -72,7 +72,8 @@ interface ChatProps {
 
 export const Chat = forwardRef<ChatRef, ChatProps>(
   ({ notebookId, initialMessages = [] }, ref) => {
-    const { userId } = useAuth();
+    const { data: session } = useSession();
+    const userId = session?.user?.id;
     const [messages, setMessages] = useState<Message[]>(initialMessages);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);

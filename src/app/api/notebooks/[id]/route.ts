@@ -1,4 +1,5 @@
-import { auth } from "@clerk/nextjs/server";
+export const dynamic = "force-dynamic";
+import { getCurrentUser } from "@/lib/auth";
 import { NextResponse } from "next/server";
 import { getRedisClient } from "@/lib/redis";
 import { prisma } from "@/lib/db";
@@ -23,8 +24,9 @@ async function hasNotebookAccess(notebookId: string, userId: string) {
 
 export async function GET(
   req: Request,
-  { params }: { params: { id: string } }
+  props: { params: Promise<{ id: string }> }
 ) {
+  const params = await props.params;
   try {
     const user = await getOrCreateUser();
     if (!user) {
@@ -77,10 +79,12 @@ export async function GET(
 
 export async function PUT(
   req: Request,
-  { params }: { params: { id: string } }
+  props: { params: Promise<{ id: string }> }
 ) {
+  const params = await props.params;
   try {
-    const { userId } = await auth();
+    const user = await getCurrentUser();
+    const userId = user?.id;
     if (!userId) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
@@ -104,8 +108,9 @@ export async function PUT(
 
 export async function PATCH(
   req: Request,
-  { params }: { params: { id: string } }
+  props: { params: Promise<{ id: string }> }
 ) {
+  const params = await props.params;
   try {
     const user = await getOrCreateUser();
     if (!user) {

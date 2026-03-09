@@ -14,6 +14,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { WebsiteURLInput } from "@/components/website-url-input";
 import { Card } from "@/components/ui/card";
 import { AudioLoading } from "@/components/audio-loading";
+import { authClient } from "@/lib/auth-client";
 
 interface MobileNotebookProps {
   notebookId: string;
@@ -38,6 +39,7 @@ interface MobileNotebookProps {
 type TabType = 'sources' | 'chat' | 'studio';
 
 export function MobileNotebook({ notebookId, notebook, onWebsiteSubmit, onSendToCerebras, initialMessages = [] }: MobileNotebookProps) {
+  const { data: session } = authClient.useSession();
   const [activeTab, setActiveTab] = useState<TabType>('chat');
   const [showWebsiteInput, setShowWebsiteInput] = useState(false);
   const [addSourceOpen, setAddSourceOpen] = useState(false);
@@ -164,6 +166,8 @@ export function MobileNotebook({ notebookId, notebook, onWebsiteSubmit, onSendTo
                 <DialogContent className="sm:max-w-[600px] bg-[#1A1A1A] border-[#2A2A2A]">
                   {showWebsiteInput ? (
                     <WebsiteURLInput
+                      notebookId={notebookId}
+                      userId={session?.user?.id || ""}
                       onBack={() => setShowWebsiteInput(false)}
                       onSubmit={(url) => {
                         onWebsiteSubmit?.(url);
@@ -280,7 +284,7 @@ export function MobileNotebook({ notebookId, notebook, onWebsiteSubmit, onSendTo
                       className="w-full"
                     >
                       {isGeneratingAudio ? (
-                        <AudioLoading className="mr-2" />
+                        <div className="mr-2"><AudioLoading /></div>
                       ) : null}
                       {isGeneratingAudio ? "Generating..." : "Generate audio"}
                     </Button>

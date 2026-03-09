@@ -185,34 +185,35 @@ To get a local copy up and running, follow these steps.
 ### Prerequisites
 
 * Node.js (v20 or later)
-* pnpm
+* Bun
   ```sh
-  npm install -g pnpm
+  curl -fsSL https://bun.sh/install | bash
   ```
 * Python (3.8 or later)
 
 ### Installation
 
-1. Clone the repo
+1. Clone the repository
    ```sh
    git clone https://github.com/open-biz/OpenBookLM.git
    ```
 2. Install dependencies
    ```sh
-   pnpm install
+   bun install
    ```
 3. Set up Python environment
    ```sh
    ./setup/create_venv.sh
    source venv/bin/activate
+   pip install -r requirements.txt
    ```
-4. Create a `.env` file with your environment variables
+4. Set up environment variables
    ```sh
    cp .env.example .env
    ```
 5. Start the development server
    ```sh
-   pnpm dev
+   bun dev
    ```
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>

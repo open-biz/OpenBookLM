@@ -1,12 +1,11 @@
 import { redirect } from "next/navigation";
-import { auth } from "@clerk/nextjs/server";
+import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { getOrCreateUser } from "@/lib/auth";
 import { setAllNotebooks } from "@/lib/redis-utils";
 import HomePage from "./home-page";
 
 export default async function Page() {
-  const { userId } = await auth();
   const user = await getOrCreateUser();
 
   if (!user) {
