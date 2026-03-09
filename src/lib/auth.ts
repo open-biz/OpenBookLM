@@ -1,5 +1,6 @@
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
+import { magicLink } from "better-auth/plugins";
 import { prisma } from "./db";
 import { CreditManager } from "./credit-manager";
 import { nanoid } from "nanoid";
@@ -19,7 +20,19 @@ export const auth = betterAuth({
       clientId: process.env.GITHUB_CLIENT_ID || "",
       clientSecret: process.env.GITHUB_CLIENT_SECRET || "",
     },
+    google: {
+      clientId: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "",
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
+    },
   },
+  plugins: [
+    magicLink({
+      sendMagicLink: async ({ email, token, url }, request) => {
+        // TODO: Implement your email sending logic here (e.g., using Resend, SendGrid, AWS SES)
+        console.log(`[MAGIC LINK] Email: ${email} | URL: ${url}`);
+      },
+    }),
+  ],
 });
 
 export async function getOrCreateUser(shouldSetCookie = false) {

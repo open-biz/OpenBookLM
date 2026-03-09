@@ -9,6 +9,7 @@ import { GitHubStats } from "@/components/github-stats";
 import Image from "next/image";
 import { CreditStatus } from "@/components/credit-status";
 import { GuestModeIndicator } from "@/components/guest-mode-indicator";
+import { LoginModal } from "@/components/login-modal";
 
 interface RootLayoutProps {
   children: React.ReactNode;
@@ -54,9 +55,7 @@ export function RootLayout({ children }: RootLayoutProps) {
                   <LogOut className="h-5 w-5" />
                 </Button>
               ) : (
-                <Button variant="ghost" size="icon" onClick={() => signIn.social({ provider: 'github' })}>
-                  <LogIn className="h-5 w-5" />
-                </Button>
+                <LoginModal />
               )}
             </nav>
           </div>
