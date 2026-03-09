@@ -51,7 +51,7 @@ export function CreateNotebookDialog({ children, onNotebookCreated }: CreateNote
     // Create an optimistic notebook
     const optimisticNotebook = {
       id: `temp-${Date.now()}`,
-      title: "New Notebook",
+      title: "Untitled notebook",
       sources: [],
       updatedAt: new Date().toISOString(),
       role: "owner",
@@ -71,7 +71,7 @@ export function CreateNotebookDialog({ children, onNotebookCreated }: CreateNote
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          title: "New Notebook", // We'll let users rename it later
+          title: "Untitled notebook", // Match UI spec
         }),
       });
 
@@ -99,12 +99,12 @@ export function CreateNotebookDialog({ children, onNotebookCreated }: CreateNote
     </div>
   ) : (
     <Button
-      size="lg"
-      className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 flex items-center gap-2"
+      variant="secondary"
+      className="rounded-full px-4 h-10 flex items-center gap-2 bg-white text-black hover:bg-gray-200"
       onClick={handleCreateNotebook}
     >
-      <Plus className="h-5 w-5" />
-      Create Notebook
+      <Plus className="h-4 w-4" />
+      Create notebook
     </Button>
   );
 }

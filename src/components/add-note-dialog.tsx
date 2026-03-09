@@ -53,7 +53,7 @@ export function AddNoteDialog({ notebookId, onNoteAdded }: AddNoteDialogProps) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm" className="gap-2">
+        <Button variant="secondary" className="rounded-full px-5 h-10 flex items-center gap-2 bg-white text-black hover:bg-gray-200">
           <Plus className="h-4 w-4" />
           Add note
         </Button>

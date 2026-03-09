@@ -26,7 +26,7 @@ export function RootLayout({ children }: RootLayoutProps) {
           <div className="mr-4 flex">
             <Link href="/" className="mr-6 flex items-center space-x-2">
               <Image src="/logo.png" alt="Logo" width={32} height={32} />
-              <span className="hidden font-bold sm:inline-block">
+              <span className="hidden md:inline-block font-bold">
                 OpenBookLM
               </span>
             </Link>

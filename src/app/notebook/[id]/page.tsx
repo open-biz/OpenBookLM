@@ -25,6 +25,8 @@ interface Notebook {
   }[];
 }
 
+import { AddSourceDialog } from "@/components/notebook/add-source-dialog";
+
 export default function NotebookPage(props: { params: Promise<{ id: string }> }) {
   const params = use(props.params);
   const [notebook, setNotebook] = useState<Notebook | null>(null);
@@ -34,6 +36,7 @@ export default function NotebookPage(props: { params: Promise<{ id: string }> })
   const [rightSidebarOpen, setRightSidebarOpen] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
+  const [isAddSourceOpen, setIsAddSourceOpen] = useState(false);
   const chatRef = useRef<{ handleUrlSummary: (url: string) => void }>(null);
   const router = useRouter();
 
@@ -66,6 +69,10 @@ export default function NotebookPage(props: { params: Promise<{ id: string }> })
         }
 
         setNotebook(notebookData);
+        if (notebookData.sources && notebookData.sources.length === 0) {
+          setIsAddSourceOpen(true);
+        }
+        
         if (chatResponse.ok && chatData.messages) {
           setMessages(chatData.messages);
         }
@@ -163,10 +170,17 @@ export default function NotebookPage(props: { params: Promise<{ id: string }> })
           sources={notebook?.sources}
           onWebsiteSubmit={handleWebsiteSubmit}
           onSendToCerebras={handleSendToCerebras}
+          onOpenAddSource={() => setIsAddSourceOpen(true)}
         />
 
-        <div className="flex-1 bg-[#1C1C1C] overflow-hidden">
-          <Chat ref={chatRef} notebookId={params.id} initialMessages={messages} />
+        <div className="flex-1 bg-[#1A1A1A] overflow-hidden rounded-tl-2xl rounded-tr-2xl border border-[#2A2A2A] shadow-lg mt-4 mx-4 mb-4">
+          <Chat 
+            ref={chatRef} 
+            notebookId={params.id} 
+            initialMessages={messages} 
+            hasSources={(notebook?.sources?.length ?? 0) > 0}
+            onOpenAddSource={() => setIsAddSourceOpen(true)}
+          />
         </div>
 
         <StudioSidebar
@@ -178,6 +192,14 @@ export default function NotebookPage(props: { params: Promise<{ id: string }> })
           notes={notebook?.notes}
         />
       </div>
+
+      <AddSourceDialog
+        open={isAddSourceOpen}
+        onOpenChange={setIsAddSourceOpen}
+        notebookId={params.id}
+        onWebsiteSubmit={handleWebsiteSubmit}
+        onSendToCerebras={handleSendToCerebras}
+      />
     </main>
   );
 }

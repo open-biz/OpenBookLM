@@ -68,10 +68,12 @@ export interface ChatRef {
 interface ChatProps {
   notebookId: string;
   initialMessages?: Message[];
+  hasSources?: boolean;
+  onOpenAddSource?: () => void;
 }
 
 export const Chat = forwardRef<ChatRef, ChatProps>(
-  ({ notebookId, initialMessages = [] }, ref) => {
+  ({ notebookId, initialMessages = [], hasSources = true, onOpenAddSource }, ref) => {
     const { data: session } = useSession();
     const userId = session?.user?.id;
     const [messages, setMessages] = useState<Message[]>(initialMessages);
@@ -284,7 +286,7 @@ export const Chat = forwardRef<ChatRef, ChatProps>(
     }));
 
     return (
-      <div className="flex flex-col h-full">
+      <div className="flex flex-col h-full relative">
         {isLoadingHistory ? (
           <div className="flex items-center justify-center h-full">
             <div className="flex items-center space-x-2">
@@ -293,6 +295,37 @@ export const Chat = forwardRef<ChatRef, ChatProps>(
                 <div className="w-1 h-1 bg-white rounded-full animate-bounce"></div>
                 <div className="w-1 h-1 bg-white rounded-full animate-bounce"></div>
                 <div className="w-1 h-1 bg-white rounded-full animate-bounce"></div>
+              </div>
+            </div>
+          </div>
+        ) : !hasSources && messages.length === 0 ? (
+          <div className="flex-1 flex flex-col items-center justify-center">
+            <div className="w-12 h-12 rounded-full bg-[#1C365D] flex items-center justify-center mb-6">
+              <Upload className="h-6 w-6 text-blue-400" />
+            </div>
+            <h3 className="text-xl font-medium text-white mb-6">Add a source to get started</h3>
+            <Button 
+              variant="outline" 
+              className="rounded-full bg-transparent border-[#333] hover:bg-[#333] text-white px-6 h-10"
+              onClick={onOpenAddSource}
+            >
+              Upload a source
+            </Button>
+            <div className="absolute bottom-6 w-full px-8 max-w-3xl mx-auto left-0 right-0">
+              <div 
+                className="flex items-center justify-between border border-[#333] rounded-full p-2 pl-6 bg-[#252525] cursor-text"
+                onClick={onOpenAddSource}
+              >
+                <span className="text-gray-500">Upload a source to get started</span>
+                <div className="flex items-center gap-3">
+                  <span className="text-xs text-gray-500">0 sources</span>
+                  <div className="w-8 h-8 rounded-full bg-[#333] flex items-center justify-center">
+                    <Send className="w-4 h-4 text-gray-500" />
+                  </div>
+                </div>
+              </div>
+              <div className="text-center mt-3 text-xs text-gray-600">
+                NotebookLM can be inaccurate; please double check its responses.
               </div>
             </div>
           </div>

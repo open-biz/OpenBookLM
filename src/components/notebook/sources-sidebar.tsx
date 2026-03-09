@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
-import { ChevronLeft, LinkIcon, Upload, Youtube } from "lucide-react";
+import { ChevronLeft, LinkIcon, Upload, Youtube, FileText } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { WebsiteURLInput } from "@/components/website-url-input";
 import { SummaryView } from "@/components/summary-view";
@@ -17,6 +17,7 @@ interface SourcesSidebarProps {
   onWebsiteSubmit?: (url: string) => void;
   onSendToCerebras?: (url: string) => void;
   notebookId: string;
+  onOpenAddSource: () => void;
 }
 
 export function SourcesSidebar({
@@ -27,10 +28,9 @@ export function SourcesSidebar({
   sources = [],
   onWebsiteSubmit,
   onSendToCerebras,
-  notebookId
+  notebookId,
+  onOpenAddSource
 }: SourcesSidebarProps) {
-  const [showWebsiteInput, setShowWebsiteInput] = useState(false);
-  const [addSourceOpen, setAddSourceOpen] = useState(false);
   const { data: session } = authClient.useSession();
 
   return (
@@ -71,78 +71,17 @@ export function SourcesSidebar({
                 }}
               />
             ))}
+            {sources.length === 0 && (
+              <div className="text-sm text-gray-500 text-center py-8">
+                <FileText className="w-8 h-8 mx-auto mb-2 text-gray-600" />
+                <p>Saved sources will appear here</p>
+                <p className="mt-2 text-xs">Click Add source above to add PDFs, websites, text, videos, or audio files.</p>
+              </div>
+            )}
           </div>
-          <Dialog open={addSourceOpen} onOpenChange={setAddSourceOpen}>
-            <DialogTrigger asChild>
-              <Button className="w-full mb-4" variant="outline">
-                + Add source
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[600px] bg-[#1A1A1A] border-[#2A2A2A]">
-              {showWebsiteInput ? (
-                <WebsiteURLInput
-                  notebookId={notebookId}
-                  userId={session?.user?.id || ""}
-                  onBack={() => setShowWebsiteInput(false)}
-                  onSubmit={(url) => {
-                    onWebsiteSubmit?.(url);                    setShowWebsiteInput(false);
-                    setAddSourceOpen(false);
-                  }}
-                  onSendToCerebras={onSendToCerebras}
-                />
-              ) : (
-                <>
-                  <DialogHeader className="space-y-4">
-                    <DialogTitle className="text-xl text-white">
-                      Add source
-                    </DialogTitle>
-                    <DialogDescription className="text-gray-400">
-                      Choose a source to add to your notebook
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="grid gap-4 py-4">
-                    <Button
-                      variant="outline"
-                      className="flex items-center justify-start space-x-2 h-auto py-4 px-4"
-                      onClick={() => setShowWebsiteInput(true)}
-                    >
-                      <LinkIcon className="h-5 w-5" />
-                      <div className="flex flex-col items-start">
-                        <span className="font-medium">Website URL</span>
-                        <span className="text-sm text-gray-400">
-                          Add content from any website
-                        </span>
-                      </div>
-                    </Button>
-                    <Button
-                      variant="outline"
-                      className="flex items-center justify-start space-x-2 h-auto py-4 px-4"
-                    >
-                      <Youtube className="h-5 w-5" />
-                      <div className="flex flex-col items-start">
-                        <span className="font-medium">YouTube video</span>
-                        <span className="text-sm text-gray-400">
-                          Add content from a YouTube video
-                        </span>
-                      </div>
-                    </Button>
-                    <Button
-                      variant="outline"
-                      className="flex items-center justify-start space-x-2 h-auto py-4 px-4"
-                    >
-                      <Upload className="h-5 w-5" />
-                      <div className="flex flex-col items-start">
-                        <span className="font-medium">Upload file</span>
-                        <span className="text-sm text-gray-400">
-                          Upload a PDF, DOCX, or TXT file
-                        </span>
-                      </div>
-                    </Button>
-                  </div>
-                </>
-              )}
-            </DialogContent>
-          </Dialog>
+          <Button className="w-full mb-4 bg-[#2A2A2A] hover:bg-[#333] text-white border-0 rounded-full" variant="outline" onClick={onOpenAddSource}>
+            + Add sources
+          </Button>
         </div>
       </div>
     </div>
