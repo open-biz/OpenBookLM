@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Search, Globe, Sparkles, ArrowRight, Upload, Link as LinkIcon, HardDrive, Files } from "lucide-react";
 import { WebsiteURLInput } from "@/components/website-url-input";
 import { authClient } from "@/lib/auth-client";
+import { NotImplementedDialog } from "@/components/not-implemented-dialog";
 
 interface AddSourceDialogProps {
   open: boolean;
@@ -18,7 +19,14 @@ interface AddSourceDialogProps {
 export function AddSourceDialog({ open, onOpenChange, notebookId, onWebsiteSubmit, onSendToCerebras }: AddSourceDialogProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [showWebsiteInput, setShowWebsiteInput] = useState(false);
+  const [notImplementedOpen, setNotImplementedOpen] = useState(false);
+  const [selectedFeature, setSelectedFeature] = useState("");
   const { data: session } = authClient.useSession();
+
+  const handleFeatureClick = (featureName: string) => {
+    setSelectedFeature(featureName);
+    setNotImplementedOpen(true);
+  };
 
   return (
     <Dialog open={open} onOpenChange={(val) => {
@@ -85,7 +93,11 @@ export function AddSourceDialog({ open, onOpenChange, notebookId, onWebsiteSubmi
               <p className="text-sm text-gray-500 mb-8">pdf, images, docs, audio, <span className="underline decoration-gray-500 underline-offset-4 cursor-pointer hover:text-gray-400">and more</span></p>
               
               <div className="flex flex-wrap justify-center gap-4 w-full max-w-lg">
-                <Button variant="outline" className="rounded-full bg-[#252525] border-[#333] hover:bg-[#333] text-white h-10 px-5">
+                <Button 
+                  variant="outline" 
+                  className="rounded-full bg-[#252525] border-[#333] hover:bg-[#333] text-white h-10 px-5"
+                  onClick={() => handleFeatureClick("File Upload")}
+                >
                   <Upload className="w-4 h-4 mr-2" /> Upload files
                 </Button>
                 <Button 
@@ -95,10 +107,18 @@ export function AddSourceDialog({ open, onOpenChange, notebookId, onWebsiteSubmi
                 >
                   <LinkIcon className="w-4 h-4 mr-2 text-red-500" /> Websites
                 </Button>
-                <Button variant="outline" className="rounded-full bg-[#252525] border-[#333] hover:bg-[#333] text-white h-10 px-5">
+                <Button 
+                  variant="outline" 
+                  className="rounded-full bg-[#252525] border-[#333] hover:bg-[#333] text-white h-10 px-5"
+                  onClick={() => handleFeatureClick("Google Drive Import")}
+                >
                   <HardDrive className="w-4 h-4 mr-2 text-blue-400" /> Drive
                 </Button>
-                <Button variant="outline" className="rounded-full bg-[#252525] border-[#333] hover:bg-[#333] text-white h-10 px-5">
+                <Button 
+                  variant="outline" 
+                  className="rounded-full bg-[#252525] border-[#333] hover:bg-[#333] text-white h-10 px-5"
+                  onClick={() => handleFeatureClick("Pasted Text Import")}
+                >
                   <Files className="w-4 h-4 mr-2 text-gray-400" /> Copied text
                 </Button>
               </div>
@@ -106,6 +126,11 @@ export function AddSourceDialog({ open, onOpenChange, notebookId, onWebsiteSubmi
           </>
         )}
       </DialogContent>
+      <NotImplementedDialog
+        open={notImplementedOpen}
+        onOpenChange={setNotImplementedOpen}
+        featureName={selectedFeature}
+      />
     </Dialog>
   );
 }
