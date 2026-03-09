@@ -117,18 +117,21 @@ export default function HomePage({
         </h1>
         
         <div>
+          <div className="flex items-center space-x-6 mb-8">
+            <button className="px-4 py-1.5 rounded-full bg-[#252525] text-white text-sm font-medium border border-[#333]">
+              All
+            </button>
+            <button className="text-gray-400 hover:text-white text-sm font-medium transition-colors">
+              My notebooks
+            </button>
+            <button className="text-gray-400 hover:text-white text-sm font-medium transition-colors">
+              Shared with me
+            </button>
+          </div>
+
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-[22px] font-medium text-gray-100">My Notebooks</h2>
+            <h2 className="text-[22px] font-medium text-gray-100">Recent notebooks</h2>
             <div className="flex items-center gap-3">
-              <CreateNotebookDialog onNotebookCreated={handleNotebookCreated}>
-                <Button 
-                  size="sm" 
-                  className="flex items-center gap-2 bg-[#4285f4] hover:bg-[#4285f4]/90 text-white rounded-full px-4 h-9"
-                >
-                  <Plus className="h-4 w-4" />
-                  Create new
-                </Button>
-              </CreateNotebookDialog>
               <div className="flex items-center gap-0.5 bg-[#2A2A2A] rounded-lg p-1">
                 <Button
                   size="sm"
@@ -154,20 +157,40 @@ export default function HomePage({
               <Button 
                 size="sm" 
                 variant="ghost" 
-                className="text-gray-400 hover:text-gray-300 h-9 px-3"
+                className="text-gray-300 border border-[#333] rounded-full hover:bg-[#2A2A2A] hover:text-white h-9 px-4"
               >
                 Most recent
-                <ChevronDown className="h-4 w-4 ml-1" />
+                <ChevronDown className="h-4 w-4 ml-2" />
               </Button>
+              <CreateNotebookDialog onNotebookCreated={handleNotebookCreated}>
+                <Button 
+                  size="sm" 
+                  className="flex items-center gap-2 bg-white text-black hover:bg-gray-200 rounded-full px-5 h-9 font-medium ml-2"
+                >
+                  <Plus className="h-4 w-4" />
+                  Create new
+                </Button>
+              </CreateNotebookDialog>
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            <CreateNotebookDialog onNotebookCreated={handleNotebookCreated}>
+              <div className="group relative rounded-2xl overflow-hidden aspect-[4/3] p-6 bg-[#202020] hover:bg-[#252525] border border-[#2A2A2A] hover:border-[#3A3A3A] transition-all cursor-pointer flex flex-col items-center justify-center text-center h-full">
+                <div className="w-14 h-14 rounded-full bg-[#2A3B5C] flex items-center justify-center mb-4 group-hover:bg-[#344871] transition-colors">
+                  <Plus className="h-7 w-7 text-blue-400" />
+                </div>
+                <h3 className="text-[17px] font-medium text-gray-300 group-hover:text-white transition-colors">
+                  Create new notebook
+                </h3>
+              </div>
+            </CreateNotebookDialog>
+            
             {notebooks.map((notebook, index) => (
               <Link
                 key={notebook.id}
                 href={`/notebook/${notebook.id}`}
-                className="group relative rounded-2xl overflow-hidden aspect-[4/3] p-6 bg-gradient-to-br from-gray-800/50 via-gray-900 to-gray-900 hover:ring-1 hover:ring-white/10 transition-all"
+                className="group relative rounded-2xl overflow-hidden aspect-[4/3] p-6 bg-[#1C1C1C] border border-[#2A2A2A] hover:bg-[#252525] hover:border-[#3A3A3A] transition-all flex flex-col h-full"
               >
                 <div className="absolute top-3 right-3">
                   <DropdownMenu>
