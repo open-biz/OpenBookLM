@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
@@ -23,6 +23,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
 
+import { NotImplementedDialog } from "@/components/not-implemented-dialog";
+
 interface Notebook {
   id: string;
   title: string;
@@ -41,6 +43,23 @@ export default function HomePage({
   const [notebooks, setNotebooks] = useState(initialNotebooks);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [deletingNotebookId, setDeletingNotebookId] = useState<string | null>(null);
+  const [notImplementedOpen, setNotImplementedOpen] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 768) {
+        setViewMode("list");
+      } else {
+        setViewMode("grid");
+      }
+    };
+    
+    // Set initial layout
+    handleResize();
+    
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   const refreshNotebooks = async () => {
     // Start fetching in the background
@@ -110,28 +129,50 @@ export default function HomePage({
 
   return (
     <div className="min-h-screen bg-[#1a1a1a] text-white">
-      <div className="max-w-[1400px] mx-auto px-16 py-16">
-        <h1 className="text-[56px] font-medium leading-tight mb-16">
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-16 py-8 sm:py-16">
+        <h1 className="text-4xl sm:text-[56px] font-medium leading-tight mb-8 sm:mb-16 hidden sm:block">
           <span className="text-[#4285f4]">Welcome to </span>
           <span className="text-[#8ab4f8]">OpenBookLM</span>
         </h1>
         
         <div>
-          <div className="flex items-center space-x-6 mb-8">
-            <button className="px-4 py-1.5 rounded-full bg-[#252525] text-white text-sm font-medium border border-[#333]">
-              All
-            </button>
-            <button className="text-gray-400 hover:text-white text-sm font-medium transition-colors">
-              My notebooks
-            </button>
-            <button className="text-gray-400 hover:text-white text-sm font-medium transition-colors">
-              Shared with me
-            </button>
-          </div>
+          {/* Mobile Header elements are generally handled in root-layout, but we can structure the sub-header here */}
+          
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-8 mt-2 sm:mt-0">
+            <div className="flex items-center gap-4 sm:hidden justify-center mb-2">
+              <Button 
+                variant="outline" 
+                className="bg-transparent border-[#333] text-white rounded-full px-5 h-10 w-40 flex justify-between"
+              >
+                <span>Most recent</span>
+                <ChevronDown className="h-4 w-4 opacity-50" />
+              </Button>
+              <CreateNotebookDialog onNotebookCreated={handleNotebookCreated}>
+                <Button 
+                  className="flex items-center justify-center gap-2 bg-white text-black hover:bg-gray-200 rounded-full px-5 h-10 font-medium w-40"
+                >
+                  <Plus className="h-4 w-4" />
+                  Create
+                </Button>
+              </CreateNotebookDialog>
+            </div>
 
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-[22px] font-medium text-gray-100">Recent notebooks</h2>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center justify-center sm:justify-start space-x-4 sm:space-x-6 overflow-x-auto pb-2 scrollbar-none w-full sm:w-auto">
+              <button className="px-4 py-1.5 text-gray-400 hover:text-white text-sm font-medium transition-colors whitespace-nowrap">
+                All
+              </button>
+              <button className="px-4 py-1.5 text-gray-400 hover:text-white text-sm font-medium transition-colors whitespace-nowrap">
+                My notebooks
+              </button>
+              <button 
+                className="px-4 py-1.5 rounded-full bg-transparent text-[#A8C7FA] text-sm font-medium border border-[#A8C7FA] whitespace-nowrap"
+                onClick={() => setNotImplementedOpen(true)}
+              >
+                Shared with me
+              </button>
+            </div>
+
+            <div className="hidden sm:flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
               <div className="flex items-center gap-0.5 bg-[#2A2A2A] rounded-lg p-1">
                 <Button
                   size="sm"
@@ -165,7 +206,7 @@ export default function HomePage({
               <CreateNotebookDialog onNotebookCreated={handleNotebookCreated}>
                 <Button 
                   size="sm" 
-                  className="flex items-center gap-2 bg-white text-black hover:bg-gray-200 rounded-full px-5 h-9 font-medium ml-2"
+                  className="flex items-center justify-center gap-2 bg-white text-black hover:bg-gray-200 rounded-full px-5 h-9 font-medium"
                 >
                   <Plus className="h-4 w-4" />
                   Create new
@@ -174,39 +215,79 @@ export default function HomePage({
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            <CreateNotebookDialog onNotebookCreated={handleNotebookCreated}>
-              <div className="group relative rounded-2xl overflow-hidden aspect-[4/3] p-6 bg-[#202020] hover:bg-[#252525] border border-[#2A2A2A] hover:border-[#3A3A3A] transition-all cursor-pointer flex flex-col items-center justify-center text-center h-full">
-                <div className="w-14 h-14 rounded-full bg-[#2A3B5C] flex items-center justify-center mb-4 group-hover:bg-[#344871] transition-colors">
-                  <Plus className="h-7 w-7 text-blue-400" />
+          <h2 className="text-[24px] sm:text-[22px] font-medium text-gray-100 mb-6 px-2 sm:px-0">
+            {notImplementedOpen ? "Shared with me" : "Recent notebooks"}
+          </h2>
+
+          <div className={viewMode === "grid" 
+            ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 px-2 sm:px-0" 
+            : "flex flex-col px-2 sm:px-0"
+          }>
+            {viewMode === "grid" && (
+              <CreateNotebookDialog onNotebookCreated={handleNotebookCreated}>
+                <div className="group relative rounded-2xl overflow-hidden aspect-[4/3] p-6 bg-[#202020] hover:bg-[#252525] border border-[#2A2A2A] hover:border-[#3A3A3A] transition-all cursor-pointer flex flex-col items-center justify-center text-center h-full">
+                  <div className="w-14 h-14 rounded-full bg-[#2A3B5C] flex items-center justify-center mb-4 group-hover:bg-[#344871] transition-colors">
+                    <Plus className="h-7 w-7 text-blue-400" />
+                  </div>
+                  <h3 className="text-[17px] font-medium text-gray-300 group-hover:text-white transition-colors">
+                    Create new notebook
+                  </h3>
                 </div>
-                <h3 className="text-[17px] font-medium text-gray-300 group-hover:text-white transition-colors">
-                  Create new notebook
-                </h3>
-              </div>
-            </CreateNotebookDialog>
+              </CreateNotebookDialog>
+            )}
             
+            {viewMode === "list" && (
+              <div className="flex items-center text-sm font-medium text-gray-400 border-b border-[#333] pb-4 mb-2">
+                <span className="flex-1">Title</span>
+              </div>
+            )}
+
             {notebooks.map((notebook, index) => (
               <Link
                 key={notebook.id}
                 href={`/notebook/${notebook.id}`}
-                className="group relative rounded-2xl overflow-hidden aspect-[4/3] p-6 bg-[#1C1C1C] border border-[#2A2A2A] hover:bg-[#252525] hover:border-[#3A3A3A] transition-all flex flex-col h-full"
+                className={viewMode === "grid"
+                  ? "group relative rounded-2xl overflow-hidden aspect-[4/3] p-6 bg-[#1C1C1C] border border-[#2A2A2A] hover:bg-[#252525] hover:border-[#3A3A3A] transition-all flex flex-col h-full"
+                  : "group relative flex items-center justify-between py-4 border-b border-[#2A2A2A] hover:bg-[#1C1C1C] transition-colors px-2"
+                }
               >
-                <div className="absolute top-3 right-3">
+                <div className={viewMode === "grid" ? "flex flex-col h-full" : "flex items-center gap-4 flex-1"}>
+                  <div className={viewMode === "grid" ? "text-2xl mb-3" : "text-xl"}>
+                    {getNotebookEmoji(notebook)}
+                  </div>
+                  <div className={viewMode === "grid" ? "" : "flex-1"}>
+                    <h3 className="text-[17px] font-medium text-gray-100 line-clamp-2 leading-snug">
+                      {notebook.title}
+                    </h3>
+                  </div>
+                  
+                  {viewMode === "grid" && (
+                    <div className="flex items-center text-sm text-gray-500 mt-auto pt-4">
+                      <span>{new Date(notebook.updatedAt).toLocaleDateString()}</span>
+                      <span className="mx-2">•</span>
+                      <span>{notebook.sources.length} source{notebook.sources.length !== 1 ? 's' : ''}</span>
+                    </div>
+                  )}
+                </div>
+
+                <div className={viewMode === "grid" ? "absolute top-3 right-3" : ""}>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button
                         size="sm"
                         variant="ghost"
-                        className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity text-gray-400 hover:text-white rounded-full"
+                        className={viewMode === "grid" 
+                          ? "h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity text-gray-400 hover:text-white rounded-full"
+                          : "h-8 w-8 p-0 text-blue-400 hover:text-blue-300 hover:bg-[#2A2A2A] rounded-full"
+                        }
                         disabled={deletingNotebookId === notebook.id}
                       >
                         <MoreVertical className="h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-40">
+                    <DropdownMenuContent align="end" className="w-40 bg-[#1C1C1C] border-[#2A2A2A] text-white">
                       <DropdownMenuItem
-                        className="text-red-500 focus:text-red-500"
+                        className="text-red-500 focus:text-red-400 focus:bg-red-500/10 cursor-pointer"
                         onClick={(e) => {
                           e.preventDefault();
                           handleDeleteNotebook(notebook.id);
@@ -218,24 +299,16 @@ export default function HomePage({
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
-                <div className="flex flex-col h-full">
-                  <div>
-                    <div className="text-2xl mb-3">{getNotebookEmoji(notebook)}</div>
-                    <h3 className="text-[17px] font-medium text-gray-100 line-clamp-2 leading-snug">
-                      {notebook.title}
-                    </h3>
-                  </div>
-                  <div className="flex items-center text-sm text-gray-500 mt-auto pt-4">
-                    <span>{new Date(notebook.updatedAt).toLocaleDateString()}</span>
-                    <span className="mx-2">•</span>
-                    <span>{notebook.sources.length} source{notebook.sources.length !== 1 ? 's' : ''}</span>
-                  </div>
-                </div>
               </Link>
             ))}
           </div>
         </div>
       </div>
+      <NotImplementedDialog 
+        open={notImplementedOpen} 
+        onOpenChange={setNotImplementedOpen} 
+        featureName="Notebook Sharing" 
+      />
     </div>
   );
 }
