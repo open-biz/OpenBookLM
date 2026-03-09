@@ -3,7 +3,7 @@ import { prismaAdapter } from "better-auth/adapters/prisma";
 import { prisma } from "./db";
 import { CreditManager } from "./credit-manager";
 import { nanoid } from "nanoid";
-import { headers } from "next/headers";
+import { headers, cookies } from "next/headers";
 
 export const auth = betterAuth({
   secret: process.env.BETTER_AUTH_SECRET || "this-is-a-very-long-secret-key-for-better-auth-to-use-during-build",
@@ -29,6 +29,18 @@ export async function getOrCreateUser() {
   }
 
   // Handle guest users
+  const cookieStore = await cookies();
+  const existingGuestId = cookieStore.get("openbooklm_guest_id")?.value;
+
+  if (existingGuestId) {
+    const guestUser = await prisma.user.findUnique({
+      where: { id: existingGuestId },
+    });
+    if (guestUser) {
+      return guestUser;
+    }
+  }
+
   const guestId = nanoid();
   const guestUser = await prisma.user.create({
     data: {
@@ -42,6 +54,14 @@ export async function getOrCreateUser() {
   // Initialize guest credits
   await CreditManager.initializeGuestCredits(guestUser.id);
 
+  // Set the guest cookie to persist the session
+  cookieStore.set("openbooklm_guest_id", guestUser.id, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    maxAge: 60 * 60 * 24 * 7, // 1 week
+  });
+
   return guestUser;
 }
 
@@ -53,6 +73,15 @@ export async function getCurrentUser() {
   if (session?.user) {
     return prisma.user.findUnique({
       where: { id: session.user.id },
+    });
+  }
+
+  const cookieStore = await cookies();
+  const existingGuestId = cookieStore.get("openbooklm_guest_id")?.value;
+
+  if (existingGuestId) {
+    return prisma.user.findUnique({
+      where: { id: existingGuestId },
     });
   }
   

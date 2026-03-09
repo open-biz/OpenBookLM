@@ -25,16 +25,6 @@ spec:
           ports:
             - containerPort: 3000
           env:
-            - name: NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: clerk-credentials
-                  key: NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
-            - name: CLERK_SECRET_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: clerk-credentials
-                  key: CLERK_SECRET_KEY
             - name: DATABASE_URL
               valueFrom:
                 secretKeyRef:

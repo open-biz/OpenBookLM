@@ -49,8 +49,8 @@
         <li><a href="#installation">Installation</a></li>
       </ul>
     </li>
-    <li><a href="#challenges">Challenges</a></li>
-    <li><a href="#advice-for-contributors">Advice for Contributors</a></li>
+    <li><a href="#freemium-model--guest-mode">Freemium Model & Guest Mode</a></li>
+    <li><a href="#future-optimizations">Future Optimizations</a></li>
     <li><a href="#contributing">Contributing</a></li>
     <li><a href="#license">License</a></li>
     <li><a href="#contact">Contact</a></li>
@@ -108,12 +108,12 @@ OpenBookLM is designed to bridge the gap between traditional learning methods an
 graph TD
     subgraph Client
         UI[Next.js Frontend]
-        Auth[Clerk Auth]
+        Auth[Better Auth]
     end
 
     subgraph Server
         API[Next.js API Routes]
-        LLM[LLM Service]
+        LLM[LLM Python Service]
         Cache[Redis Cache]
     end
 
@@ -139,44 +139,30 @@ graph TD
 
 ### Built With
 
-* [![Next][Next.js]][Next-url]
-* [![React][React.js]][React-url]
+* [![Next][Next.js]][Next-url] (v16+)
+* [![React][React.js]][React-url] (v19)
+* [![Bun][Bun-badge]][Bun-url]
 * [![TypeScript][TypeScript]][TypeScript-url]
 * [![Tailwind][TailwindCSS]][Tailwind-url]
 * [![Prisma][Prisma]][Prisma-url]
 * [![PostgreSQL][PostgreSQL]][PostgreSQL-url]
 
-## Challenges ⚠️
+## Freemium Model & Guest Mode 🆓
 
-### GPU Hosting 💻
-- Managing high computational power requirements
-- Optimizing resource allocation
-- Cost-effective scaling solutions
+OpenBookLM operates on a freemium model. We believe education should be accessible to everyone immediately. Users can access the site and utilize "Guest Mode" without the friction of signing up. Guest users are assigned temporary identities using cookies and receive a limited pool of credits for audio generation, document processing, and context tokens. Once they see the value, they can easily sign in via GitHub to unlock higher limits and persistent storage via **Better Auth**.
 
-### Text-to-Audio Pipelines 🗣️
-- Ensuring high-quality audio output
-- Managing pre-generated transcripts
-- Supporting multiple languages efficiently
+## Future Optimizations ⚡
 
-### Community Integration 🤲
-- Building a curated content platform
-- Managing user contributions
-- Maintaining quality standards
+As OpenBookLM scales, there are several architectural paths we plan to explore to maximize speed and lower compute costs:
 
-## Advice for Contributors ⚡
+### 1. High-Performance Backend (Rust / Go)
+Currently, our heavy text-to-audio and PDF parsing tasks are handled by a Python backend. Rewriting these specific, CPU-intensive microservices in **Rust** or **Go** could drastically reduce our memory footprint and execution time, allowing us to serve more concurrent users on cheaper hardware.
 
-### Rapid AI Prototyping 🌀
-> "The simplest way to build an awesome product? Replicate an existing one, but add a unique twist or focus on a different market!"
+### 2. WebAssembly (Wasm) Integration
+Certain parsing tasks, document vectorization, and local token counting can be shifted directly to the user's browser using **WebAssembly**. By compiling Rust/C++ libraries into Wasm, we can offload compute from our servers to the client, making the application feel instantaneous and significantly reducing our cloud hosting costs.
 
-Our twist:
-- Open-source accessibility
-- Multilingual capabilities
-- Global collaboration features
-
-### Market Gap Focus 🔍
-- Addressing language restrictions
-- Providing open-source alternatives
-- Enabling community-driven learning
+### 3. Edge Computing & Aggressive Caching
+Leveraging Redis at the edge and pushing static LLM summaries to CDNs can ensure that repeated queries (like summarizing popular open-source books) are served in single-digit milliseconds worldwide.
 
 ## Getting Started
 
@@ -189,7 +175,8 @@ To get a local copy up and running, follow these steps.
   ```sh
   curl -fsSL https://bun.sh/install | bash
   ```
-* Python (3.8 or later)
+* Python (3.12 or later)
+* Docker & Docker Compose (for DB and Redis)
 
 ### Installation
 
@@ -211,7 +198,15 @@ To get a local copy up and running, follow these steps.
    ```sh
    cp .env.example .env
    ```
-5. Start the development server
+5. Start local services (Postgres & Redis)
+   ```sh
+   docker compose up -d db redis
+   ```
+6. Sync your database schema
+   ```sh
+   bunx prisma db push
+   ```
+7. Start the development server
    ```sh
    bun dev
    ```
@@ -220,25 +215,11 @@ To get a local copy up and running, follow these steps.
 
 ## Usage
 
-1. **Create a Notebook**: Start by creating a new notebook for your study topic
+1. **Create a Notebook**: Start by creating a new notebook for your study topic (Guests can do this instantly!)
 2. **Add Sources**: Upload URLs, documents, or other study materials
 3. **Take Notes**: Use the AI-powered interface to take and organize notes
 4. **Study & Review**: Engage with your materials through interactive features
 5. **Share & Collaborate**: Join the community and share your knowledge
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-## Features
-
-- Dark mode by default
-- Modern UI with shadcn components
-- Notebook management
-- Community courses section
-- Interactive chat interface
-- Source management
-- Notes and study tools
-- Real-time updates
-- Progress tracking
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -290,3 +271,5 @@ Project Link: [https://github.com/open-biz/OpenBookLM](https://github.com/open-b
 [Prisma-url]: https://www.prisma.io/
 [PostgreSQL]: https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white
 [PostgreSQL-url]: https://www.postgresql.org/
+[Bun-badge]: https://img.shields.io/badge/Bun-%23000000.svg?style=for-the-badge&logo=bun&logoColor=white
+[Bun-url]: https://bun.sh/
