@@ -9,9 +9,9 @@ export async function GET() {
     const currentUser = await getCurrentUser();
     const userId = currentUser?.id;
     if (!userId) {
-      return new NextResponse("Unauthorized", { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-    const user = await getOrCreateUser();
+    const user = await getOrCreateUser(true);
     const notebooks = await prisma.notebook.findMany({
       where: {
         userId: user?.id,
@@ -28,22 +28,22 @@ export async function GET() {
     return NextResponse.json(notebooks);
   } catch (error) {
     console.error("[NOTEBOOKS_GET]", error);
-    return new NextResponse("Internal Error", { status: 500 });
+    return NextResponse.json({ error: "Internal Error" }, { status: 500 });
   }
 }
 
 export async function POST(req: Request) {
   try {
-    const user = await getOrCreateUser();
+    const user = await getOrCreateUser(true);
     if (!user) {
-      return new NextResponse("Unauthorized", { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const body = await req.json();
     const { title, provider } = body;
 
     if (!title) {
-      return new NextResponse("Title is required", { status: 400 });
+      return NextResponse.json({ error: "Title is required" }, { status: 400 });
     }
 
     const notebook = await prisma.notebook.create({
@@ -58,6 +58,6 @@ export async function POST(req: Request) {
     return NextResponse.json(notebook);
   } catch (error) {
     console.error("[NOTEBOOKS_POST]", error);
-    return new NextResponse("Internal Error", { status: 500 });
+    return NextResponse.json({ error: "Internal Error" }, { status: 500 });
   }
 }

@@ -32,7 +32,7 @@ export async function POST(req: Request) {
   try {
     const user = await getOrCreateUser();
     if (!user) {
-      return new NextResponse("Unauthorized", { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const body = await req.json();
@@ -167,6 +167,6 @@ const finalMessages = [
         { status: 400 }
       );
     }
-    return new NextResponse("Internal Error", { status: 500 });
+    return NextResponse.json({ error: "Internal Error" }, { status: 500 });
   }
 }
