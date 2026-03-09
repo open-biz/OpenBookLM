@@ -15,10 +15,13 @@ spec:
       labels:
         app: openbooklm
     spec:
+      imagePullSecrets:
+        - name: ghcr-secret
       containers:
         # Frontend container
         - name: frontend
-          image: node:20-slim
+          image: ghcr.io/open-biz/openbooklm:main
+          imagePullPolicy: Always
           ports:
             - containerPort: 3000
           env:
@@ -54,13 +57,11 @@ spec:
                 configMapKeyRef:
                   name: openbooklm-config
                   key: BASE_URL
-            # Add Cerebras API key to frontend
             - name: CEREBRAS_API_KEY
               valueFrom:
                 secretKeyRef:
                   name: api-credentials
                   key: CEREBRAS_API_KEY
-            # Google API credentials
             - name: NEXT_PUBLIC_GOOGLE_CLIENT_ID
               valueFrom:
                 secretKeyRef:
@@ -83,22 +84,11 @@ spec:
             limits:
               cpu: '1000m'
               memory: '2Gi'
-          command: ['/bin/sh', '-c']
-          args:
-            - |
-              set -e
-              apt-get update
-              apt-get install -y git openssl libssl-dev ca-certificates
-              npm install -g pnpm
-              git clone -b feat/connor/tmp-host https://github.com/open-biz/openbooklm.git
-              cd openbooklm
-              pnpm install
-              npx prisma generate
-              pnpm build
-              pnpm start
-        # Backend container (single definition)
+        
+        # Backend container
         - name: backend
-          image: python:3.12-slim
+          image: ghcr.io/open-biz/openbooklm-backend:main
+          imagePullPolicy: Always
           ports:
             - containerPort: 8000
           env:
@@ -117,31 +107,15 @@ spec:
                 secretKeyRef:
                   name: api-credentials
                   key: OPENAI_API_KEY
-          # Backend container
-          command: ['/bin/sh', '-c']
-          args:
-            - |
-              set -e
-              apt-get update
-              apt-get install -y git python3-pip python3-venv ffmpeg libsndfile1 libportaudio2
-              git clone -b feat/connor/tmp-host https://github.com/open-biz/openbooklm.git
-              cd openbooklm
-              chmod +x setup/create_venv.sh
-              # Install packages in smaller groups to manage memory better
-              python3 -m venv venv
-              . venv/bin/activate
-              pip install --no-cache-dir -U pip setuptools wheel
-              # Install core dependencies first
-              pip install --no-cache-dir torch transformers scipy numpy
-              # Install remaining packages
-              pip install --no-cache-dir -r requirements.txt
-              # Run the Groq server
-              python3 backend/groq/main.py
+            - name: GROQ_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: api-credentials
+                  key: GROQ_API_KEY
           resources:
             requests:
               cpu: '500m'
-              memory: '8Gi' # Increased from 4Gi
+              memory: '2Gi'
             limits:
               cpu: '1000m'
-              memory: '16Gi' # Increased from 8Gi
-          # Removed readinessProbe and livenessProbe
+              memory: '4Gi'

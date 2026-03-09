@@ -1,199 +1,121 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  annotations:
-    deployment.kubernetes.io/revision: "68"
-    kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"apps/v1","kind":"Deployment","metadata":{"annotations":{},"labels":{"app":"openbooklm"},"name":"openbooklm","namespace":"openbooklm"},"spec":{"replicas":1,"selector":{"matchLabels":{"app":"openbooklm"}},"template":{"metadata":{"labels":{"app":"openbooklm"}},"spec":{"containers":[{"args":["set -e\napt-get update\napt-get install -y git openssl libssl-dev ca-certificates\nnpm install -g pnpm\ngit clone -b feat/connor/backend-structure https://github.com/open-biz/openbooklm.git\ncd openbooklm\npnpm install\nnpx prisma generate\npnpm build\npnpm start\n"],"command":["/bin/sh","-c"],"env":[{"name":"NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY","valueFrom":{"secretKeyRef":{"key":"NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY","name":"clerk-credentials"}}},{"name":"CLERK_SECRET_KEY","valueFrom":{"secretKeyRef":{"key":"CLERK_SECRET_KEY","name":"clerk-credentials"}}},{"name":"DATABASE_URL","valueFrom":{"secretKeyRef":{"key":"DATABASE_URL","name":"db-credentials"}}},{"name":"REDIS_URL","valueFrom":{"secretKeyRef":{"key":"REDIS_URL","name":"redis-credentials"}}},{"name":"NODE_ENV","value":"production"},{"name":"NEXT_PUBLIC_API_URL","valueFrom":{"configMapKeyRef":{"key":"API_URL","name":"openbooklm-config"}}},{"name":"NEXT_PUBLIC_BASE_URL","valueFrom":{"configMapKeyRef":{"key":"BASE_URL","name":"openbooklm-config"}}},{"name":"CEREBRAS_API_KEY","valueFrom":{"secretKeyRef":{"key":"CEREBRAS_API_KEY","name":"api-credentials"}}},{"name":"NEXT_PUBLIC_GOOGLE_CLIENT_ID","valueFrom":{"secretKeyRef":{"key":"NEXT_PUBLIC_GOOGLE_CLIENT_ID","name":"google-credentials"}}},{"name":"GOOGLE_CLIENT_SECRET","valueFrom":{"secretKeyRef":{"key":"GOOGLE_CLIENT_SECRET","name":"google-credentials"}}},{"name":"NEXT_PUBLIC_GOOGLE_API_KEY","valueFrom":{"secretKeyRef":{"key":"NEXT_PUBLIC_GOOGLE_API_KEY","name":"google-credentials"}}}],"image":"node:20-slim","name":"frontend","ports":[{"containerPort":3000}],"resources":{"limits":{"cpu":"1000m","memory":"2Gi"},"requests":{"cpu":"500m","memory":"1Gi"}}},{"args":["set -e\napt-get update\napt-get install -y git python3-pip python3-venv ffmpeg libsndfile1 libportaudio2\ngit clone -b feat/connor/backend-structure https://github.com/open-biz/openbooklm.git\ncd openbooklm\nchmod +x setup/create_venv.sh\n# Install packages in smaller groups to manage memory better\npython3 -m venv venv\n. venv/bin/activate\npip install --no-cache-dir -U pip setuptools wheel\n# Install core dependencies first\npip install --no-cache-dir torch transformers scipy numpy\n# Install remaining packages\npip install --no-cache-dir -r requirements.txt\n# Run the Groq server\npython3 backend/main.py\n"],"command":["/bin/sh","-c"],"env":[{"name":"GROQ_API_KEY","valueFrom":{"secretKeyRef":{"key":"GROQ_API_KEY","name":"api-credentials"}}},{"name":"CEREBRAS_API_KEY","valueFrom":{"secretKeyRef":{"key":"CEREBRAS_API_KEY","name":"api-credentials"}}},{"name":"LLAMA_API_KEY","valueFrom":{"secretKeyRef":{"key":"LLAMA_API_KEY","name":"api-credentials"}}},{"name":"OPENAI_API_KEY","valueFrom":{"secretKeyRef":{"key":"OPENAI_API_KEY","name":"api-credentials"}}}],"image":"python:3.12-slim","name":"backend","ports":[{"containerPort":8000}],"resources":{"limits":{"cpu":"1000m","memory":"16Gi"},"requests":{"cpu":"500m","memory":"8Gi"}}}]}}}}
-  creationTimestamp: "2025-02-10T23:40:41Z"
-  generation: 75
-  labels:
-    app: openbooklm
   name: openbooklm
   namespace: openbooklm
-  resourceVersion: "67636780"
-  uid: db934213-324c-4197-bb17-2324a8e5d204
+  labels:
+    app: openbooklm
 spec:
-  progressDeadlineSeconds: 600
   replicas: 1
-  revisionHistoryLimit: 10
   selector:
     matchLabels:
       app: openbooklm
-  strategy:
-    rollingUpdate:
-      maxSurge: 25%
-      maxUnavailable: 25%
-    type: RollingUpdate
   template:
     metadata:
-      annotations:
-        kubectl.kubernetes.io/restartedAt: "2025-02-13T15:23:37-05:00"
-      creationTimestamp: null
       labels:
         app: openbooklm
     spec:
+      imagePullSecrets:
+        - name: ghcr-secret
       containers:
-      - args:
-        - |
-          set -e
-          apt-get update
-          apt-get install -y git openssl libssl-dev ca-certificates
-          npm install -g pnpm
-          git clone -b feat/connor/backend-structure https://github.com/open-biz/openbooklm.git
-          cd openbooklm
-          pnpm install
-          npx prisma generate
-          pnpm build
-          pnpm start
-        command:
-        - /bin/sh
-        - -c
-        env:
-        - name: NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
-          valueFrom:
-            secretKeyRef:
-              key: NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
-              name: clerk-credentials
-        - name: CLERK_SECRET_KEY
-          valueFrom:
-            secretKeyRef:
-              key: CLERK_SECRET_KEY
-              name: clerk-credentials
-        - name: DATABASE_URL
-          valueFrom:
-            secretKeyRef:
-              key: DATABASE_URL
-              name: db-credentials
-        - name: REDIS_URL
-          valueFrom:
-            secretKeyRef:
-              key: REDIS_URL
-              name: redis-credentials
-        - name: NODE_ENV
-          value: production
-        - name: NEXT_PUBLIC_API_URL
-          valueFrom:
-            configMapKeyRef:
-              key: API_URL
-              name: openbooklm-config
-        - name: NEXT_PUBLIC_BASE_URL
-          valueFrom:
-            configMapKeyRef:
-              key: BASE_URL
-              name: openbooklm-config
-        - name: CEREBRAS_API_KEY
-          valueFrom:
-            secretKeyRef:
-              key: CEREBRAS_API_KEY
-              name: api-credentials
-        - name: NEXT_PUBLIC_GOOGLE_CLIENT_ID
-          valueFrom:
-            secretKeyRef:
-              key: NEXT_PUBLIC_GOOGLE_CLIENT_ID
-              name: google-credentials
-        - name: GOOGLE_CLIENT_SECRET
-          valueFrom:
-            secretKeyRef:
-              key: GOOGLE_CLIENT_SECRET
-              name: google-credentials
-        - name: NEXT_PUBLIC_GOOGLE_API_KEY
-          valueFrom:
-            secretKeyRef:
-              key: NEXT_PUBLIC_GOOGLE_API_KEY
-              name: google-credentials
-        image: node:20-slim
-        imagePullPolicy: IfNotPresent
-        name: frontend
-        ports:
-        - containerPort: 3000
-          protocol: TCP
-        resources:
-          limits:
-            cpu: "1"
-            memory: 2Gi
-          requests:
-            cpu: 125m
-            memory: 1Gi
-        terminationMessagePath: /dev/termination-log
-        terminationMessagePolicy: File
-      - args:
-        - |
-          set -e
-          apt-get update
-          apt-get install -y git python3-pip python3-venv ffmpeg libsndfile1 libportaudio2
-          git clone -b feat/connor/backend-structure https://github.com/open-biz/openbooklm.git
-          cd openbooklm
-          chmod +x setup/create_venv.sh
-          # Install packages in smaller groups to manage memory better
-          python3 -m venv venv
-          . venv/bin/activate
-          pip install --no-cache-dir -U pip setuptools wheel
-          # Install core dependencies first
-          pip install --no-cache-dir torch transformers scipy numpy
-          # Install remaining packages
-          pip install --no-cache-dir -r requirements.txt
-          # Run the Groq server
-          python3 backend/main.py
-        command:
-        - /bin/sh
-        - -c
-        env:
-        - name: GROQ_API_KEY
-          valueFrom:
-            secretKeyRef:
-              key: GROQ_API_KEY
-              name: api-credentials
-        - name: CEREBRAS_API_KEY
-          valueFrom:
-            secretKeyRef:
-              key: CEREBRAS_API_KEY
-              name: api-credentials
-        - name: LLAMA_API_KEY
-          valueFrom:
-            secretKeyRef:
-              key: LLAMA_API_KEY
-              name: api-credentials
-        - name: OPENAI_API_KEY
-          valueFrom:
-            secretKeyRef:
-              key: OPENAI_API_KEY
-              name: api-credentials
-        image: python:3.12-slim
-        imagePullPolicy: IfNotPresent
-        name: backend
-        ports:
-        - containerPort: 8000
-          protocol: TCP
-        resources:
-          limits:
-            cpu: "1"
-            memory: 16Gi
-          requests:
-            cpu: 125m
-            memory: 8Gi
-        terminationMessagePath: /dev/termination-log
-        terminationMessagePolicy: File
-      dnsPolicy: ClusterFirst
-      restartPolicy: Always
-      schedulerName: default-scheduler
-      securityContext: {}
-      terminationGracePeriodSeconds: 30
-status:
-  conditions:
-  - lastTransitionTime: "2025-02-11T19:11:43Z"
-    lastUpdateTime: "2025-09-03T18:28:03Z"
-    message: ReplicaSet "openbooklm-785dc9cd76" has successfully progressed.
-    reason: NewReplicaSetAvailable
-    status: "True"
-    type: Progressing
-  - lastTransitionTime: "2025-09-11T20:04:03Z"
-    lastUpdateTime: "2025-09-11T20:04:03Z"
-    message: Deployment does not have minimum availability.
-    reason: MinimumReplicasUnavailable
-    status: "False"
-    type: Available
-  observedGeneration: 75
-  replicas: 1
-  unavailableReplicas: 1
-  updatedReplicas: 1
+        # Frontend container
+        - name: frontend
+          image: ghcr.io/open-biz/openbooklm:main
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 3000
+          env:
+            - name: NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: clerk-credentials
+                  key: NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
+            - name: CLERK_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: clerk-credentials
+                  key: CLERK_SECRET_KEY
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: db-credentials
+                  key: DATABASE_URL
+            - name: REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: redis-credentials
+                  key: REDIS_URL
+            - name: NODE_ENV
+              value: 'production'
+            - name: NEXT_PUBLIC_API_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: openbooklm-config
+                  key: API_URL
+            - name: NEXT_PUBLIC_BASE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: openbooklm-config
+                  key: BASE_URL
+            - name: CEREBRAS_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: api-credentials
+                  key: CEREBRAS_API_KEY
+            - name: NEXT_PUBLIC_GOOGLE_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: google-credentials
+                  key: NEXT_PUBLIC_GOOGLE_CLIENT_ID
+            - name: GOOGLE_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: google-credentials
+                  key: GOOGLE_CLIENT_SECRET
+            - name: NEXT_PUBLIC_GOOGLE_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: google-credentials
+                  key: NEXT_PUBLIC_GOOGLE_API_KEY
+          resources:
+            requests:
+              cpu: '500m'
+              memory: '1Gi'
+            limits:
+              cpu: '1000m'
+              memory: '2Gi'
+        
+        # Backend container
+        - name: backend
+          image: ghcr.io/open-biz/openbooklm-backend:main
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8000
+          env:
+            - name: CEREBRAS_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: api-credentials
+                  key: CEREBRAS_API_KEY
+            - name: LLAMA_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: api-credentials
+                  key: LLAMA_API_KEY
+            - name: OPENAI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: api-credentials
+                  key: OPENAI_API_KEY
+            - name: GROQ_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: api-credentials
+                  key: GROQ_API_KEY
+          resources:
+            requests:
+              cpu: '500m'
+              memory: '2Gi'
+            limits:
+              cpu: '1000m'
+              memory: '4Gi'

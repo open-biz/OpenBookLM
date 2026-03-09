@@ -20,7 +20,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy backend source code
 COPY backend/ ./backend/
-COPY utils/ ./utils/
 # Any other shared modules needed by the backend
 
 EXPOSE 8000
