@@ -24,6 +24,7 @@ import {
 import { toast } from "sonner";
 
 import { NotImplementedDialog } from "@/components/not-implemented-dialog";
+import { NotebookCard } from "@/components/notebook-card";
 
 interface Notebook {
   id: string;
@@ -165,12 +166,11 @@ export default function HomePage({
                 My notebooks
               </button>
               <button 
-                className="px-4 py-1.5 rounded-full bg-transparent text-[#A8C7FA] text-sm font-medium border border-[#A8C7FA] whitespace-nowrap"
+                className="px-4 py-1.5 text-gray-400 hover:text-white text-sm font-medium transition-colors whitespace-nowrap"
                 onClick={() => setNotImplementedOpen(true)}
               >
                 Shared with me
-              </button>
-            </div>
+              </button>            </div>
 
             <div className="hidden sm:flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
               <div className="flex items-center gap-0.5 bg-[#2A2A2A] rounded-lg p-1">
@@ -243,63 +243,13 @@ export default function HomePage({
             )}
 
             {notebooks.map((notebook, index) => (
-              <Link
+              <NotebookCard 
                 key={notebook.id}
-                href={`/notebook/${notebook.id}`}
-                className={viewMode === "grid"
-                  ? "group relative rounded-2xl overflow-hidden aspect-[4/3] p-6 bg-[#1C1C1C] border border-[#2A2A2A] hover:bg-[#252525] hover:border-[#3A3A3A] transition-all flex flex-col h-full"
-                  : "group relative flex items-center justify-between py-4 border-b border-[#2A2A2A] hover:bg-[#1C1C1C] transition-colors px-2"
-                }
-              >
-                <div className={viewMode === "grid" ? "flex flex-col h-full" : "flex items-center gap-4 flex-1"}>
-                  <div className={viewMode === "grid" ? "text-2xl mb-3" : "text-xl"}>
-                    {getNotebookEmoji(notebook)}
-                  </div>
-                  <div className={viewMode === "grid" ? "" : "flex-1"}>
-                    <h3 className="text-[17px] font-medium text-gray-100 line-clamp-2 leading-snug">
-                      {notebook.title}
-                    </h3>
-                  </div>
-                  
-                  {viewMode === "grid" && (
-                    <div className="flex items-center text-sm text-gray-500 mt-auto pt-4">
-                      <span>{new Date(notebook.updatedAt).toLocaleDateString()}</span>
-                      <span className="mx-2">•</span>
-                      <span>{notebook.sources.length} source{notebook.sources.length !== 1 ? 's' : ''}</span>
-                    </div>
-                  )}
-                </div>
-
-                <div className={viewMode === "grid" ? "absolute top-3 right-3" : ""}>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className={viewMode === "grid" 
-                          ? "h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity text-gray-400 hover:text-white rounded-full"
-                          : "h-8 w-8 p-0 text-blue-400 hover:text-blue-300 hover:bg-[#2A2A2A] rounded-full"
-                        }
-                        disabled={deletingNotebookId === notebook.id}
-                      >
-                        <MoreVertical className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-40 bg-[#1C1C1C] border-[#2A2A2A] text-white">
-                      <DropdownMenuItem
-                        className="text-red-500 focus:text-red-400 focus:bg-red-500/10 cursor-pointer"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          handleDeleteNotebook(notebook.id);
-                        }}
-                      >
-                        <Trash2 className="h-4 w-4 mr-2" />
-                        Delete
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
-              </Link>
+                notebook={notebook}
+                viewMode={viewMode}
+                isDeleting={deletingNotebookId === notebook.id}
+                onDelete={handleDeleteNotebook}
+              />
             ))}
           </div>
         </div>
