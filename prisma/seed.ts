@@ -9,7 +9,6 @@ async function main() {
     update: {},
     create: {
       id: 'demo-user',
-      clerkId: 'demo-clerk-id',
       email: 'demo@openbooklm.com',
       name: 'Demo User',
     },

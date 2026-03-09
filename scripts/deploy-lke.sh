@@ -23,14 +23,6 @@ fi
 echo -e "${GREEN}Creating namespace...${NC}"
 kubectl create namespace openbooklm --dry-run=client -o yaml | kubectl apply -f -
 
-# Create Clerk credentials secret
-echo -e "${GREEN}Creating Clerk credentials secret...${NC}"
-kubectl create secret generic clerk-credentials \
-    --namespace openbooklm \
-    --from-literal=NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="$NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY" \
-    --from-literal=CLERK_SECRET_KEY="$CLERK_SECRET_KEY" \
-    --dry-run=client -o yaml | kubectl apply -f -
-
 # Create API credentials secret
 echo -e "${GREEN}Creating API credentials secret...${NC}"
 kubectl create secret generic api-credentials \

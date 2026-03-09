@@ -141,8 +141,6 @@ echo -e "${YELLOW}kubectl logs -f deployment/openbooklm -n openbooklm${NC}"
 # Add this near the start of the script
 validate_environment() {
   local required_vars=(
-    "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY"
-    "CLERK_SECRET_KEY"
     "DATABASE_URL"
     "REDIS_URL"
   )

@@ -6,9 +6,6 @@ if [ ! -f .env ]; then
     cat > .env << EOL
 DATABASE_URL="postgresql://postgres:postgres@localhost:5432/openbooklm"
 REDIS_URL="redis://localhost:6379"
-# Add your Clerk keys here
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=""
-CLERK_SECRET_KEY=""
 # Add your AI API keys here
 CEREBRAS_API_KEY=""
 LLAMA_API_KEY=""

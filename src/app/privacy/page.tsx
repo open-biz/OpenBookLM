@@ -29,8 +29,9 @@ const PrivacyPolicy = () => {
               Data Collection and Usage
             </h2>
             <p className="text-gray-300/90 mb-8 leading-7">
-              To provide our services, we need certain permissions through Clerk
-              Authentication. Here's what we request and why:
+              To provide our services, we need certain permissions through our
+              authentication provider (Better Auth). Here's what we request and
+              why:
             </p>
 
             <div className="grid gap-6 md:grid-cols-2">
