@@ -10,7 +10,15 @@ import {
   PanelLeftClose,
   PanelRightClose,
   Trash2,
+  Settings,
+  LayoutGrid
 } from "lucide-react";
+import Image from "next/image";
+import { useSession, signOut } from "@/lib/auth-client";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
+import { LogOut } from "lucide-react";
+import { LoginModal } from "@/components/login-modal";
 import { CreateNotebookDialog } from "@/components/create-notebook-dialog";
 import { Card } from "@/components/ui/card";
 import { ShareDialog } from "@/components/share-dialog";
@@ -45,6 +53,8 @@ export default function HomePage({
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [deletingNotebookId, setDeletingNotebookId] = useState<string | null>(null);
   const [notImplementedOpen, setNotImplementedOpen] = useState(false);
+  const { data: session } = useSession();
+  const isSignedIn = !!session;
 
   useEffect(() => {
     const handleResize = () => {
@@ -130,7 +140,63 @@ export default function HomePage({
 
   return (
     <div className="min-h-screen bg-[#1a1a1a] text-white">
-      <div className="max-w-[1400px] mx-auto px-4 sm:px-16 py-8 sm:py-16">
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-16 py-6 sm:py-16">
+        
+        {/* Mobile Header (Hidden on Desktop) */}
+        <div className="flex sm:hidden items-center justify-between mb-8">
+          <Link href="/" className="flex items-center space-x-2">
+            <Image src="/logo.png" alt="Logo" width={28} height={28} />
+            <span className="font-medium text-xl">
+              NotebookLM
+            </span>
+          </Link>
+          
+          <div className="flex items-center gap-1">
+            <Button variant="ghost" size="icon" className="text-gray-300 hover:text-white rounded-full">
+              <Settings className="h-5 w-5" />
+            </Button>
+            <Button variant="ghost" size="icon" className="text-gray-300 hover:text-white rounded-full">
+              <LayoutGrid className="h-5 w-5" />
+            </Button>
+            {isSignedIn ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="relative h-8 w-8 rounded-full ml-1">
+                    <Avatar className="h-8 w-8 border border-[#333]">
+                      <AvatarImage src={session.user.image || ""} alt={session.user.name || "User"} />
+                      <AvatarFallback className="bg-[#2A3B5C] text-white text-xs">
+                        {session.user.name?.charAt(0).toUpperCase() || session.user.email?.charAt(0).toUpperCase() || "U"}
+                      </AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56 bg-[#1C1C1C] border-[#2A2A2A] text-white mt-2">
+                  <div className="flex items-center justify-start gap-2 p-2">
+                    <div className="flex flex-col space-y-1 leading-none">
+                      {session.user.name && <p className="font-medium">{session.user.name}</p>}
+                      {session.user.email && (
+                        <p className="w-[200px] truncate text-sm text-gray-400">
+                          {session.user.email}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  <DropdownMenuSeparator className="bg-[#2A2A2A]" />
+                  <DropdownMenuItem 
+                    onClick={() => signOut()} 
+                    className="text-red-500 focus:text-red-400 focus:bg-red-500/10 cursor-pointer"
+                  >
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>Log out</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <LoginModal />
+            )}
+          </div>
+        </div>
+
         <h1 className="text-4xl sm:text-[56px] font-medium leading-tight mb-8 sm:mb-16 hidden sm:block">
           <span className="text-[#4285f4]">Welcome to </span>
           <span className="text-[#8ab4f8]">OpenBookLM</span>

@@ -31,7 +31,7 @@ export function RootLayout({ children }: RootLayoutProps) {
 
   return (
     <div className="flex min-h-screen flex-col">
-      <header className="sticky top-0 z-50 w-full border-b border-[#2A2A2A] bg-[#1A1A1A]">
+      <header className="sticky top-0 z-50 w-full border-b border-[#2A2A2A] bg-[#1A1A1A] hidden sm:block">
         <div className="container flex h-16 items-center">
           <div className="mr-4 flex">
             <Link href="/" className="mr-6 flex items-center space-x-2">
