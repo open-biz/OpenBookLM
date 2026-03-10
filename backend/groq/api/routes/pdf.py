@@ -3,10 +3,10 @@ from typing import Dict, Any
 import logging
 from pathlib import Path
 import tempfile
-from ...pdf_to_text import process_pdf
-from ...text_to_summary import process_text_document, ProcessingStatus
-from ...summary_to_dialogue import generate_dialogue
-from ...utils.decorators import timeit  # Add this import
+from backend.groq.api.pdf_to_text import process_pdf
+from backend.groq.api.text_to_summary import process_text_document, ProcessingStatus
+from backend.groq.api.summary_to_dialogue import generate_dialogue
+from backend.groq.utils.decorators import timeit  # Add this import
 
 router = APIRouter()
 logger = logging.getLogger(__name__)

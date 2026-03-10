@@ -1,9 +1,9 @@
 from backend.groq.api.audio_generation import router as groq_audio_router
 from backend.groq.api.sources import router as groq_sources_router
 from backend.groq.api.health import router as groq_health_router
-from backend.cerebras.api.sources import router as cerebras_sources_router
-# from backend.cerebras.api.audio_generation import router as cerebras_audio_router
-from backend.cerebras.api.health import router as cerebras_health_router
+from backend.cerebras_api.api.sources import router as cerebras_sources_router
+# from backend.cerebras_api.api.audio_generation import router as cerebras_audio_router
+from backend.cerebras_api.api.health import router as cerebras_health_router
 
 # Create router registry
 routers = {

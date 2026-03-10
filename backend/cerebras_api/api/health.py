@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 from typing import Dict
-from backend.cerebras.utils.cerebras_helpers import get_cerebras_client
+from backend.cerebras_api.utils.cerebras_helpers import get_cerebras_client
 
 router = APIRouter()
 

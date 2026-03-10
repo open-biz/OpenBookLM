@@ -31,10 +31,10 @@ from dotenv import load_dotenv
 from llamaapi import LlamaAPI
 
 # Local imports
-from .utils.decorators import timeit
-from .utils.token_counter import count_tokens
-from .utils.llama_api_token_limits import get_llama_total_token_limit
-from .utils.llama_api_helpers import (
+from backend.groq.utils.decorators import timeit
+from backend.groq.utils.token_counter import count_tokens
+from backend.groq.utils.llama_api_token_limits import get_llama_total_token_limit
+from backend.groq.utils.llama_api_helpers import (
     estimate_token_cost_per_model,
     APIError,
     make_api_call,
@@ -76,7 +76,9 @@ if not LLAMA_API_KEY:
 
 # Constants for API configuration
 GROQ_MODEL = os.getenv("GROQ_MODEL", "llama-3.1-8b-instant")  # Groq model
-GROQ_API_KEY = "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"
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+if not GROQ_API_KEY:
+    raise ValueError("GROQ_API_KEY not found in environment variables")
 
 # Initialize API client
 llama = LlamaAPI(GROQ_API_KEY)  # We'll override the endpoint in make_api_call

@@ -11,7 +11,7 @@ import sys
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
 sys.path.append(ROOT)
 
-from backend.cerebras.utils.cerebras_helpers import make_api_call
+from backend.cerebras_api.utils.cerebras_helpers import make_api_call
 # from backend.pdf_to_text import process_pdf
 # from backend.text_to_summary import process_text_document
 

@@ -12,7 +12,7 @@ from scipy.io import wavfile
 import torch
 from transformers import AutoTokenizer
 import sys
-from .utils.decorators import timeit
+from backend.groq.utils.decorators import timeit
 
 # Force CPU if no GPU available
 if not torch.cuda.is_available():

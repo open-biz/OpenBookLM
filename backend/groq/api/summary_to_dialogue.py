@@ -19,9 +19,9 @@ import glob
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 sys.path.append(ROOT)
 
-from .utils.llama_api_helpers import make_api_call
+from backend.groq.utils.llama_api_helpers import make_api_call
 
-from .utils.decorators import timeit
+from backend.groq.utils.decorators import timeit
 
 INPUT_DIR = os.path.join(ROOT, "output", "summaries")
 OUTPUT_DIR = os.path.join(ROOT, "output", "dialogue")
@@ -35,10 +35,10 @@ if not GROQ_API_KEY:
 groq_client = Groq(api_key=GROQ_API_KEY)
 
 # To this:
-DIALOGUE_PROMPT_PATH = os.path.join(ROOT, "prompts", "multi_lang_guests.txt")
+DIALOGUE_PROMPT_PATH = os.path.join(ROOT, "prompts", "s2d_multi_lang_guests.txt")
 
 # Update the prompt path to use the groq directory's prompts
-DIALOGUE_PROMPT_PATH = os.path.join(ROOT, "prompts", "multi_lang_guests.txt")
+DIALOGUE_PROMPT_PATH = os.path.join(ROOT, "prompts", "s2d_multi_lang_guests.txt")
 with open(DIALOGUE_PROMPT_PATH, 'r') as f:
     DIALOGUE_PROMPT = f.read().strip()
 

@@ -89,9 +89,9 @@ MAX_OUTPUT_TOKENS = int(1.2 * TARGET_OUTPUT_TOKENS)
 
 # Hugging Face same model used for token counting
 HUGGING_FACE_MODEL = "meta-llama/Llama-3.1-8B"
-HF_TOKEN = os.getenv('HUGGING_FACE_API_KEY', None)
+HF_TOKEN = os.getenv("HUGGING_FACE_API_KEY")
 if not HF_TOKEN:
-    raise ValueError("HUGGING_FACE_TOKEN not found in environment variables")
+    print("Warning: HUGGING_FACE_API_KEY not found in environment variables. Token counting might fail.")
 
 OUTPUT_DIR = os.path.join(ROOT, 'backend', 'cerebras')
 

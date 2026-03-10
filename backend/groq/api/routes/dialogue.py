@@ -3,8 +3,8 @@ from typing import Dict, Any
 import logging
 from pathlib import Path
 import tempfile
-from ...summary_to_dialogue import generate_dialogue
-from ...utils.decorators import timeit
+from backend.groq.api.summary_to_dialogue import generate_dialogue
+from backend.groq.utils.decorators import timeit
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
