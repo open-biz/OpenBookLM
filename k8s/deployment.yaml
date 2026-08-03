@@ -37,6 +37,22 @@ spec:
                   key: REDIS_URL
             - name: NODE_ENV
               value: 'production'
+            - name: BETTER_AUTH_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: openbooklm-config
+                  key: BETTER_AUTH_URL
+            - name: NEXT_PUBLIC_APP_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: openbooklm-config
+                  key: NEXT_PUBLIC_APP_URL
+            - name: BETTER_AUTH_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: openbooklm
+                  key: BETTER_AUTH_SECRET
+                  optional: true
             - name: NEXT_PUBLIC_API_URL
               valueFrom:
                 configMapKeyRef:
@@ -74,38 +90,3 @@ spec:
             limits:
               cpu: '1000m'
               memory: '2Gi'
-        
-        # Backend container
-        - name: backend
-          image: ghcr.io/open-biz/openbooklm-backend:main
-          imagePullPolicy: Always
-          ports:
-            - containerPort: 8000
-          env:
-            - name: CEREBRAS_API_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: api-credentials
-                  key: CEREBRAS_API_KEY
-            - name: LLAMA_API_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: api-credentials
-                  key: LLAMA_API_KEY
-            - name: OPENAI_API_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: api-credentials
-                  key: OPENAI_API_KEY
-            - name: GROQ_API_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: api-credentials
-                  key: GROQ_API_KEY
-          resources:
-            requests:
-              cpu: '500m'
-              memory: '2Gi'
-            limits:
-              cpu: '1000m'
-              memory: '4Gi'

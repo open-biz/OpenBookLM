@@ -5,3 +5,7 @@ metadata:
 data:
   NODE_ENV: "production"
   NEXT_TELEMETRY_DISABLED: "1"
+  API_URL: "https://openbooklm.com/python/api"
+  BASE_URL: "https://openbooklm.com"
+  NEXT_PUBLIC_APP_URL: "https://openbooklm.com"
+  BETTER_AUTH_URL: "https://openbooklm.com"

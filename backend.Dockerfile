@@ -26,4 +26,4 @@ EXPOSE 8000
 
 ENV PYTHONPATH=/app
 
-CMD ["python", "backend/main.py"]
+CMD ["python", "-m", "backend.main"]
