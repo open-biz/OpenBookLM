@@ -22,7 +22,13 @@ Create a Git-source **Docker Compose Application** for each frontend (five resou
 
 Coolify4.5's ordinary Dockerfile Application generator hardcodes `restart: unless-stopped`; its custom Docker run options do not support `--restart=no`. Do not use that application mode for this job. The source Compose file's explicit restart policy is required. The custom foreground start command lets the publisher exit status determine the deployment result; default detached `up -d` would finish before publication completes. An exited container after success is expected and should not be kept alive by a dummy daemon.
 
-Compose's build context is `..` relative to the `.cloudflare/` source file, with Dockerfile `.cloudflare/Dockerfile.ci`. Keep this relative path when Coolify supplies the Compose file/project directory.
+Coolify normalizes this Compose file to the repository root. Its build context must therefore be `.` with Dockerfile `.cloudflare/Dockerfile.ci`. A parent-directory context would resolve to `/artifacts` and fail before building. Match Coolify locally by anchoring the project directory explicitly:
+
+```
+docker compose --project-directory . -f .cloudflare/compose.ci.yaml config
+```
+
+Use the same `--project-directory .` when manually running Compose commands from the repository root. Optional public build arguments have empty defaults to avoid unset-variable warnings; `PAGES_APP` and `SOURCE_COMMIT` remain required and are validated by the artifact builder.
 
 **Build inputs (public only)**
 

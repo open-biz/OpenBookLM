@@ -34,3 +34,15 @@ test("Docker actually excludes generated fixture credentials from the build cont
   assert.equal(await readFile(join(output,"context/package.json"),"utf8"),"{}");
  }finally{await rm(base,{recursive:true,force:true});}
 });
+
+test("Coolify root-normalized Compose resolves the Dockerfile inside the source checkout",async context=>{
+ const {spawnSync}=await import("node:child_process");const {fileURLToPath}=await import("node:url");const {resolve}=await import("node:path");
+ const root=fileURLToPath(new URL("../",import.meta.url));
+ const result=spawnSync("docker",["compose","--project-directory",root,"--env-file","/dev/null","-f",fileURLToPath(new URL("compose.ci.yaml",import.meta.url)),"config","--format","json","--no-interpolate"],{encoding:"utf8",env:{PATH:process.env.PATH,HOME:process.env.HOME},timeout:15000});
+ if(result.error?.code==="ENOENT"){context.skip("Docker Compose CLI unavailable");return;}
+ assert.equal(result.status,0,result.stderr);
+ const service=JSON.parse(result.stdout).services.ci;
+ assert.equal(resolve(service.build.context),resolve(root));
+ assert.equal(resolve(service.build.context,service.build.dockerfile),fileURLToPath(new URL("Dockerfile.ci",import.meta.url)));
+ assert.equal(service.restart,"no");
+});
