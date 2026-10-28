@@ -1,0 +1,17 @@
+{
+  "name": "openbooklm-web",
+  "canonicalHost": "openbooklm.com",
+  "aliases": [
+    "www.openbooklm.com"
+  ],
+  "backendPaths": [
+    "/sample-conversation.wav"
+  ],
+  "retainedAssets": [
+    "sample-conversation.wav"
+  ],
+  "spa": true,
+  "deniedPaths": [
+    "/api/test-redis"
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "openbooklm-web": {
+    "build": [
+      "bun",
+      "run",
+      "build:pages"
+    ],
+    "output": "pages-dist",
+    "checks": [
+      [
+        "node",
+        "--test",
+        "cloudflare/contracts.test.mjs"
+      ],
+      [
+        "bun",
+        "test",
+        "cloudflare/auth.test.ts"
+      ]
+    ]
+  }
+}

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { UsageType } from "@prisma/client";
+import type { UsageType } from "@prisma/client";
 import { Progress } from "@/components/ui/progress";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle, Coins, ChevronDown } from "lucide-react";

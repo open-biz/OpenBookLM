@@ -14,7 +14,8 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import ReactMarkdown from "react-markdown";
 import type { Components } from "react-markdown";
 import { ChatInput } from "@/components/chat-input";
-import { getChatHistory, setChatHistory } from "@/lib/redis-utils";
+import { getChatHistory } from "@/lib/chat-history-client";
+import { completionText } from "../../cloudflare/contracts.mjs";
 import { useSession } from "@/lib/auth-client";
 
 type MessageRole = "user" | "assistant" | "system";
@@ -85,25 +86,29 @@ export const Chat = forwardRef<ChatRef, ChatProps>(
 
     // Single useEffect for loading chat history
     useEffect(() => {
+      const abort = new AbortController();
       async function loadChatHistory() {
-        if (!userId || !notebookId) return;
+        if (!notebookId) return;
 
         try {
           setIsLoadingHistory(true);
-          const history = await getChatHistory(userId, notebookId);
+          const history = await getChatHistory(userId || "", notebookId, abort.signal);
+          if (abort.signal.aborted) return;
           if (history && history.length > 0) {
             setMessages(history);
             scrollToBottom();
           }
         } catch (error) {
+          if (abort.signal.aborted) return;
           console.error("Failed to load chat history:", error);
           setError("Failed to load chat history");
         } finally {
-          setIsLoadingHistory(false);
+          if (!abort.signal.aborted) setIsLoadingHistory(false);
         }
       }
 
       loadChatHistory();
+      return () => abort.abort();
     }, [userId, notebookId]);
 
     // Scroll to bottom when initial messages are loaded
@@ -152,47 +157,9 @@ export const Chat = forwardRef<ChatRef, ChatProps>(
           );
         }
 
-        const reader = response.body?.getReader();
-        if (!reader) throw new Error("Failed to get response stream");
-
-        let assistantMessage = { role: "assistant" as const, content: "" };
-        setMessages((prevMessages) => [...prevMessages, assistantMessage]);
-
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-
-          // Convert the chunk to text
-          const chunk = new TextDecoder().decode(value);
-          try {
-            const data = JSON.parse(chunk);
-            console.log('Received chunk:', data); // Debug log
-            
-            if (data.error) {
-              throw new Error(data.error);
-            }
-            
-            // Handle different response formats
-            const content = 
-              data.choices?.[0]?.delta?.content || // OpenAI/Cerebras format
-              data.choices?.[0]?.message?.content || // Alternative format
-              data.content; // Simple format
-              
-            if (content) {
-              assistantMessage.content += content;
-              setMessages((prevMessages) => {
-                const newMessages = [...prevMessages];
-                newMessages[newMessages.length - 1] = { ...assistantMessage };
-                return newMessages;
-              });
-            }
-          } catch (e) {
-            console.error("Error parsing chunk:", e, "Raw chunk:", chunk);
-            if (e instanceof Error && e.message !== "Unexpected end of JSON input") {
-              throw e;
-            }
-          }
-        }
+        const data = await response.json();
+        const content = completionText(data);
+        setMessages(previous => [...previous, { role: "assistant", content }]);
       } catch (error) {
         // Remove the assistant's message if there was an error
         setMessages((prevMessages) => 
@@ -233,47 +200,9 @@ export const Chat = forwardRef<ChatRef, ChatProps>(
           throw new Error(error.error || "Failed to get response from AI");
         }
 
-        const reader = response.body?.getReader();
-        if (!reader) throw new Error("Failed to get response stream");
-
-        let assistantMessage = { role: "assistant" as const, content: "" };
-        setMessages((prevMessages) => [...prevMessages, assistantMessage]);
-
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-
-          // Convert the chunk to text
-          const chunk = new TextDecoder().decode(value);
-          try {
-            const data = JSON.parse(chunk);
-            console.log('Received chunk:', data); // Debug log
-            
-            if (data.error) {
-              throw new Error(data.error);
-            }
-            
-            // Handle different response formats
-            const content = 
-              data.choices?.[0]?.delta?.content || // OpenAI/Cerebras format
-              data.choices?.[0]?.message?.content || // Alternative format
-              data.content; // Simple format
-              
-            if (content) {
-              assistantMessage.content += content;
-              setMessages((prevMessages) => {
-                const newMessages = [...prevMessages];
-                newMessages[newMessages.length - 1] = { ...assistantMessage };
-                return newMessages;
-              });
-            }
-          } catch (e) {
-            console.error("Error parsing chunk:", e, "Raw chunk:", chunk);
-            if (e instanceof Error && e.message !== "Unexpected end of JSON input") {
-              throw e;
-            }
-          }
-        }
+        const data = await response.json();
+        const content = completionText(data);
+        setMessages(previous => [...previous, { role: "assistant", content }]);
       } catch (error) {
         setError(error instanceof Error ? error.message : "An error occurred");
       } finally {

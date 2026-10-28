@@ -117,3 +117,6 @@ backend/musicgen.py
 # cache files
 __pycache__
 *.pyc
+
+# Cloudflare Pages output
+/pages-dist/
