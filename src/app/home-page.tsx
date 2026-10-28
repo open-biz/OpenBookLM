@@ -56,6 +56,8 @@ export default function HomePage({
   const { data: session } = useSession();
   const isSignedIn = !!session;
 
+  useEffect(() => setNotebooks(initialNotebooks), [initialNotebooks]);
+
   useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth < 768) {
@@ -74,10 +76,11 @@ export default function HomePage({
 
   const refreshNotebooks = async () => {
     // Start fetching in the background
-    fetch('/api/notebooks')
+    fetch('/api/pages/bootstrap', { cache: 'no-store', credentials: 'same-origin' })
       .then(response => response.json())
       .then(data => {
-        setNotebooks(data);
+        if (!Array.isArray(data.notebooks)) throw new Error("Invalid notebook response");
+        setNotebooks(data.notebooks);
       })
       .catch(error => {
         console.error('Error fetching notebooks:', error);

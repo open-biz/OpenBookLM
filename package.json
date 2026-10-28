@@ -15,7 +15,11 @@
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
-    "db:connect": "./scripts/db-connect.sh"
+    "db:connect": "./scripts/db-connect.sh",
+    "build:pages": "vite build --config cloudflare/vite.config.mjs",
+    "test:pages": "node --test cloudflare/*.test.mjs && bun test cloudflare/auth.test.ts",
+    "test:pages:browser": "node --test cloudflare/browser.test.mjs",
+    "test:pages:auth": "bun test cloudflare/auth.test.ts"
   },
   "dependencies": {
     "@better-auth/prisma-adapter": "^1.5.3",
@@ -59,7 +63,9 @@
     "tailwindcss": "^3.4.1",
     "ts-node": "^10.9.2",
     "typescript": "^5.7.3",
-    "wait-on": "^8.0.2"
+    "wait-on": "^8.0.2",
+    "vite": "7.3.7",
+    "playwright": "1.64.1"
   },
   "prisma": {
     "seed": "npx ts-node --compiler-options '{\"module\":\"CommonJS\"}' prisma/seed.ts"

@@ -55,7 +55,8 @@ export async function getOrCreateUser(shouldSetCookie = false) {
     const guestUser = await prisma.user.findUnique({
       where: { id: existingGuestId },
     });
-    if (guestUser) {
+    // A guest cookie is an unsigned identifier, never an authenticated account credential.
+    if (guestUser?.isGuest === true) {
       return guestUser;
     }
   }
@@ -101,9 +102,10 @@ export async function getCurrentUser() {
   const existingGuestId = cookieStore.get("openbooklm_guest_id")?.value;
 
   if (existingGuestId) {
-    return prisma.user.findUnique({
+    const guestUser = await prisma.user.findUnique({
       where: { id: existingGuestId },
     });
+    return guestUser?.isGuest === true ? guestUser : null;
   }
   
   return null;
