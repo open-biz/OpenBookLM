@@ -1,0 +1,36 @@
+# Dockerfile-specific ignore rules take precedence over the repository's normal Docker ignore file.
+# Coolify writes runtime configuration in the checkout; exclude it from COPY and all builder layers.
+.env*
+**/.env*
+.dev.vars*
+**/.dev.vars*
+.git*
+**/.git*
+*compose*.yml
+*compose*.yaml
+**/*compose*.yml
+**/*compose*.yaml
+node_modules
+**/node_modules
+.cloudflare/staged
+**/.cloudflare/staged
+.wrangler
+**/.wrangler
+.next
+**/.next
+pages-dist
+**/pages-dist
+out
+**/out
+dist
+**/dist
+build
+**/build
+.pages-prerender
+**/.pages-prerender
+.pages-fixture-dist
+**/.pages-fixture-dist
+.turbo
+**/.turbo
+*.log
+**/*.log
