@@ -19,7 +19,8 @@
     "build:pages": "vite build --config cloudflare/vite.config.mjs",
     "test:pages": "node --test cloudflare/*.test.mjs && bun test cloudflare/auth.test.ts",
     "test:pages:browser": "node --test cloudflare/browser.test.mjs",
-    "test:pages:auth": "bun test cloudflare/auth.test.ts"
+    "test:pages:auth": "bun test cloudflare/auth.test.ts",
+    "test:email": "bun test cloudflare/email.test.ts"
   },
   "dependencies": {
     "@better-auth/prisma-adapter": "^1.5.3",

@@ -1,4 +1,5 @@
 import { betterAuth } from "better-auth";
+import { escapeHtml, sendTransactionalEmail } from "./cloudflare-email";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { magicLink } from "better-auth/plugins";
 import { prisma } from "./db";
@@ -27,9 +28,14 @@ export const auth = betterAuth({
   },
   plugins: [
     magicLink({
-      sendMagicLink: async ({ email, token, url }, request) => {
-        // TODO: Implement your email sending logic here (e.g., using Resend, SendGrid, AWS SES)
-        console.log(`[MAGIC LINK] Email: ${email} | URL: ${url}`);
+      expiresIn: 60 * 5,
+      sendMagicLink: async ({ email, url }) => {
+        await sendTransactionalEmail({
+          to: email,
+          subject: "Sign in to OpenBookLM",
+          text: `Sign in to OpenBookLM: ${url}\n\nThis link expires in 5 minutes and can only be used once. If you did not request it, ignore this email.`,
+          html: `<h2>Sign in to OpenBookLM</h2><p><a href="${escapeHtml(url)}">Sign in to OpenBookLM</a></p><p>This link expires in 5 minutes and can only be used once. If you did not request it, ignore this email.</p>`,
+        });
       },
     }),
   ],
