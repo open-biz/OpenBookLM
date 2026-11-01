@@ -25,7 +25,7 @@ ENV NODE_ENV=production
 RUN bunx prisma generate
 
 # Build application
-RUN bun run build
+RUN bun run test:email && bun run build
 
 # Runner stage
 FROM node:20-slim AS runner
